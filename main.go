@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/router"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"log"
+	"net/http"
 )
 
 var db *sql.DB
@@ -27,4 +29,8 @@ func main() {
 		fmt.Println(err)
 		log.Fatal(config.ErrConnectDB, err)
 	}
+
+	r := router.GetHTTPHandler(db)
+	log.Fatal(http.ListenAndServe(":8080", r))
+
 }

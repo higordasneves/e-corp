@@ -9,6 +9,7 @@ import (
 	"net/http"
 )
 
+//GetHTTPHandler returns HTTP handler with all routes
 func GetHTTPHandler(db *sql.DB) *mux.Router {
 	accRepo := postgres.NewAccountRepo(db)
 	accUseCase := usecase.NewAccountUseCase(accRepo)

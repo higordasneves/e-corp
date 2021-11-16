@@ -21,6 +21,7 @@ func NewAccountController(accUseCase usecase.AccountUseCase) AccountController {
 	return &accountController{accUseCase: accUseCase}
 }
 
+// CreateAccount CreateAccount reads HTTP POST request to create an account and returns a response
 func (accController accountController) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	bodyRequest, err := ioutil.ReadAll(r.Body)
 	if err != nil {
