@@ -1,0 +1,35 @@
+version: '3'
+services:
+  fullstack-postgres:
+    image: postgres:latest
+    container_name: ecorp_db
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+    ports:
+      - '5432:5432'
+    volumes:
+      - database_postgres:/var/lib/postgresql/data
+    networks:
+      - fullstack
+  app:
+    container_name: ecorp
+    build: .
+    ports:
+      - 5000:5000
+    restart: on-failure
+    depends_on:
+      - fullstack-postgres          # Uncomment this when using postgres.
+    networks:
+      - fullstack
+
+volumes:
+  api:
+  database_postgres:                  # Uncomment this when using postgres.
+
+# Networks to be created to facilitate communication between containers
+networks:
+  fullstack:
+    driver: bridge
