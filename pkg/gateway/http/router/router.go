@@ -17,7 +17,7 @@ func GetHTTPHandler(db *sql.DB) *mux.Router {
 	router := mux.NewRouter()
 
 	//account
-	router.HandleFunc("/account", accControler.CreateAccount).Methods(http.MethodPost)
+	router.HandleFunc("/accounts", accControler.CreateAccount).Methods(http.MethodPost)
 
 	return router
 }
