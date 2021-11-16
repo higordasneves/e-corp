@@ -17,7 +17,7 @@ type accountController struct {
 	accUseCase usecase.AccountUseCase
 }
 
-func NewAccountUseCase(accUseCase usecase.AccountUseCase) AccountController {
+func NewAccountController(accUseCase usecase.AccountUseCase) AccountController {
 	return &accountController{accUseCase: accUseCase}
 }
 
