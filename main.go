@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
@@ -16,7 +15,6 @@ func main() {
 	dbCfg := config.DatabaseConfig{}
 	dbCfg.LoadEnv()
 	dbDNS := dbCfg.DNS()
-	fmt.Println(uuid.NewString())
 
 	fmt.Println("Accessing database", dbDNS)
 	db, err := sql.Open(dbCfg.Driver, dbDNS)

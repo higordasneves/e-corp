@@ -12,7 +12,8 @@ type AccountInput struct {
 	Balance float64 `json:"balance"`
 }
 
-func (a accountUseCase) CreateAccount(accInput AccountInput) (*models.Account, error) {
+//CreateAccount validates and handles user input and creates a formatted account
+func (accUseCase accountUseCase) CreateAccount(accInput AccountInput) (*models.Account, error) {
 	accID := newAccID()
 	account := &models.Account{ID: accID,
 		Name:    accInput.Name,
@@ -20,9 +21,16 @@ func (a accountUseCase) CreateAccount(accInput AccountInput) (*models.Account, e
 		Secret:  accInput.Secret,
 		Balance: accInput.Balance}
 	account.GetHashSecret()
+
+	err := accUseCase.accountRepo.CreateAccount(account)
+
+	if err != nil {
+		return nil, err
+	}
 	return account, nil
 }
 
+// newAccID gets uuid using google lib
 func newAccID() string {
 	return uuid.NewString()
 }

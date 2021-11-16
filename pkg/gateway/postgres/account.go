@@ -15,7 +15,7 @@ func NewAccountRepo(db *sql.DB) repository.AccountRepo {
 }
 
 //CreateAccount inserts a account in database
-func (a account) CreateAccount(acc models.Account) error {
+func (a account) CreateAccount(acc *models.Account) error {
 	statement, err := a.db.Prepare("INSERT INTO accounts (id, cpf, name, secret, balance, created_at) VALUES ($1, $2, $3, $4, $5, $6)")
 	if err != nil {
 		return err

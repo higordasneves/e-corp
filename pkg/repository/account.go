@@ -5,5 +5,5 @@ import (
 )
 
 type AccountRepo interface {
-	CreateAccount(account models.Account) error
+	CreateAccount(account *models.Account) error
 }
