@@ -20,6 +20,7 @@ func (accUseCase accountUseCase) CreateAccount(accInput AccountInput) (*models.A
 		CPF:     accInput.CPF,
 		Secret:  accInput.Secret,
 		Balance: accInput.Balance}
+
 	account.GetHashSecret()
 
 	err := accUseCase.accountRepo.CreateAccount(account)
