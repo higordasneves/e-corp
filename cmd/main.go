@@ -23,6 +23,7 @@ func main() {
 	log.Info("Accessing database")
 	ctxDB := context.Background()
 	dbPool, err := pgxpool.Connect(ctxDB, dbDNS)
+
 	defer dbPool.Close()
 
 	if err != nil {
