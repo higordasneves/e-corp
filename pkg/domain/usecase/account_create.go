@@ -76,7 +76,7 @@ func (accInput *AccountInput) ValidateAccountInput() error {
 	return nil
 }
 
-//inputEmpty validates if the user has filled in the required fields
+//inputEmpty validates if the user has filled the required fields
 func (accInput *AccountInput) inputEmpty() error {
 	if accInput.Name == "" || accInput.CPF == "" || accInput.Secret == "" {
 		return ErrEmptyInput

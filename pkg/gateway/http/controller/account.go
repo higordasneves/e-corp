@@ -38,6 +38,7 @@ func (accController accountController) CreateAccount(w http.ResponseWriter, r *h
 
 	err = accountInput.ValidateAccountInput()
 	if err != nil {
+		accountInput.Secret = "######"
 		responses.Error(w, http.StatusBadRequest, err, accController.log)
 		return
 	}
