@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
 type AccountInput struct {
@@ -33,6 +34,6 @@ func (accUseCase accountUseCase) CreateAccount(ctx context.Context, accInput Acc
 }
 
 // newAccID gets uuid using google lib
-func newAccID() string {
-	return uuid.NewString()
+func newAccID() vos.AccountID {
+	return vos.AccountID(uuid.NewString())
 }

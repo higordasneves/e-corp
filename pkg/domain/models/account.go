@@ -1,15 +1,14 @@
 package models
 
 import (
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
-type AccountID string
-
 //Account represents a banking account
 type Account struct {
-	ID        string
+	ID        vos.AccountID
 	Name      string
 	CPF       string
 	Secret    string
