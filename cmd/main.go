@@ -1,17 +1,16 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/router"
+	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 )
-
-var db *sql.DB
 
 func main() {
 	dbCfg := config.DatabaseConfig{}
@@ -19,18 +18,21 @@ func main() {
 	dbDNS := dbCfg.DNS()
 
 	fmt.Println("Accessing database", dbDNS)
-	db, err := sql.Open(dbCfg.Driver, dbDNS)
+	ctxDB := context.Background()
+	dbPool, err := pgxpool.Connect(ctxDB, dbDNS)
+	defer dbPool.Close()
+
 	if err != nil {
 		fmt.Println(err)
 		log.Fatal(config.ErrConnectDB, err)
 	}
-	defer db.Close()
-	if err = db.Ping(); err != nil {
+
+	if err = dbPool.Ping(ctxDB); err != nil {
 		fmt.Println(err)
 		log.Fatal(config.ErrConnectDB, err)
 	}
 
-	r := router.GetHTTPHandler(db)
+	r := router.GetHTTPHandler(dbPool)
 	log.Fatal(http.ListenAndServe(":8080", r))
 
 }

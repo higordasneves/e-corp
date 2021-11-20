@@ -1,9 +1,10 @@
 package repository
 
 import (
+	"context"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
 )
 
 type AccountRepo interface {
-	CreateAccount(account *models.Account) error
+	CreateAccount(context.Context, *models.Account) error
 }

@@ -1,12 +1,13 @@
 package usecase
 
 import (
+	"context"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
 	"github.com/higordasneves/e-corp/pkg/repository"
 )
 
 type AccountUseCase interface {
-	CreateAccount(input AccountInput) (*models.Account, error)
+	CreateAccount(ctx context.Context, input AccountInput) (*models.Account, error)
 }
 
 type accountUseCase struct {

@@ -1,17 +1,17 @@
 package router
 
 import (
-	"database/sql"
 	"github.com/gorilla/mux"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"net/http"
 )
 
 //GetHTTPHandler returns HTTP handler with all routes
-func GetHTTPHandler(db *sql.DB) *mux.Router {
-	accRepo := postgres.NewAccountRepo(db)
+func GetHTTPHandler(dbPool *pgxpool.Pool) *mux.Router {
+	accRepo := postgres.NewAccountRepo(dbPool)
 	accUseCase := usecase.NewAccountUseCase(accRepo)
 	accControler := controller.NewAccountController(accUseCase)
 
