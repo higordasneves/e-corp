@@ -18,7 +18,9 @@ require (
 	github.com/jackc/puddle v1.1.3 // indirect
 	github.com/joho/godotenv v1.3.0 // indirect
 	github.com/lib/pq v1.10.4 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
 	golang.org/x/crypto v0.0.0-20211115234514-b4de73f9ece8 // indirect
+	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	gopkg.in/yaml.v2 v2.2.2 // indirect
 	olympos.io/encoding/edn v0.0.0-20200308123125-93e3b8dd0e24 // indirect

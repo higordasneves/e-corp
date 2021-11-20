@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
 type AccountInput struct {
@@ -17,7 +16,7 @@ type AccountInput struct {
 //CreateAccount validates and handles user input and creates a formatted account
 func (accUseCase accountUseCase) CreateAccount(ctx context.Context, accInput AccountInput) (*models.Account, error) {
 	accID := newAccID()
-	account := &models.Account{ID: vos.AccountID(accID),
+	account := &models.Account{ID: accID,
 		Name:    accInput.Name,
 		CPF:     accInput.CPF,
 		Secret:  accInput.Secret,

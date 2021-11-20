@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
 	"github.com/higordasneves/e-corp/pkg/repository"
+	"github.com/sirupsen/logrus"
 )
 
 type AccountUseCase interface {
@@ -12,8 +13,9 @@ type AccountUseCase interface {
 
 type accountUseCase struct {
 	accountRepo repository.AccountRepo
+	log         *logrus.Logger
 }
 
-func NewAccountUseCase(accountRepo repository.AccountRepo) AccountUseCase {
-	return &accountUseCase{accountRepo: accountRepo}
+func NewAccountUseCase(accountRepo repository.AccountRepo, log *logrus.Logger) AccountUseCase {
+	return &accountUseCase{accountRepo: accountRepo, log: log}
 }

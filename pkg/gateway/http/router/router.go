@@ -6,14 +6,15 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
 //GetHTTPHandler returns HTTP handler with all routes
-func GetHTTPHandler(dbPool *pgxpool.Pool) *mux.Router {
-	accRepo := postgres.NewAccountRepo(dbPool)
-	accUseCase := usecase.NewAccountUseCase(accRepo)
-	accControler := controller.NewAccountController(accUseCase)
+func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger) *mux.Router {
+	accRepo := postgres.NewAccountRepo(dbPool, log)
+	accUseCase := usecase.NewAccountUseCase(accRepo, log)
+	accControler := controller.NewAccountController(accUseCase, log)
 
 	router := mux.NewRouter()
 
