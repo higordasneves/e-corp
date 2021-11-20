@@ -2,8 +2,8 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/responses"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -26,18 +26,20 @@ func NewAccountController(accUseCase usecase.AccountUseCase, log *logrus.Logger)
 func (accController accountController) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	bodyRequest, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		accController.log.WithError(err).Warn()
+		responses.Error(w, http.StatusUnprocessableEntity, err, accController.log)
+		return
 	}
 
 	var accountInput usecase.AccountInput
 	if err = json.Unmarshal(bodyRequest, &accountInput); err != nil {
-		accController.log.WithError(err).Warn()
+		responses.Error(w, http.StatusBadRequest, err, accController.log)
+		return
 	}
 
 	account, err := accController.accUseCase.CreateAccount(r.Context(), accountInput)
 	if err != nil {
-		accController.log.WithError(err).Warn()
+		responses.Error(w, http.StatusInternalServerError, err, accController.log)
+		return
 	}
-
-	w.Write([]byte(fmt.Sprintf("%s, your account was created", account.Name)))
+	responses.JSON(w, http.StatusCreated, account.Name, accController.log)
 }

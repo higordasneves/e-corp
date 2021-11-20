@@ -2,15 +2,13 @@ package main
 
 import (
 	"context"
-	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
-	"github.com/sirupsen/logrus"
-
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/router"
-
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
+	"github.com/sirupsen/logrus"
 
 	"net/http"
 )

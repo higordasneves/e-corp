@@ -26,5 +26,6 @@ func (accRepo account) CreateAccount(ctx context.Context, acc *models.Account) e
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
