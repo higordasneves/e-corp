@@ -36,6 +36,12 @@ func (accController accountController) CreateAccount(w http.ResponseWriter, r *h
 		return
 	}
 
+	err = accountInput.ValidateAccountInput()
+	if err != nil {
+		responses.Error(w, http.StatusBadRequest, err, accController.log)
+		return
+	}
+
 	account, err := accController.accUseCase.CreateAccount(r.Context(), accountInput)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err, accController.log)

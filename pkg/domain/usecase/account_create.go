@@ -51,46 +51,57 @@ func newAccID() vos.AccountID {
 	return vos.AccountID(uuid.NewString())
 }
 
-func ValidateAccountInput(accInput *AccountInput) error {
-	err := accInput.InputEmpty()
+//ValidateAccountInput validates account input and returns if occurred an error
+func (accInput *AccountInput) ValidateAccountInput() error {
+	err := accInput.inputEmpty()
 	if err != nil {
 		return err
 	}
 
-	err = accInput.SecretLen()
+	err = accInput.secretLen()
 	if err != nil {
 		return err
 	}
 
-	err = accInput.CPFLen()
+	err = accInput.cpfLen()
 	if err != nil {
 		return err
 	}
+
+	err = accInput.cpfFormat()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (accInput *AccountInput) InputEmpty() error {
+//inputEmpty validates if the user has filled in the required fields
+func (accInput *AccountInput) inputEmpty() error {
 	if accInput.Name == "" || accInput.CPF == "" || accInput.Secret == "" {
 		return ErrEmptyInput
 	}
 	return nil
 }
 
-func (accInput *AccountInput) SecretLen() error {
+//secretLen validates the secret length
+func (accInput *AccountInput) secretLen() error {
 	if len(accInput.Secret) < 8 {
 		return ErrSmallSecret
 	}
 	return nil
 }
 
-func (accInput *AccountInput) CPFLen() error {
-	if len(accInput.CPF) != 8 {
+//cpfLen validates the CPF length
+func (accInput *AccountInput) cpfLen() error {
+	if len(accInput.CPF) != 11 {
 		return ErrCPFLen
 	}
 	return nil
 }
 
-func (accInput *AccountInput) CPFFormat() error {
+//cpfLen validates if the CPF has only numbers
+func (accInput *AccountInput) cpfFormat() error {
 	for _, v := range accInput.CPF {
 		if !unicode.IsDigit(v) {
 			return ErrCPFFormat
