@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"time"
 )
 
 type AccountInput struct {
@@ -18,10 +19,12 @@ type AccountInput struct {
 func (accUseCase accountUseCase) CreateAccount(ctx context.Context, accInput AccountInput) (*models.Account, error) {
 	accID := newAccID()
 	account := &models.Account{ID: accID,
-		Name:    accInput.Name,
-		CPF:     accInput.CPF,
-		Secret:  accInput.Secret,
-		Balance: accInput.Balance}
+		Name:      accInput.Name,
+		CPF:       accInput.CPF,
+		Secret:    accInput.Secret,
+		Balance:   accInput.Balance,
+		CreatedAt: time.Now().Truncate(time.Second),
+	}
 
 	account.GetHashSecret()
 
