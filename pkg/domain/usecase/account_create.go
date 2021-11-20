@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"strings"
 	"time"
 	"unicode"
 )
@@ -53,6 +54,8 @@ func newAccID() vos.AccountID {
 
 //ValidateAccountInput validates account input and returns if occurred an error
 func (accInput *AccountInput) ValidateAccountInput() error {
+	accInput.removesBlankSpaces()
+
 	err := accInput.inputEmpty()
 	if err != nil {
 		return err
@@ -108,4 +111,11 @@ func (accInput *AccountInput) cpfFormat() error {
 		}
 	}
 	return nil
+}
+
+//removesBlankSpaces removes blank spaces of account fields
+func (accInput *AccountInput) removesBlankSpaces() {
+	accInput.Name = strings.TrimSpace(accInput.Name)
+	accInput.CPF = strings.TrimSpace(accInput.CPF)
+	accInput.Secret = strings.TrimSpace(accInput.Secret)
 }
