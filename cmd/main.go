@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
 	"github.com/sirupsen/logrus"
 
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
@@ -33,6 +34,8 @@ func main() {
 	if err = dbPool.Ping(ctxDB); err != nil {
 		log.WithError(err).Fatal(config.ErrConnectDB)
 	}
+
+	postgres.Migration(dbPool, log)
 
 	r := router.GetHTTPHandler(dbPool, log)
 	log.Fatal(http.ListenAndServe(":5000", r))

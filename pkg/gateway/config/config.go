@@ -8,7 +8,9 @@ import (
 )
 
 var (
-	ErrConnectDB = errors.New("Failed to connect to database")
+	ErrConnectDB         = errors.New("Failed to connect to database")
+	ErrMigrateDB         = errors.New("Failed to migrate to database")
+	ErrMigrateNoChangeDB = errors.New("Failed to migrate to database")
 )
 
 type DatabaseConfig struct {
