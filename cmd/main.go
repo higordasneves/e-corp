@@ -35,6 +35,6 @@ func main() {
 	}
 
 	r := router.GetHTTPHandler(dbPool, log)
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(":5000", r))
 
 }
