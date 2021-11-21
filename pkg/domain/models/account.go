@@ -36,6 +36,14 @@ func (acc *Account) GetHashSecret() error {
 	return nil
 }
 
+func (acc *Account) CompareHashSecret(secret string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(secret), []byte(acc.Secret))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 //GetAccOutput formats and return only pertinent information from account
 func (acc *Account) GetAccOutput() *AccountOutput {
 	acc.cpfMask()
