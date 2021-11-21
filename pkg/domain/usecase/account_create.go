@@ -19,10 +19,10 @@ var (
 )
 
 type AccountInput struct {
-	Name    string  `json:"name"`
-	CPF     string  `json:"cpf"`
-	Secret  string  `json:"secret"`
-	Balance float64 `json:"balance"`
+	Name    string       `json:"name"`
+	CPF     string       `json:"cpf"`
+	Secret  string       `json:"secret"`
+	Balance vos.Currency `json:"balance"`
 }
 
 //CreateAccount validates and handles user input and creates a formatted account,
@@ -34,7 +34,7 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput Ac
 		Name:      accInput.Name,
 		CPF:       accInput.CPF,
 		Secret:    accInput.Secret,
-		Balance:   vos.Currency(accInput.Balance),
+		Balance:   accInput.Balance,
 		CreatedAt: time.Now().Truncate(time.Second),
 	}
 
@@ -43,6 +43,7 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput Ac
 		return nil, ErrUnexpected
 	}
 
+	account.Balance.ConvertToCents()
 	err = accUseCase.accountRepo.CreateAccount(ctx, account)
 
 	if err != nil {

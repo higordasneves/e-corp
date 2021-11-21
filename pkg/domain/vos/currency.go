@@ -5,8 +5,8 @@ type (
 )
 
 //ConvertToCents converts currency unit to cents to solve floating point math problem
-func (c Currency) ConvertToCents() int64 {
-	return int64(c * 100)
+func (c *Currency) ConvertToCents() {
+	*c = *c * 100
 }
 
 //ConvertFromCents converts cents to currency unit
