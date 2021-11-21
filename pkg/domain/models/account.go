@@ -39,11 +39,12 @@ func (acc *Account) GetHashSecret() error {
 //GetAccOutput formats and return only pertinent information from account
 func (acc *Account) GetAccOutput() *AccountOutput {
 	acc.cpfMask()
+	acc.Balance.ConvertFromCents()
 	accOutput := &AccountOutput{
 		ID:        acc.ID,
 		Name:      acc.Name,
 		CPF:       acc.CPF,
-		Balance:   acc.Balance / 100,
+		Balance:   acc.Balance,
 		CreatedAt: acc.CreatedAt,
 	}
 	return accOutput
