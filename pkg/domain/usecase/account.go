@@ -9,6 +9,7 @@ import (
 
 type AccountUseCase interface {
 	CreateAccount(ctx context.Context, input AccountInput) (*models.Account, error)
+	FetchAccounts(ctx context.Context) ([]models.AccountOutput, error)
 }
 
 type accountUseCase struct {

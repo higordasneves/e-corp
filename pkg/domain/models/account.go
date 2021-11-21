@@ -19,11 +19,11 @@ type Account struct {
 
 //AccountOutput represents information from a bank account that should be returned
 type AccountOutput struct {
-	ID        vos.AccountID
-	Name      string
-	CPF       string
-	Balance   vos.Currency
-	CreatedAt time.Time
+	ID        vos.AccountID `json:"id"`
+	Name      string        `json:"name"`
+	CPF       string        `json:"cpf"`
+	Balance   vos.Currency  `json:"balance"`
+	CreatedAt time.Time     `json:"created_at"`
 }
 
 //GetHashSecret returns hash of password

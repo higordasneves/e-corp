@@ -7,4 +7,5 @@ import (
 
 type AccountRepo interface {
 	CreateAccount(context.Context, *models.Account) error
+	FetchAccounts(ctx context.Context) ([]models.AccountOutput, error)
 }

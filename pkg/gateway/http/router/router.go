@@ -20,6 +20,7 @@ func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger) *mux.Router {
 
 	//account
 	router.HandleFunc("/accounts", accControler.CreateAccount).Methods(http.MethodPost)
+	router.HandleFunc("/accounts", accControler.FetchAccounts).Methods(http.MethodGet)
 
 	return router
 }
