@@ -17,7 +17,7 @@ func (accID AccountID) String() string {
 	return string(accID)
 }
 
-// newAccID gets uuid using google lib
+//NewAccID gets uuid using google lib
 func NewAccID() AccountID {
 	return AccountID(uuid.NewString())
 }
