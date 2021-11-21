@@ -43,7 +43,7 @@ func (acc *Account) GetAccOutput() *AccountOutput {
 		ID:        acc.ID,
 		Name:      acc.Name,
 		CPF:       acc.CPF,
-		Balance:   acc.Balance,
+		Balance:   acc.Balance / 100,
 		CreatedAt: acc.CreatedAt,
 	}
 	return accOutput

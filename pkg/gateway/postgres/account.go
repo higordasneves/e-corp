@@ -48,19 +48,20 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]models.AccountOutpu
 	}
 	accList := make([]models.AccountOutput, 0, count)
 
-	rows, err := accRepo.dbPool.Query(ctx, "select id, name, cpf, (balance/100) as balance, created_at from accounts")
+	rows, err := accRepo.dbPool.Query(ctx, "select id, name, cpf, balance, created_at from accounts")
 	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
 
 	for rows.Next() {
-		var acc models.AccountOutput
+		var acc models.Account
 		err = rows.Scan(&acc.ID, &acc.Name, &acc.CPF, &acc.Balance, &acc.CreatedAt)
+		accOutput := acc.GetAccOutput()
 		if err != nil {
 			return nil, err
 		}
-		accList = append(accList, acc)
+		accList = append(accList, *accOutput)
 	}
 
 	return accList, nil
