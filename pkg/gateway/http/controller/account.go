@@ -31,26 +31,26 @@ func NewAccountController(accUseCase usecase.AccountUseCase, log *logrus.Logger)
 func (accController accountController) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	bodyRequest, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		responses.SendResponse(w, http.StatusCreated, responses.ErrorJSON(err), accController.log)
+		responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), accController.log)
 		return
 	}
 
 	var accountInput usecase.AccountInput
 	if err = json.Unmarshal(bodyRequest, &accountInput); err != nil {
-		responses.SendResponse(w, http.StatusCreated, responses.ErrorJSON(err), accController.log)
+		responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), accController.log)
 		return
 	}
 
 	err = accountInput.ValidateAccountInput()
 	if err != nil {
 		accountInput.Secret = "######"
-		responses.SendResponse(w, http.StatusCreated, responses.ErrorJSON(err), accController.log)
+		responses.SendResponse(w, http.StatusNotFound, responses.ErrorJSON(err), accController.log)
 		return
 	}
 
 	account, err := accController.accUseCase.CreateAccount(r.Context(), accountInput)
 	if err != nil {
-		responses.SendResponse(w, http.StatusCreated, responses.ErrorJSON(err), accController.log)
+		responses.SendResponse(w, http.StatusInternalServerError, responses.ErrorJSON(err), accController.log)
 		return
 	}
 	accOutput := account.GetAccOutput()
@@ -64,24 +64,26 @@ func (accController accountController) FetchAccounts(w http.ResponseWriter, r *h
 		responses.SendResponse(w, http.StatusInternalServerError, responses.ErrorJSON(err), accController.log)
 		return
 	}
-
 	responses.SendResponse(w, http.StatusCreated, accList, accController.log)
-
 }
 
 func (accController accountController) GetBalance(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 	id := params["account_id"]
-
-	balance, err := accController.accUseCase.GetBalance(r.Context(), vos.AccountID(id))
-
-	if err == postgres.ErrAccNotFound {
+	err := vos.IsValidUUID(id)
+	if err != nil {
 		responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), accController.log)
 		return
 	}
 
+	balance, err := accController.accUseCase.GetBalance(r.Context(), vos.AccountID(id))
+
 	if err != nil {
+		if err == postgres.ErrAccNotFound {
+			responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), accController.log)
+			return
+		}
 		responses.SendResponse(w, http.StatusInternalServerError, responses.ErrorJSON(err), accController.log)
 		return
 	}

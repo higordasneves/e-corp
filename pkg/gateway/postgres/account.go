@@ -13,7 +13,6 @@ import (
 
 var (
 	ErrAccNotFound = errors.New("account not found")
-	ErrGetBalance  = errors.New("error getting account balance")
 )
 
 type account struct {
@@ -76,14 +75,13 @@ func (accRepo account) GetBalance(ctx context.Context, id vos.AccountID) (*vos.C
 	var balance vos.Currency
 	err := row.Scan(&balance)
 
-	if err == pgx.ErrNoRows {
-		return nil, ErrAccNotFound
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, ErrAccNotFound
+		}
+		return nil, err
 	}
 
-	if err != nil {
-		accRepo.log.WithError(err).Println(ErrGetBalance)
-		return nil, ErrGetBalance
-	}
 	balance.ConvertFromCents()
 	return &balance, nil
 }

@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"errors"
-	"github.com/google/uuid"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"strings"
@@ -16,6 +15,7 @@ var (
 	ErrSmallSecret = errors.New("the password must be at least 8 characters long")
 	ErrCPFLen      = errors.New("the CPF must be 11 characters long")
 	ErrCPFFormat   = errors.New("the CPF must contain only numbers")
+	ErrUnexpected  = errors.New("an unexpected error has occurred trying to process your request")
 )
 
 type AccountInput struct {
@@ -28,7 +28,7 @@ type AccountInput struct {
 //CreateAccount validates and handles user input and creates a formatted account,
 //then calls the function to insert the account into the database
 func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput AccountInput) (*models.Account, error) {
-	accID := newAccID()
+	accID := vos.NewAccID()
 
 	account := &models.Account{ID: accID,
 		Name:      accInput.Name,
@@ -38,19 +38,17 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput Ac
 		CreatedAt: time.Now().Truncate(time.Second),
 	}
 
-	account.GetHashSecret()
+	err := account.GetHashSecret()
+	if err != nil {
+		return nil, ErrUnexpected
+	}
 
-	err := accUseCase.accountRepo.CreateAccount(ctx, account)
+	err = accUseCase.accountRepo.CreateAccount(ctx, account)
 
 	if err != nil {
-		return nil, err
+		return nil, ErrUnexpected
 	}
 	return account, nil
-}
-
-// newAccID gets uuid using google lib
-func newAccID() vos.AccountID {
-	return vos.AccountID(uuid.NewString())
 }
 
 //ValidateAccountInput validates account input and returns if occurred an error
