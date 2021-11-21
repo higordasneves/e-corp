@@ -29,11 +29,12 @@ type AccountInput struct {
 //then calls the function to insert the account into the database
 func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput AccountInput) (*models.Account, error) {
 	accID := newAccID()
+
 	account := &models.Account{ID: accID,
 		Name:      accInput.Name,
 		CPF:       accInput.CPF,
 		Secret:    accInput.Secret,
-		Balance:   accInput.Balance,
+		Balance:   vos.Currency(accInput.Balance),
 		CreatedAt: time.Now().Truncate(time.Second),
 	}
 

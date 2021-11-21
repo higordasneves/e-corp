@@ -17,11 +17,11 @@ func NewAccountRepo(dbPool *pgxpool.Pool, log *logrus.Logger) repository.Account
 	return &account{dbPool, log}
 }
 
-//CreateAccount inserts a account in database
+//CreateAccount inserts account in database
 func (accRepo account) CreateAccount(ctx context.Context, acc *models.Account) error {
 	_, err := accRepo.dbPool.Exec(ctx, "INSERT INTO accounts "+
 		"(id, cpf, name, secret, balance, created_at)"+
-		" VALUES ($1, $2, $3, $4, $5, $6)", acc.ID.String(), acc.CPF, acc.Name, acc.Secret, acc.Balance, acc.CreatedAt)
+		" VALUES ($1, $2, $3, $4, $5, $6)", acc.ID.String(), acc.CPF, acc.Name, acc.Secret, acc.Balance.ConvertToCents(), acc.CreatedAt)
 
 	if err != nil {
 		return err
