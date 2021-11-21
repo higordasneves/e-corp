@@ -2,8 +2,11 @@ package controller
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/responses"
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -12,6 +15,7 @@ import (
 type AccountController interface {
 	CreateAccount(w http.ResponseWriter, r *http.Request)
 	FetchAccounts(w http.ResponseWriter, r *http.Request)
+	GetBalance(w http.ResponseWriter, r *http.Request)
 }
 
 type accountController struct {
@@ -57,10 +61,32 @@ func (accController accountController) CreateAccount(w http.ResponseWriter, r *h
 func (accController accountController) FetchAccounts(w http.ResponseWriter, r *http.Request) {
 	accList, err := accController.accUseCase.FetchAccounts(r.Context())
 	if err != nil {
-		responses.SendResponse(w, http.StatusCreated, responses.ErrorJSON(err), accController.log)
+		responses.SendResponse(w, http.StatusInternalServerError, responses.ErrorJSON(err), accController.log)
 		return
 	}
 
 	responses.SendResponse(w, http.StatusCreated, accList, accController.log)
+
+}
+
+func (accController accountController) GetBalance(w http.ResponseWriter, r *http.Request) {
+
+	params := mux.Vars(r)
+	id := params["account_id"]
+
+	balance, err := accController.accUseCase.GetBalance(r.Context(), vos.AccountID(id))
+
+	if err == postgres.ErrAccNotFound {
+		responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), accController.log)
+		return
+	}
+
+	if err != nil {
+		responses.SendResponse(w, http.StatusInternalServerError, responses.ErrorJSON(err), accController.log)
+		return
+	}
+
+	balanceResponse := map[string]*vos.Currency{"balance": balance}
+	responses.SendResponse(w, http.StatusCreated, balanceResponse, accController.log)
 
 }

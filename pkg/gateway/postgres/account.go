@@ -2,10 +2,18 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	ErrAccNotFound = errors.New("account not found")
+	ErrGetBalance  = errors.New("error getting account balance")
 )
 
 type account struct {
@@ -56,4 +64,25 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]models.AccountOutpu
 	}
 
 	return accList, nil
+}
+
+func (accRepo account) GetBalance(ctx context.Context, id vos.AccountID) (*vos.Currency, error) {
+	row := accRepo.dbPool.QueryRow(ctx,
+		`select balance
+			from accounts
+			where id = $1`, id.String())
+
+	var balance vos.Currency
+	err := row.Scan(&balance)
+
+	if err == pgx.ErrNoRows {
+		return nil, ErrAccNotFound
+	}
+
+	if err != nil {
+		accRepo.log.WithError(err).Println(ErrGetBalance)
+		return nil, ErrGetBalance
+	}
+	balance.ConvertFromCents()
+	return &balance, nil
 }
