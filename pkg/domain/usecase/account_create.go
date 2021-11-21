@@ -55,7 +55,7 @@ func newAccID() vos.AccountID {
 
 //ValidateAccountInput validates account input and returns if occurred an error
 func (accInput *AccountInput) ValidateAccountInput() error {
-	accInput.removesBlankSpaces()
+	accInput.removeBlankSpaces()
 
 	err := accInput.inputEmpty()
 	if err != nil {
@@ -115,7 +115,7 @@ func (accInput *AccountInput) cpfFormat() error {
 }
 
 //removesBlankSpaces removes blank spaces of account fields
-func (accInput *AccountInput) removesBlankSpaces() {
+func (accInput *AccountInput) removeBlankSpaces() {
 	accInput.Name = strings.TrimSpace(accInput.Name)
 	accInput.CPF = strings.TrimSpace(accInput.CPF)
 	accInput.Secret = strings.TrimSpace(accInput.Secret)

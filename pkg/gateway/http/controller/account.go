@@ -48,5 +48,6 @@ func (accController accountController) CreateAccount(w http.ResponseWriter, r *h
 		responses.Error(w, http.StatusInternalServerError, err, accController.log)
 		return
 	}
-	responses.JSON(w, http.StatusCreated, account.Name, accController.log)
+	accOutput := account.GetAccOutput()
+	responses.JSON(w, http.StatusCreated, accOutput, accController.log)
 }
