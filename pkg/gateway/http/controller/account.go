@@ -64,7 +64,7 @@ func (accController accountController) FetchAccounts(w http.ResponseWriter, r *h
 		responses.SendResponse(w, http.StatusInternalServerError, responses.ErrorJSON(err), accController.log)
 		return
 	}
-	responses.SendResponse(w, http.StatusCreated, accList, accController.log)
+	responses.SendResponse(w, http.StatusOK, accList, accController.log)
 }
 
 func (accController accountController) GetBalance(w http.ResponseWriter, r *http.Request) {
@@ -89,6 +89,6 @@ func (accController accountController) GetBalance(w http.ResponseWriter, r *http
 	}
 
 	balanceResponse := map[string]*vos.Currency{"balance": balance}
-	responses.SendResponse(w, http.StatusCreated, balanceResponse, accController.log)
+	responses.SendResponse(w, http.StatusOK, balanceResponse, accController.log)
 
 }
