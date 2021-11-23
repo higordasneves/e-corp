@@ -28,8 +28,10 @@ type AccountInput struct {
 //CreateAccount validates and handles user input and creates a formatted account,
 //then calls the function to insert the account into the database
 func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput AccountInput) (*models.Account, error) {
-	accID := vos.NewAccID()
+	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
 
+	accID := vos.NewAccID()
 	account := &models.Account{ID: accID,
 		Name:      accInput.Name,
 		CPF:       accInput.CPF,
