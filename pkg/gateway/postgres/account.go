@@ -2,17 +2,13 @@ package postgres
 
 import (
 	"context"
-	"errors"
+	"github.com/higordasneves/e-corp/pkg/domain/errors"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
-)
-
-var (
-	ErrAccNotFound = errors.New("account not found")
 )
 
 type account struct {
@@ -31,7 +27,8 @@ func (accRepo account) CreateAccount(ctx context.Context, acc *models.Account) e
 		" VALUES ($1, $2, $3, $4, $5, $6)", acc.ID.String(), acc.CPF, acc.Name, acc.Secret, int64(acc.Balance), acc.CreatedAt)
 
 	if err != nil {
-		return err
+		accRepo.log.WithError(err).Println(repository.ErrCreateAcc)
+		return repository.ErrCreateAcc
 	}
 
 	return nil
@@ -48,9 +45,11 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]models.AccountOutpu
 	accList := make([]models.AccountOutput, 0, count)
 
 	rows, err := accRepo.dbPool.Query(ctx, "select id, name, cpf, balance, created_at from accounts")
+
 	defer rows.Close()
 	if err != nil {
-		return nil, err
+		accRepo.log.WithError(err).Println(repository.ErrFetchAcc)
+		return nil, repository.ErrFetchAcc
 	}
 
 	for rows.Next() {
@@ -58,7 +57,8 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]models.AccountOutpu
 		err = rows.Scan(&acc.ID, &acc.Name, &acc.CPF, &acc.Balance, &acc.CreatedAt)
 		accOutput := acc.GetAccOutput()
 		if err != nil {
-			return nil, err
+			accRepo.log.WithError(err).Println(repository.ErrFetchAcc)
+			return nil, repository.ErrFetchAcc
 		}
 		accList = append(accList, *accOutput)
 	}
@@ -77,9 +77,10 @@ func (accRepo account) GetBalance(ctx context.Context, id vos.AccountID) (*vos.C
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, ErrAccNotFound
+			return nil, errors.ErrAccNotFound
 		}
-		return nil, err
+		accRepo.log.WithError(err).Println(repository.ErrGetBalance)
+		return nil, repository.ErrGetBalance
 	}
 
 	balance.ConvertFromCents()

@@ -3,10 +3,10 @@ package controller
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/higordasneves/e-corp/pkg/domain/errors"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/responses"
-	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -80,7 +80,7 @@ func (accController accountController) GetBalance(w http.ResponseWriter, r *http
 	balance, err := accController.accUseCase.GetBalance(r.Context(), vos.AccountID(id))
 
 	if err != nil {
-		if err == postgres.ErrAccNotFound {
+		if err == errors.ErrAccNotFound {
 			responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), accController.log)
 			return
 		}

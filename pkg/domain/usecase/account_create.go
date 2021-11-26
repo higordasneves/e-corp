@@ -2,20 +2,12 @@ package usecase
 
 import (
 	"context"
-	"errors"
+	"github.com/higordasneves/e-corp/pkg/domain/errors"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"strings"
 	"time"
 	"unicode"
-)
-
-var (
-	ErrEmptyInput  = errors.New("the name, document and password fields are required")
-	ErrSmallSecret = errors.New("the password must be at least 8 characters long")
-	ErrCPFLen      = errors.New("the CPF must be 11 characters long")
-	ErrCPFFormat   = errors.New("the CPF must contain only numbers")
-	ErrUnexpected  = errors.New("an unexpected error has occurred trying to process your request")
 )
 
 type AccountInput struct {
@@ -42,14 +34,15 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput Ac
 
 	err := account.GetHashSecret()
 	if err != nil {
-		return nil, ErrUnexpected
+		accUseCase.log.WithError(err).Println(errors.ErrUnexpected)
+		return nil, errors.ErrUnexpected
 	}
 
 	account.Balance.ConvertToCents()
 	err = accUseCase.accountRepo.CreateAccount(ctx, account)
 
 	if err != nil {
-		return nil, ErrUnexpected
+		return nil, err
 	}
 	return account, nil
 }
@@ -84,7 +77,7 @@ func (accInput *AccountInput) ValidateAccountInput() error {
 //inputEmpty validates if the user has filled the required fields
 func (accInput *AccountInput) inputEmpty() error {
 	if accInput.Name == "" || accInput.CPF == "" || accInput.Secret == "" {
-		return ErrEmptyInput
+		return errors.ErrEmptyInput
 	}
 	return nil
 }
@@ -92,7 +85,7 @@ func (accInput *AccountInput) inputEmpty() error {
 //secretLen validates the secret length
 func (accInput *AccountInput) secretLen() error {
 	if len(accInput.Secret) < 8 {
-		return ErrSmallSecret
+		return errors.ErrSmallSecret
 	}
 	return nil
 }
@@ -100,7 +93,7 @@ func (accInput *AccountInput) secretLen() error {
 //cpfLen validates the CPF length
 func (accInput *AccountInput) cpfLen() error {
 	if len(accInput.CPF) != 11 {
-		return ErrCPFLen
+		return errors.ErrCPFLen
 	}
 	return nil
 }
@@ -109,7 +102,7 @@ func (accInput *AccountInput) cpfLen() error {
 func (accInput *AccountInput) cpfFormat() error {
 	for _, v := range accInput.CPF {
 		if !unicode.IsDigit(v) {
-			return ErrCPFFormat
+			return errors.ErrCPFFormat
 		}
 	}
 	return nil
