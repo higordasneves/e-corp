@@ -8,13 +8,15 @@ import (
 )
 
 var (
-	ErrCreateAcc  = errors.New("an unexpected error has occurred while creating account")
+	ErrCreateAcc  = errors.New("an unexpected error occurred while creating account")
 	ErrFetchAcc   = errors.New("an unexpected error occurred while fetching accounts")
 	ErrGetBalance = errors.New("an unexpected error occurred while getting account balance")
+	ErrGetAccount = errors.New("an unexpected error occurred")
 )
 
 type AccountRepo interface {
 	CreateAccount(context.Context, *models.Account) error
 	FetchAccounts(ctx context.Context) ([]models.AccountOutput, error)
 	GetBalance(ctx context.Context, id vos.AccountID) (*vos.Currency, error)
+	GetAccount(ctx context.Context, cpf string) (*models.Account, error)
 }

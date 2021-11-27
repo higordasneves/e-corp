@@ -86,3 +86,23 @@ func (accRepo account) GetBalance(ctx context.Context, id vos.AccountID) (*vos.C
 	balance.ConvertFromCents()
 	return &balance, nil
 }
+
+func (accRepo account) GetAccount(ctx context.Context, cpf string) (*models.Account, error) {
+	row := accRepo.dbPool.QueryRow(ctx,
+		`select balance
+			from accounts
+			where cpf = $1`, cpf)
+
+	var acc models.Account
+	err := row.Scan(&acc.ID, &acc.Name, &acc.CPF, &acc.Secret, &acc.Balance, &acc.CreatedAt)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, errors.ErrAccNotFound
+		}
+		accRepo.log.WithError(err).Println(repository.ErrGetBalance)
+		return nil, repository.ErrGetAccount
+	}
+
+	return &acc, nil
+}
