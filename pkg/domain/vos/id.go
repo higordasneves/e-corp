@@ -6,25 +6,25 @@ import (
 )
 
 type (
-	AccountID string
+	UUID string
 )
 
 var (
 	ErrInvalidID = errors.New("error, invalid id")
 )
 
-func (accID AccountID) String() string {
-	return string(accID)
+func (id UUID) String() string {
+	return string(id)
 }
 
 //NewAccID gets uuid using google lib
-func NewAccID() AccountID {
-	return AccountID(uuid.NewString())
+func NewAccID() UUID {
+	return UUID(uuid.NewString())
 }
 
 // IsValidUUID validates uuid
-func IsValidUUID(accID string) error {
-	_, err := uuid.Parse(accID)
+func IsValidUUID(id string) error {
+	_, err := uuid.Parse(id)
 	if err != nil {
 		return ErrInvalidID
 	}

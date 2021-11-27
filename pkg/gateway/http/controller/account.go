@@ -77,7 +77,7 @@ func (accController accountController) GetBalance(w http.ResponseWriter, r *http
 		return
 	}
 
-	balance, err := accController.accUseCase.GetBalance(r.Context(), vos.AccountID(id))
+	balance, err := accController.accUseCase.GetBalance(r.Context(), vos.UUID(id))
 
 	if err != nil {
 		if err == errors.ErrAccNotFound {

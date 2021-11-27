@@ -9,7 +9,7 @@ import (
 
 //Account represents a banking account
 type Account struct {
-	ID        vos.AccountID
+	ID        vos.UUID
 	Name      string
 	CPF       string
 	Secret    string
@@ -19,11 +19,11 @@ type Account struct {
 
 //AccountOutput represents information from a bank account that should be returned
 type AccountOutput struct {
-	ID        vos.AccountID `json:"id"`
-	Name      string        `json:"name"`
-	CPF       string        `json:"cpf"`
-	Balance   vos.Currency  `json:"balance"`
-	CreatedAt time.Time     `json:"created_at"`
+	ID        vos.UUID     `json:"id"`
+	Name      string       `json:"name"`
+	CPF       string       `json:"cpf"`
+	Balance   vos.Currency `json:"balance"`
+	CreatedAt time.Time    `json:"created_at"`
 }
 
 //GetHashSecret returns hash of password

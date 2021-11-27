@@ -11,7 +11,7 @@ import (
 type AccountUseCase interface {
 	CreateAccount(ctx context.Context, input AccountInput) (*models.Account, error)
 	FetchAccounts(ctx context.Context) ([]models.AccountOutput, error)
-	GetBalance(ctx context.Context, id vos.AccountID) (*vos.Currency, error)
+	GetBalance(ctx context.Context, id vos.UUID) (*vos.Currency, error)
 }
 
 type accountUseCase struct {

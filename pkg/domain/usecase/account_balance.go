@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (accUseCase accountUseCase) GetBalance(ctx context.Context, id vos.AccountID) (*vos.Currency, error) {
+func (accUseCase accountUseCase) GetBalance(ctx context.Context, id vos.UUID) (*vos.Currency, error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 

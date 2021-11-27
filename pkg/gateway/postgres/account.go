@@ -66,7 +66,7 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]models.AccountOutpu
 	return accList, nil
 }
 
-func (accRepo account) GetBalance(ctx context.Context, id vos.AccountID) (*vos.Currency, error) {
+func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (*vos.Currency, error) {
 	row := accRepo.dbPool.QueryRow(ctx,
 		`select balance
 			from accounts
