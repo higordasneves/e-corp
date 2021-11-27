@@ -44,7 +44,7 @@ func (accController accountController) CreateAccount(w http.ResponseWriter, r *h
 	err = accountInput.ValidateAccountInput()
 	if err != nil {
 		accountInput.Secret = "######"
-		responses.SendResponse(w, http.StatusNotFound, responses.ErrorJSON(err), accController.log)
+		responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), accController.log)
 		return
 	}
 
@@ -53,8 +53,7 @@ func (accController accountController) CreateAccount(w http.ResponseWriter, r *h
 		responses.SendResponse(w, http.StatusInternalServerError, responses.ErrorJSON(err), accController.log)
 		return
 	}
-	accOutput := account.GetAccOutput()
-	responses.SendResponse(w, http.StatusCreated, accOutput, accController.log)
+	responses.SendResponse(w, http.StatusCreated, account, accController.log)
 }
 
 // FetchAccounts reads HTTP GET request for accounts and sends response with account list or error
@@ -81,7 +80,7 @@ func (accController accountController) GetBalance(w http.ResponseWriter, r *http
 
 	if err != nil {
 		if err == errors.ErrAccNotFound {
-			responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), accController.log)
+			responses.SendResponse(w, http.StatusNotFound, responses.ErrorJSON(err), accController.log)
 			return
 		}
 		responses.SendResponse(w, http.StatusInternalServerError, responses.ErrorJSON(err), accController.log)

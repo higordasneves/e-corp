@@ -19,7 +19,7 @@ type AccountInput struct {
 
 //CreateAccount validates and handles user input and creates a formatted account,
 //then calls the function to insert the account into the database
-func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput AccountInput) (*models.Account, error) {
+func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput AccountInput) (*models.AccountOutput, error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
@@ -44,7 +44,7 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput Ac
 	if err != nil {
 		return nil, err
 	}
-	return account, nil
+	return account.GetAccOutput(), nil
 }
 
 //ValidateAccountInput validates account input and returns if occurred an error

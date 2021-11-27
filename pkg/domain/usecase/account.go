@@ -9,7 +9,7 @@ import (
 )
 
 type AccountUseCase interface {
-	CreateAccount(ctx context.Context, input AccountInput) (*models.Account, error)
+	CreateAccount(ctx context.Context, input AccountInput) (*models.AccountOutput, error)
 	FetchAccounts(ctx context.Context) ([]models.AccountOutput, error)
 	GetBalance(ctx context.Context, id vos.UUID) (*vos.Currency, error)
 }
