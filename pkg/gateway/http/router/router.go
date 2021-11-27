@@ -16,12 +16,19 @@ func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger) *mux.Router {
 	accUseCase := usecase.NewAccountUseCase(accRepo, log)
 	accController := controller.NewAccountController(accUseCase, log)
 
+	tRepo := postgres.NewTransferRepository(dbPool, log)
+	tUseCase := usecase.NewTransferUseCase(accRepo, tRepo, log)
+	tController := controller.NewTransferController(tUseCase, log)
+
 	router := mux.NewRouter()
 
 	//account
 	router.HandleFunc("/accounts", accController.CreateAccount).Methods(http.MethodPost)
 	router.HandleFunc("/accounts", accController.FetchAccounts).Methods(http.MethodGet)
 	router.HandleFunc("/accounts/{account_id}/balance", accController.GetBalance).Methods(http.MethodGet)
+
+	//transfer
+	router.HandleFunc("/transfers", tController.GetTransfers).Methods(http.MethodGet)
 
 	return router
 }
