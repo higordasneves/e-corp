@@ -15,7 +15,6 @@ func Migration(dbPool *pgxpool.Pool, log *logrus.Logger) {
 	cfg := dbPool.Config().ConnConfig
 
 	db := stdlib.OpenDB(*cfg)
-	defer db.Close()
 
 	err := db.Ping()
 	if err != nil {
@@ -31,6 +30,7 @@ func Migration(dbPool *pgxpool.Pool, log *logrus.Logger) {
 	}
 
 	err = m.Up()
+
 	if err == migrate.ErrNoChange {
 		log.WithError(err).Warn(config.ErrMigrateDB)
 	} else if err != nil {
