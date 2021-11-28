@@ -43,6 +43,18 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 			},
 			err: domainerr.ErrAccAlreadyExists,
 		},
+		{
+			name: "invalid id",
+			acc: &models.Account{
+				ID:        "invalid",
+				Name:      "Elliot",
+				CPF:       "33344455567",
+				Secret:    "password",
+				Balance:   0,
+				CreatedAt: time.Now().Truncate(time.Second),
+			},
+			err: repository.ErrCreateAcc,
+		},
 	}
 	defer ClearDB()
 	for _, test := range tests {
@@ -97,7 +109,7 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 
 	result, err := accRepo.FetchAccounts(ctxDB)
 	if err != nil {
-		t.Error(repository.ErrFetchAcc)
+		t.Errorf("got: %v, want: %v", err, nil)
 	}
 
 	if !reflect.DeepEqual(want, result) {
@@ -108,42 +120,86 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 func TestAccRepo_GetBalance(t *testing.T) {
 	accRepo := NewAccountRepo(dbTest, logTest)
 	ctxDB := context.Background()
-
-	accounts := []models.Account{
+	tests := []struct {
+		name        string
+		acc         *models.Account
+		insert      bool
+		expectedErr bool
+		err         error
+	}{
 		{
-			ID:        vos.NewAccID(),
-			Name:      "Elliot",
-			CPF:       "33344455567",
-			Secret:    "password",
-			Balance:   7000,
-			CreatedAt: time.Now().Truncate(time.Second),
+			name: "with success",
+			acc: &models.Account{
+				ID:        vos.NewAccID(),
+				Name:      "Elliot",
+				CPF:       "33344455567",
+				Secret:    "password",
+				Balance:   7000,
+				CreatedAt: time.Now().Truncate(time.Second),
+			},
+			insert:      true,
+			expectedErr: false,
+			err:         nil,
 		},
-
 		{
-			ID:        vos.NewAccID(),
-			Name:      "Mr.Robot",
-			CPF:       "33344455568",
-			Secret:    "password",
-			Balance:   3000,
-			CreatedAt: time.Now().Truncate(time.Second),
+			name: "with success balance 0",
+			acc: &models.Account{
+				ID:        vos.NewAccID(),
+				Name:      "Elliot",
+				CPF:       "33344455568",
+				Secret:    "password",
+				Balance:   0,
+				CreatedAt: time.Now().Truncate(time.Second),
+			},
+			insert:      true,
+			expectedErr: false,
+			err:         nil,
 		},
-	}
-
-	for _, acc := range accounts {
-		err := accRepo.CreateAccount(ctxDB, &acc)
-		if err != nil {
-			t.Error("error inserting accounts")
-		}
+		{
+			name: "account not found",
+			acc: &models.Account{
+				ID:        vos.NewAccID(),
+				Name:      "Elliot",
+				CPF:       "33344455567",
+				Secret:    "password",
+				Balance:   0,
+				CreatedAt: time.Now().Truncate(time.Second),
+			},
+			insert:      false,
+			expectedErr: true,
+			err:         domainerr.ErrAccNotFound,
+		},
+		{
+			name: "invalid id",
+			acc: &models.Account{
+				ID:        "invalid",
+				Name:      "Elliot",
+				CPF:       "33344455567",
+				Secret:    "password",
+				Balance:   0,
+				CreatedAt: time.Now().Truncate(time.Second),
+			},
+			insert:      false,
+			expectedErr: true,
+			err:         repository.ErrGetBalance,
+		},
 	}
 
 	defer ClearDB()
-	for _, acc := range accounts {
-		result, err := accRepo.GetBalance(context.Background(), acc.ID)
-		if err != nil {
-			t.Error(repository.ErrGetBalance)
-		}
-		if *result != acc.Balance {
-			t.Errorf("got: %v, want: %v", *result, acc.Balance)
-		}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.insert {
+				_ = accRepo.CreateAccount(ctxDB, test.acc)
+			}
+
+			result, err := accRepo.GetBalance(context.Background(), test.acc.ID)
+			if test.expectedErr && err != test.err {
+				t.Errorf("got: %v, want: %v", err, test.err)
+			}
+
+			if !test.expectedErr && *result != test.acc.Balance {
+				t.Errorf("got: %v, want: %v", *result, test.acc.Balance)
+			}
+		})
 	}
 }
