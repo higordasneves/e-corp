@@ -10,11 +10,12 @@ import (
 	"unicode"
 )
 
+const balanceInit vos.Currency = 10000
+
 type AccountInput struct {
-	Name    string       `json:"name"`
-	CPF     string       `json:"cpf"`
-	Secret  string       `json:"secret"`
-	Balance vos.Currency `json:"balance"`
+	Name   string `json:"name"`
+	CPF    string `json:"cpf"`
+	Secret string `json:"secret"`
 }
 
 //CreateAccount validates and handles user input and creates a formatted account,
@@ -28,7 +29,7 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput Ac
 		Name:      accInput.Name,
 		CPF:       accInput.CPF,
 		Secret:    accInput.Secret,
-		Balance:   accInput.Balance,
+		Balance:   balanceInit,
 		CreatedAt: time.Now().Truncate(time.Second),
 	}
 
