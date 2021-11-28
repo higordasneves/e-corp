@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
+	"github.com/higordasneves/e-corp/pkg/repository"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/ory/dockertest/v3"
 	"github.com/sirupsen/logrus"
@@ -81,4 +82,15 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(code)
+}
+
+func ClearDB() {
+	_, err := dbTest.Exec(context.Background(),
+		`TRUNCATE TABLE 
+	transfers, 
+    accounts;`)
+
+	if err != nil {
+		logTest.WithError(err).Println(repository.ErrTruncDB)
+	}
 }

@@ -12,6 +12,7 @@ var (
 	ErrFetchAcc   = errors.New("an unexpected error occurred while fetching accounts")
 	ErrGetBalance = errors.New("an unexpected error occurred while getting account balance")
 	ErrGetAccount = errors.New("an unexpected error occurred")
+	ErrTruncDB    = errors.New("an unexpected error occurred while deleting tables")
 )
 
 type AccountRepo interface {
