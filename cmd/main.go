@@ -33,7 +33,11 @@ func main() {
 		log.WithError(err).Fatal(config.ErrConnectDB)
 	}
 
-	postgres.Migration(dbPool, log)
+	migrationPath := "pkg/gateway/postgres/migrations"
+	err = postgres.Migration(migrationPath, dbPool, log)
+	if err != nil {
+		log.WithError(err).Fatal(config.ErrMigrateDB)
+	}
 
 	r := router.GetHTTPHandler(dbPool, log)
 	log.Fatal(http.ListenAndServe(":5000", r))

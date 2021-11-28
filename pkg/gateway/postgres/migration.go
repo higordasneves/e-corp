@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func Migration(dbPool *pgxpool.Pool, log *logrus.Logger) {
+func Migration(migrationPath string, dbPool *pgxpool.Pool, log *logrus.Logger) error {
 
 	cfg := dbPool.Config().ConnConfig
 
@@ -18,22 +18,25 @@ func Migration(dbPool *pgxpool.Pool, log *logrus.Logger) {
 
 	err := db.Ping()
 	if err != nil {
-		log.WithError(err).Fatal(config.ErrConnectDB)
+		return err
 	}
 
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://pkg/gateway/postgres/migrations",
+		"file://"+migrationPath,
 		"postgres", driver)
 	if err != nil {
-		log.WithError(err).Fatal(config.ErrMigrateDB)
+		return err
 	}
 
 	err = m.Up()
 
 	if err == migrate.ErrNoChange {
 		log.WithError(err).Warn(config.ErrMigrateDB)
-	} else if err != nil {
-		log.WithError(err).Fatal(config.ErrMigrateDB)
+		return nil
 	}
+	if err != nil {
+		return err
+	}
+	return nil
 }
