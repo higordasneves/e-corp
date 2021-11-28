@@ -160,7 +160,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 			acc: &models.Account{
 				ID:        vos.NewAccID(),
 				Name:      "Elliot",
-				CPF:       "33344455567",
+				CPF:       "33344455569",
 				Secret:    "password",
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
@@ -174,7 +174,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 			acc: &models.Account{
 				ID:        "invalid",
 				Name:      "Elliot",
-				CPF:       "33344455567",
+				CPF:       "33344455570",
 				Secret:    "password",
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
@@ -199,6 +199,65 @@ func TestAccRepo_GetBalance(t *testing.T) {
 
 			if !test.expectedErr && *result != test.acc.Balance {
 				t.Errorf("got: %v, want: %v", *result, test.acc.Balance)
+			}
+		})
+	}
+}
+
+func TestAccRepo_GetAccount(t *testing.T) {
+	accRepo := NewAccountRepo(dbTest, logTest)
+	ctxDB := context.Background()
+	tests := []struct {
+		name        string
+		acc         *models.Account
+		insert      bool
+		expectedErr bool
+		err         error
+	}{
+		{
+			name: "with success",
+			acc: &models.Account{
+				ID:        vos.NewAccID(),
+				Name:      "Elliot",
+				CPF:       "33344455567",
+				Secret:    "password",
+				Balance:   7000,
+				CreatedAt: time.Now().Truncate(time.Second),
+			},
+			insert:      true,
+			expectedErr: false,
+			err:         nil,
+		},
+		{
+			name: "account not found",
+			acc: &models.Account{
+				ID:        vos.NewAccID(),
+				Name:      "Elliot",
+				CPF:       "33344455568",
+				Secret:    "password",
+				Balance:   0,
+				CreatedAt: time.Now().Truncate(time.Second),
+			},
+			insert:      false,
+			expectedErr: true,
+			err:         domainerr.ErrAccNotFound,
+		},
+	}
+
+	defer ClearDB()
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.insert {
+				_ = accRepo.CreateAccount(ctxDB, test.acc)
+			}
+
+			result, err := accRepo.GetAccount(context.Background(), test.acc.CPF)
+			if test.expectedErr && err != test.err {
+				t.Errorf("got: %v, want: %v", err, test.err)
+			}
+
+			if !test.expectedErr && reflect.DeepEqual(&result, test.acc) {
+				t.Errorf("got: %v, want: %v", &result, test.acc)
 			}
 		})
 	}
