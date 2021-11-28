@@ -12,6 +12,7 @@ import (
 )
 
 var dbTest *pgxpool.Pool
+var logTest *logrus.Logger
 
 func TestMain(m *testing.M) {
 
@@ -19,13 +20,14 @@ func TestMain(m *testing.M) {
 	dbCfg.LoadEnv()
 	dbCfg.Host = "localhost"
 	dbCfg.Name = "ecorp_test"
+	dbCfg.SSLMode = "prefer"
 
-	log := logrus.New()
+	logTest = logrus.New()
 
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		log.Fatalf("Could not connect to docker: %s", err)
+		logTest.Fatalf("Could not connect to docker: %s", err)
 	}
 
 	// pulls an image, creates a container based on it and runs it
@@ -41,14 +43,14 @@ func TestMain(m *testing.M) {
 	})
 
 	if err != nil {
-		log.Fatalf("Could not start resource: %s", err)
+		logTest.Fatalf("Could not start resource: %s", err)
 	}
 
 	_ = resource.Expire(90) // Tell docker to hard kill the container in 90 seconds
 
 	dbCfg.Port = resource.GetPort("5432/tcp")
 	dbDNS := dbCfg.DNS()
-	log.Info("Connecting to database on url: ", dbDNS)
+	logTest.Info("Connecting to database on url: ", dbDNS)
 
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	pool.MaxWait = 90 * time.Second
@@ -60,13 +62,13 @@ func TestMain(m *testing.M) {
 		err = dbTest.Ping(context.Background())
 		return err
 	}); err != nil {
-		log.Fatalf("Could not connect to docker: %s", err)
+		logTest.Fatalf("Could not connect to docker: %s", err)
 	}
 
 	migrationPath := "migrations"
-	err = Migration(migrationPath, dbTest, log)
+	err = Migration(migrationPath, dbTest, logTest)
 	if err != nil {
-		log.WithError(err).Fatal(config.ErrMigrateDB)
+		logTest.WithError(err).Fatal(config.ErrMigrateDB)
 	}
 
 	defer dbTest.Close()
@@ -75,7 +77,7 @@ func TestMain(m *testing.M) {
 
 	// You can't defer this because os.Exit doesn't care for defer
 	if err := pool.Purge(resource); err != nil {
-		log.Fatalf("Could not purge resource: %s", err)
+		logTest.Fatalf("Could not purge resource: %s", err)
 	}
 
 	os.Exit(code)
