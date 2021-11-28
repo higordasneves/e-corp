@@ -104,3 +104,46 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 		t.Errorf("got: %v, want: %v", result, want)
 	}
 }
+
+func TestAccRepo_GetBalance(t *testing.T) {
+	accRepo := NewAccountRepo(dbTest, logTest)
+	ctxDB := context.Background()
+
+	accounts := []models.Account{
+		{
+			ID:        vos.NewAccID(),
+			Name:      "Elliot",
+			CPF:       "33344455567",
+			Secret:    "password",
+			Balance:   7000,
+			CreatedAt: time.Now().Truncate(time.Second),
+		},
+
+		{
+			ID:        vos.NewAccID(),
+			Name:      "Mr.Robot",
+			CPF:       "33344455568",
+			Secret:    "password",
+			Balance:   3000,
+			CreatedAt: time.Now().Truncate(time.Second),
+		},
+	}
+
+	for _, acc := range accounts {
+		err := accRepo.CreateAccount(ctxDB, &acc)
+		if err != nil {
+			t.Error("error inserting accounts")
+		}
+	}
+
+	defer ClearDB()
+	for _, acc := range accounts {
+		result, err := accRepo.GetBalance(context.Background(), acc.ID)
+		if err != nil {
+			t.Error(repository.ErrGetBalance)
+		}
+		if *result != acc.Balance {
+			t.Errorf("got: %v, want: %v", *result, acc.Balance)
+		}
+	}
+}
