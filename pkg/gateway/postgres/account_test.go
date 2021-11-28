@@ -50,3 +50,35 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 		}
 	}
 }
+
+func TestAccRepo_FetchAccounts(t *testing.T) {
+	accRepo := NewAccountRepo(dbTest, logTest)
+	ctxDB := context.Background()
+	accounts := []*models.Account{
+		{
+			ID:        vos.NewAccID(),
+			Name:      "Elliot",
+			CPF:       "33344455566",
+			Secret:    "password",
+			Balance:   5000,
+			CreatedAt: time.Now().Truncate(time.Second),
+		},
+
+		{
+			ID:        vos.NewAccID(),
+			Name:      "Mr.Robot",
+			CPF:       "33344455567",
+			Secret:    "password",
+			Balance:   3000,
+			CreatedAt: time.Now().Truncate(time.Second),
+		},
+	}
+
+	for _, acc := range accounts {
+		err := accRepo.CreateAccount(ctxDB, acc)
+		if err != nil {
+			t.Errorf("error inserting accounts")
+		}
+	}
+
+}

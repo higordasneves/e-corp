@@ -15,5 +15,6 @@ func (accUseCase accountUseCase) GetBalance(ctx context.Context, id vos.UUID) (*
 	if err != nil {
 		return nil, err
 	}
+	balance.ConvertFromCents()
 	return balance, nil
 }

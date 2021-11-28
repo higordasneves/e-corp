@@ -34,7 +34,7 @@ func (accRepo account) CreateAccount(ctx context.Context, acc *models.Account) e
 	return nil
 }
 
-func (accRepo account) FetchAccounts(ctx context.Context) ([]models.AccountOutput, error) {
+func (accRepo account) FetchAccounts(ctx context.Context) ([]models.Account, error) {
 	accCount := accRepo.dbPool.QueryRow(ctx, "select count(*) as count from accounts")
 
 	var count int
@@ -42,7 +42,7 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]models.AccountOutpu
 	if err != nil {
 		return nil, err
 	}
-	accList := make([]models.AccountOutput, 0, count)
+	accList := make([]models.Account, 0, count)
 
 	rows, err := accRepo.dbPool.Query(ctx, "select id, name, cpf, balance, created_at from accounts")
 
@@ -55,14 +55,12 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]models.AccountOutpu
 	for rows.Next() {
 		var acc models.Account
 		err = rows.Scan(&acc.ID, &acc.Name, &acc.CPF, &acc.Balance, &acc.CreatedAt)
-		accOutput := acc.GetAccOutput()
 		if err != nil {
 			accRepo.log.WithError(err).Println(repository.ErrFetchAcc)
 			return nil, repository.ErrFetchAcc
 		}
-		accList = append(accList, *accOutput)
+		accList = append(accList, acc)
 	}
-
 	return accList, nil
 }
 
@@ -83,7 +81,6 @@ func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (*vos.Curren
 		return nil, repository.ErrGetBalance
 	}
 
-	balance.ConvertFromCents()
 	return &balance, nil
 }
 

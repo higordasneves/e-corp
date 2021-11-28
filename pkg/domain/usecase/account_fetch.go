@@ -15,5 +15,9 @@ func (accUseCase *accountUseCase) FetchAccounts(ctx context.Context) ([]models.A
 	if err != nil {
 		return nil, err
 	}
-	return accList, nil
+	accListOutput := make([]models.AccountOutput, 0, len(accList))
+	for _, acc := range accList {
+		accListOutput = append(accListOutput, *acc.GetAccOutput())
+	}
+	return accListOutput, nil
 }
