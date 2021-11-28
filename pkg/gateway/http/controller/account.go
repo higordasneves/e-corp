@@ -3,7 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/higordasneves/e-corp/pkg/domain/errors"
+	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/responses"
@@ -50,6 +50,10 @@ func (accController accountController) CreateAccount(w http.ResponseWriter, r *h
 
 	account, err := accController.accUseCase.CreateAccount(r.Context(), accountInput)
 	if err != nil {
+		if err == domainerr.ErrAccAlreadyExists {
+			responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), accController.log)
+			return
+		}
 		responses.SendResponse(w, http.StatusInternalServerError, responses.ErrorJSON(err), accController.log)
 		return
 	}
@@ -79,7 +83,7 @@ func (accController accountController) GetBalance(w http.ResponseWriter, r *http
 	balance, err := accController.accUseCase.GetBalance(r.Context(), vos.UUID(id))
 
 	if err != nil {
-		if err == errors.ErrAccNotFound {
+		if err == domainerr.ErrAccNotFound {
 			responses.SendResponse(w, http.StatusNotFound, responses.ErrorJSON(err), accController.log)
 			return
 		}

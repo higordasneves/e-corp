@@ -2,10 +2,13 @@ package postgres
 
 import (
 	"context"
-	"github.com/higordasneves/e-corp/pkg/domain/errors"
+	"errors"
+	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
@@ -26,7 +29,13 @@ func (accRepo account) CreateAccount(ctx context.Context, acc *models.Account) e
 		"(id, cpf, name, secret, balance, created_at)"+
 		" VALUES ($1, $2, $3, $4, $5, $6)", acc.ID.String(), acc.CPF, acc.Name, acc.Secret, int64(acc.Balance), acc.CreatedAt)
 
+	var pgErr *pgconn.PgError
+	errors.As(err, &pgErr)
+
 	if err != nil {
+		if pgErr.Code == pgerrcode.UniqueViolation {
+			return domainerr.ErrAccAlreadyExists
+		}
 		accRepo.log.WithError(err).Println(repository.ErrCreateAcc)
 		return repository.ErrCreateAcc
 	}
@@ -75,7 +84,7 @@ func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (*vos.Curren
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, errors.ErrAccNotFound
+			return nil, domainerr.ErrAccNotFound
 		}
 		accRepo.log.WithError(err).Println(repository.ErrGetBalance)
 		return nil, repository.ErrGetBalance
@@ -95,7 +104,7 @@ func (accRepo account) GetAccount(ctx context.Context, cpf string) (*models.Acco
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, errors.ErrAccNotFound
+			return nil, domainerr.ErrAccNotFound
 		}
 		accRepo.log.WithError(err).Println(repository.ErrGetBalance)
 		return nil, repository.ErrGetAccount

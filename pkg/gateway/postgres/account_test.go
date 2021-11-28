@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
@@ -31,7 +32,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 			err: nil,
 		},
 		{
-			name: "with error",
+			name: "check error account already exists",
 			acc: &models.Account{
 				ID:        vos.NewAccID(),
 				Name:      "Elliot",
@@ -40,7 +41,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
 			},
-			err: repository.ErrCreateAcc,
+			err: domainerr.ErrAccAlreadyExists,
 		},
 	}
 	defer ClearDB()
@@ -92,6 +93,8 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 		})
 	}
 
+	defer ClearDB()
+
 	result, err := accRepo.FetchAccounts(ctxDB)
 	if err != nil {
 		t.Error(repository.ErrFetchAcc)
@@ -100,5 +103,4 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 	if !reflect.DeepEqual(want, result) {
 		t.Errorf("got: %v, want: %v", result, want)
 	}
-
 }

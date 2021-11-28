@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"github.com/higordasneves/e-corp/pkg/domain/errors"
+	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"strings"
@@ -34,8 +34,8 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput Ac
 
 	err := account.GetHashSecret()
 	if err != nil {
-		accUseCase.log.WithError(err).Println(errors.ErrUnexpected)
-		return nil, errors.ErrUnexpected
+		accUseCase.log.WithError(err).Println(domainerr.ErrUnexpected)
+		return nil, domainerr.ErrUnexpected
 	}
 
 	account.Balance.ConvertToCents()
@@ -77,7 +77,7 @@ func (accInput *AccountInput) ValidateAccountInput() error {
 //inputEmpty validates if the user has filled the required fields
 func (accInput *AccountInput) inputEmpty() error {
 	if accInput.Name == "" || accInput.CPF == "" || accInput.Secret == "" {
-		return errors.ErrEmptyInput
+		return domainerr.ErrEmptyInput
 	}
 	return nil
 }
@@ -85,7 +85,7 @@ func (accInput *AccountInput) inputEmpty() error {
 //secretLen validates the secret length
 func (accInput *AccountInput) secretLen() error {
 	if len(accInput.Secret) < 8 {
-		return errors.ErrSmallSecret
+		return domainerr.ErrSmallSecret
 	}
 	return nil
 }
@@ -93,7 +93,7 @@ func (accInput *AccountInput) secretLen() error {
 //cpfLen validates the CPF length
 func (accInput *AccountInput) cpfLen() error {
 	if len(accInput.CPF) != 11 {
-		return errors.ErrCPFLen
+		return domainerr.ErrCPFLen
 	}
 	return nil
 }
@@ -102,7 +102,7 @@ func (accInput *AccountInput) cpfLen() error {
 func (accInput *AccountInput) cpfFormat() error {
 	for _, v := range accInput.CPF {
 		if !unicode.IsDigit(v) {
-			return errors.ErrCPFFormat
+			return domainerr.ErrCPFFormat
 		}
 	}
 	return nil
