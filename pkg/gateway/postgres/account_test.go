@@ -80,7 +80,6 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 			Balance:   7000,
 			CreatedAt: time.Now().Truncate(time.Second),
 		},
-
 		{
 			ID:        vos.NewAccID(),
 			Name:      "Mr.Robot",

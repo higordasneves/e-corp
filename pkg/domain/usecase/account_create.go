@@ -12,6 +12,7 @@ import (
 
 const balanceInit vos.Currency = 10000
 
+//AccountInput represents information necessary to create a bank account
 type AccountInput struct {
 	Name   string `json:"name"`
 	CPF    string `json:"cpf"`
@@ -20,12 +21,13 @@ type AccountInput struct {
 
 //CreateAccount validates and handles user input and creates a formatted account,
 //then calls the function to insert the account into the database
-func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput AccountInput) (*models.AccountOutput, error) {
+func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *AccountInput) (*models.AccountOutput, error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
 	accID := vos.NewAccID()
-	account := &models.Account{ID: accID,
+	account := &models.Account{
+		ID:        accID,
 		Name:      accInput.Name,
 		CPF:       accInput.CPF,
 		Secret:    accInput.Secret,
@@ -62,12 +64,12 @@ func (accInput *AccountInput) ValidateAccountInput() error {
 		return err
 	}
 
-	err = accInput.cpfLen()
+	err = accInput.cpfFormat()
 	if err != nil {
 		return err
 	}
 
-	err = accInput.cpfFormat()
+	err = accInput.cpfLen()
 	if err != nil {
 		return err
 	}

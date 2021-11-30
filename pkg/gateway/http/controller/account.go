@@ -48,7 +48,7 @@ func (accController accountController) CreateAccount(w http.ResponseWriter, r *h
 		return
 	}
 
-	account, err := accController.accUseCase.CreateAccount(r.Context(), accountInput)
+	account, err := accController.accUseCase.CreateAccount(r.Context(), &accountInput)
 	if err != nil {
 		if err == domainerr.ErrAccAlreadyExists {
 			responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), accController.log)
