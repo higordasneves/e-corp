@@ -156,7 +156,7 @@ func TestAccountUseCase_CreateAccount(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		accRepo := repomock.NewAccountRepo(&models.Account{}, test.expectedErr)
+		accRepo := repomock.NewAccountRepo([]models.Account{}, test.expectedErr)
 		accUseCase := NewAccountUseCase(accRepo, log)
 		acc, err := accUseCase.CreateAccount(context.Background(), test.accInput)
 

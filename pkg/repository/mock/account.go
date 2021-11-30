@@ -2,8 +2,10 @@ package repomock
 
 import (
 	"context"
+	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
 	"github.com/higordasneves/e-corp/pkg/domain/models"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"time"
 )
 
 type AccountRepo interface {
@@ -14,12 +16,12 @@ type AccountRepo interface {
 }
 
 type account struct {
-	acc *models.Account
-	err error
+	accounts []models.Account
+	err      error
 }
 
-func NewAccountRepo(accRepo *models.Account, err error) AccountRepo {
-	return &account{accRepo, err}
+func NewAccountRepo(accounts []models.Account, err error) AccountRepo {
+	return &account{accounts, err}
 }
 
 func (accRepo account) CreateAccount(context.Context, *models.Account) error {
@@ -30,8 +32,19 @@ func (accRepo account) FetchAccounts(context.Context) ([]models.Account, error) 
 	panic("implement me")
 }
 
-func (accRepo account) GetBalance(context.Context, vos.UUID) (*vos.Currency, error) {
-	panic("implement me")
+func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (*vos.Currency, error) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if accRepo.err != nil {
+		return nil, accRepo.err
+	}
+
+	for _, acc := range accRepo.accounts {
+		if id == acc.ID {
+			return &acc.Balance, nil
+		}
+	}
+	return nil, domainerr.ErrAccNotFound
 }
 
 func (accRepo account) GetAccount(context.Context, string) (*models.Account, error) {
