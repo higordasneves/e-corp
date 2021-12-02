@@ -22,7 +22,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 		{
 			name: "with success",
 			acc: &models.Account{
-				ID:        vos.NewAccID(),
+				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455566",
 				Secret:    "password",
@@ -34,7 +34,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 		{
 			name: "check error account already exists",
 			acc: &models.Account{
-				ID:        vos.NewAccID(),
+				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455566",
 				Secret:    "password",
@@ -73,7 +73,7 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 
 	accounts := []models.Account{
 		{
-			ID:        vos.NewAccID(),
+			ID:        vos.NewUUID(),
 			Name:      "Elliot",
 			CPF:       "33344455567",
 			Secret:    "password",
@@ -81,7 +81,7 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 			CreatedAt: time.Now().Truncate(time.Second),
 		},
 		{
-			ID:        vos.NewAccID(),
+			ID:        vos.NewUUID(),
 			Name:      "Mr.Robot",
 			CPF:       "33344455568",
 			Secret:    "password",
@@ -129,7 +129,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 		{
 			name: "with success",
 			acc: &models.Account{
-				ID:        vos.NewAccID(),
+				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455567",
 				Secret:    "password",
@@ -143,7 +143,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 		{
 			name: "with success balance 0",
 			acc: &models.Account{
-				ID:        vos.NewAccID(),
+				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455568",
 				Secret:    "password",
@@ -157,7 +157,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 		{
 			name: "account not found",
 			acc: &models.Account{
-				ID:        vos.NewAccID(),
+				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455569",
 				Secret:    "password",
@@ -216,7 +216,7 @@ func TestAccRepo_GetAccount(t *testing.T) {
 		{
 			name: "with success",
 			acc: &models.Account{
-				ID:        vos.NewAccID(),
+				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455567",
 				Secret:    "password",
@@ -230,7 +230,7 @@ func TestAccRepo_GetAccount(t *testing.T) {
 		{
 			name: "account not found",
 			acc: &models.Account{
-				ID:        vos.NewAccID(),
+				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455568",
 				Secret:    "password",

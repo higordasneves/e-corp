@@ -29,7 +29,22 @@ func (accRepo account) CreateAccount(context.Context, *models.Account) error {
 }
 
 func (accRepo account) FetchAccounts(context.Context) ([]models.Account, error) {
-	panic("implement me")
+	if accRepo.err != nil {
+		return nil, accRepo.err
+	}
+
+	accountsList := make([]models.Account, 0, len(accRepo.accounts))
+	for _, acc := range accRepo.accounts {
+		accountOutput := models.Account{
+			ID:        acc.ID,
+			Name:      acc.Name,
+			CPF:       acc.CPF,
+			Balance:   acc.Balance,
+			CreatedAt: acc.CreatedAt,
+		}
+		accountsList = append(accountsList, accountOutput)
+	}
+	return accountsList, nil
 }
 
 func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (*vos.Currency, error) {

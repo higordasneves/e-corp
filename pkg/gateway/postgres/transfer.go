@@ -19,7 +19,7 @@ func NewTransferRepository(dbPool *pgxpool.Pool, log *logrus.Logger) repository.
 }
 
 func (t transfer) Transfer(ctx context.Context, accOriID vos.UUID, accDestID vos.UUID, amount vos.Currency) {
-	transferID := vos.NewAccID()
+	transferID := vos.NewUUID()
 	_, err := t.dbPool.Exec(ctx, "INSERT INTO transfers "+
 		"(id, account_origin_id, account_destination_id, amount, created_at)"+
 		" VALUES ($1, $2, $3, $4, $5, $6)", transferID, accOriID, accDestID, int(amount), time.Now())

@@ -25,7 +25,7 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *A
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
-	accID := vos.NewAccID()
+	accID := vos.NewUUID()
 	account := &models.Account{
 		ID:        accID,
 		Name:      accInput.Name,

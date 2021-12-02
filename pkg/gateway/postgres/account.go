@@ -53,7 +53,7 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]models.Account, err
 	}
 	accList := make([]models.Account, 0, count)
 
-	rows, err := accRepo.dbPool.Query(ctx, "select id, name, cpf, balance, created_at from accounts")
+	rows, err := accRepo.dbPool.Query(ctx, "select id, name, cpf, balance::numeric as balance, created_at from accounts")
 
 	defer rows.Close()
 	if err != nil {
@@ -65,7 +65,8 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]models.Account, err
 		var acc models.Account
 		err = rows.Scan(&acc.ID, &acc.Name, &acc.CPF, &acc.Balance, &acc.CreatedAt)
 		if err != nil {
-			accRepo.log.WithError(err).Println(repository.ErrFetchAcc)
+
+			accRepo.log.WithError(err).Println("repository.ErrFetchAcc")
 			return nil, repository.ErrFetchAcc
 		}
 		accList = append(accList, acc)
@@ -75,7 +76,7 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]models.Account, err
 
 func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (*vos.Currency, error) {
 	row := accRepo.dbPool.QueryRow(ctx,
-		`select balance
+		`select balance::numeric as balance
 			from accounts
 			where id = $1`, id.String())
 

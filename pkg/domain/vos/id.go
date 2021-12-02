@@ -17,8 +17,8 @@ func (id UUID) String() string {
 	return string(id)
 }
 
-//NewAccID gets uuid using google lib
-func NewAccID() UUID {
+//NewUUID gets uuid using google lib
+func NewUUID() UUID {
 	return UUID(uuid.NewString())
 }
 

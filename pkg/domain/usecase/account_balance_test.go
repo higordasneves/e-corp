@@ -16,8 +16,8 @@ func TestAccountUseCase_GetBalance(t *testing.T) {
 	log := logrus.New()
 
 	accInfo := make(map[vos.Currency]vos.UUID, 3)
-	accInfo[162000] = vos.NewAccID()
-	accInfo[561300] = vos.NewAccID()
+	accInfo[162000] = vos.NewUUID()
+	accInfo[561300] = vos.NewUUID()
 
 	accounts := make([]models.Account, 0, 3)
 	for i, v := range accInfo {
@@ -47,7 +47,7 @@ func TestAccountUseCase_GetBalance(t *testing.T) {
 		},
 		{
 			name:        "err account not found",
-			id:          vos.NewAccID(),
+			id:          vos.NewUUID(),
 			want:        0,
 			expectedErr: domainerr.ErrAccNotFound,
 			dbErr:       nil,
