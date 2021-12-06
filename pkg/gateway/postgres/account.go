@@ -96,7 +96,12 @@ func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (*vos.Curren
 
 func (accRepo account) GetAccount(ctx context.Context, cpf string) (*models.Account, error) {
 	row := accRepo.dbPool.QueryRow(ctx,
-		`select *
+		`select id
+			, name
+			, cpf
+			, secret
+			, balance::numeric as balance
+			, created_at
 			from accounts
 			where cpf = $1`, cpf)
 

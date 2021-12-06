@@ -12,3 +12,8 @@ var (
 	ErrCPFLen           = errors.New("the CPF must be 11 characters long")
 	ErrCPFFormat        = errors.New("the CPF must contain only numbers")
 )
+
+// login errors
+var (
+	ErrInvalidPass = errors.New("invalid password")
+)
