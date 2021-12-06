@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"context"
 	"encoding/json"
 	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
@@ -37,7 +36,7 @@ func (authCtrl authController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	account, err := authCtrl.authUseCase.Login(context.Background(), &loginInput)
+	token, err := authCtrl.authUseCase.Login(r.Context(), &loginInput)
 
 	if err != nil {
 		if err == domainerr.ErrAccNotFound || err == domainerr.ErrInvalidPass {
@@ -47,5 +46,5 @@ func (authCtrl authController) Login(w http.ResponseWriter, r *http.Request) {
 		responses.SendResponse(w, http.StatusInternalServerError, responses.ErrorJSON(err), authCtrl.log)
 		return
 	}
-	responses.SendResponse(w, http.StatusOK, account.GetAccOutput(), authCtrl.log)
+	responses.SendResponse(w, http.StatusOK, token, authCtrl.log)
 }

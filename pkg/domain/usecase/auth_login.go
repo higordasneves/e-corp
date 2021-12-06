@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"context"
+	"github.com/dgrijalva/jwt-go"
 	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
-	"github.com/higordasneves/e-corp/pkg/domain/models"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"time"
 )
 
@@ -13,7 +14,10 @@ type LoginInput struct {
 	Secret string `json:"secret"`
 }
 
-func (authUC authUseCase) Login(ctx context.Context, input *LoginInput) (*models.Account, error) {
+type Token string
+
+//Login validates credentials then call the func to create a token
+func (authUC authUseCase) Login(ctx context.Context, input *LoginInput) (*Token, error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
@@ -27,5 +31,24 @@ func (authUC authUseCase) Login(ctx context.Context, input *LoginInput) (*models
 		return nil, domainerr.ErrInvalidPass
 	}
 
-	return acc, nil
+	return authUC.createAccToken(acc.ID)
+}
+
+//createAccToken generates token for account authorization
+func (authUC authUseCase) createAccToken(accID vos.UUID) (*Token, error) {
+	// Create the Claims
+	claims := &jwt.StandardClaims{
+		Issuer:    "login",
+		Subject:   string(accID),
+		IssuedAt:  time.Now().Unix(),
+		ExpiresAt: time.Now().Add(authUC.duration).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	ss, err := token.SignedString([]byte(authUC.secretKey))
+	if err != nil {
+		return nil, domainerr.ErrUnexpected
+	}
+	accToken := Token(ss)
+	return &accToken, nil
 }

@@ -15,10 +15,11 @@ import (
 
 func main() {
 	log := logrus.New()
-	dbCfg := config.DatabaseConfig{}
-	dbCfg.LoadEnv()
-	dbDNS := dbCfg.DNS()
 
+	cfg := config.Config{}
+	cfg.LoadEnv()
+
+	dbDNS := cfg.DB.DNS()
 	log.Info("Accessing database")
 	ctxDB := context.Background()
 	dbPool, err := pgxpool.Connect(ctxDB, dbDNS)
@@ -39,7 +40,7 @@ func main() {
 		log.WithError(err).Fatal(config.ErrMigrateDB)
 	}
 
-	r := router.GetHTTPHandler(dbPool, log)
+	r := router.GetHTTPHandler(dbPool, log, &cfg.Auth)
 	log.Fatal(http.ListenAndServe(":5000", r))
 
 }

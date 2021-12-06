@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/gorilla/mux"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -11,7 +12,7 @@ import (
 )
 
 //GetHTTPHandler returns HTTP handler with all routes
-func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger) *mux.Router {
+func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.AuthConfig) *mux.Router {
 	accRepo := postgres.NewAccountRepo(dbPool, log)
 	accUseCase := usecase.NewAccountUseCase(accRepo, log)
 	accController := controller.NewAccountController(accUseCase, log)
@@ -20,7 +21,7 @@ func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger) *mux.Router {
 	tUseCase := usecase.NewTransferUseCase(accRepo, tRepo, log)
 	tController := controller.NewTransferController(tUseCase, log)
 
-	authUseCase := usecase.NewAuthUseCase(accRepo, log)
+	authUseCase := usecase.NewAuthUseCase(accRepo, log, cfgAuth)
 	authController := controller.NewAuthController(authUseCase, log)
 
 	router := mux.NewRouter()

@@ -5,12 +5,23 @@ import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
 	"log"
+	"time"
 )
 
 var (
 	ErrConnectDB = errors.New("failed to connect to database")
 	ErrMigrateDB = errors.New("failed to migrate to database")
 )
+
+type Config struct {
+	Auth AuthConfig
+	DB   DatabaseConfig
+}
+
+type AuthConfig struct {
+	Duration  time.Duration `env:"AUTH_DURATION" env-default:"20m"`
+	SecretKey string        `env:"AUTH_KEY" env-default:"replace_with_your_key"`
+}
 
 type DatabaseConfig struct {
 	Driver   string `env:"DB_DRIVER" env-default:"postgres"`
@@ -23,8 +34,8 @@ type DatabaseConfig struct {
 }
 
 //LoadEnv loads environment variables into a DatabaseConfig struct
-func (dbConfig *DatabaseConfig) LoadEnv() {
-	err := cleanenv.ReadEnv(dbConfig)
+func (config *Config) LoadEnv() {
+	err := cleanenv.ReadEnv(config)
 	if err != nil {
 		log.Fatal("Fail, .env file not found")
 	}
