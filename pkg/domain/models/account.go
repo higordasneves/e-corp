@@ -37,7 +37,7 @@ func (acc *Account) GetHashSecret() error {
 }
 
 func (acc *Account) CompareHashSecret(secret string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(secret), []byte(acc.Secret))
+	err := bcrypt.CompareHashAndPassword([]byte(acc.Secret), []byte(secret))
 	if err != nil {
 		return err
 	}
