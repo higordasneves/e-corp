@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	"github.com/sirupsen/logrus"
@@ -10,6 +11,7 @@ import (
 
 type AuthUseCase interface {
 	Login(ctx context.Context, input *LoginInput) (*Token, error)
+	ValidateToken(tokenString string) (*jwt.StandardClaims, error)
 }
 
 type authUseCase struct {

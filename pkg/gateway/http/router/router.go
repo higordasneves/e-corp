@@ -5,6 +5,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/middleware"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
@@ -32,7 +33,7 @@ func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.Au
 	router.HandleFunc("/accounts/{account_id}/balance", accController.GetBalance).Methods(http.MethodGet)
 
 	//transfer
-	router.HandleFunc("/transfers", tController.GetTransfers).Methods(http.MethodGet)
+	router.HandleFunc("/transfers", middleware.Authenticate(authUseCase, tController.GetTransfers, log)).Methods(http.MethodGet)
 
 	//login
 	router.HandleFunc("/login", authController.Login).Methods(http.MethodPost)
