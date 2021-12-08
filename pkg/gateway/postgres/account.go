@@ -94,7 +94,7 @@ func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (*vos.Curren
 	return &balance, nil
 }
 
-func (accRepo account) GetAccount(ctx context.Context, cpf string) (*models.Account, error) {
+func (accRepo account) GetAccount(ctx context.Context, cpf vos.CPF) (*models.Account, error) {
 	row := accRepo.dbPool.QueryRow(ctx,
 		`select id
 			, name

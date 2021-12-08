@@ -10,8 +10,8 @@ import (
 
 //LoginInput represents information necessary to access a bank account
 type LoginInput struct {
-	CPF    string `json:"cpf"`
-	Secret string `json:"secret"`
+	CPF    vos.CPF `json:"cpf"`
+	Secret string  `json:"secret"`
 }
 
 type Token string

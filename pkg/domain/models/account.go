@@ -3,7 +3,6 @@ package models
 import (
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"golang.org/x/crypto/bcrypt"
-	"regexp"
 	"time"
 )
 
@@ -11,7 +10,7 @@ import (
 type Account struct {
 	ID        vos.UUID
 	Name      string
-	CPF       string
+	CPF       vos.CPF
 	Secret    string
 	Balance   vos.Currency
 	CreatedAt time.Time
@@ -21,7 +20,7 @@ type Account struct {
 type AccountOutput struct {
 	ID        vos.UUID     `json:"id"`
 	Name      string       `json:"name"`
-	CPF       string       `json:"cpf"`
+	CPF       vos.CPF      `json:"cpf"`
 	Balance   vos.Currency `json:"balance"`
 	CreatedAt time.Time    `json:"created_at"`
 }
@@ -46,7 +45,7 @@ func (acc *Account) CompareHashSecret(secret string) error {
 
 //GetAccOutput formats and return only pertinent information from account
 func (acc *Account) GetAccOutput() *AccountOutput {
-	acc.cpfMask()
+	acc.CPF.FormatOutput()
 	acc.Balance.ConvertFromCents()
 	accOutput := &AccountOutput{
 		ID:        acc.ID,
@@ -56,12 +55,4 @@ func (acc *Account) GetAccOutput() *AccountOutput {
 		CreatedAt: acc.CreatedAt,
 	}
 	return accOutput
-}
-
-//cpfMask formats CPF of account owner to pattern "xxx-xxx-xxx-xx"
-func (acc *Account) cpfMask() {
-	cpfModel, err := regexp.Compile(`^([\d]{3})([\d]{3})([\d]{3})([\d]{2})$`)
-	if err == nil {
-		acc.CPF = cpfModel.ReplaceAllString(acc.CPF, "$1.$2.$3-$4")
-	}
 }

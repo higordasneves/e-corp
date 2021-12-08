@@ -19,5 +19,5 @@ type AccountRepo interface {
 	CreateAccount(context.Context, *models.Account) error
 	FetchAccounts(ctx context.Context) ([]models.Account, error)
 	GetBalance(ctx context.Context, id vos.UUID) (*vos.Currency, error)
-	GetAccount(ctx context.Context, cpf string) (*models.Account, error)
+	GetAccount(ctx context.Context, cpf vos.CPF) (*models.Account, error)
 }

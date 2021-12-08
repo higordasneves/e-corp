@@ -7,16 +7,15 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"strings"
 	"time"
-	"unicode"
 )
 
 const balanceInit vos.Currency = 10000
 
 //AccountInput represents information necessary to create a bank account
 type AccountInput struct {
-	Name   string `json:"name"`
-	CPF    string `json:"cpf"`
-	Secret string `json:"secret"`
+	Name   string  `json:"name"`
+	CPF    vos.CPF `json:"cpf"`
+	Secret string  `json:"secret"`
 }
 
 //CreateAccount validates and handles user input and creates a formatted account,
@@ -54,22 +53,17 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *A
 func (accInput *AccountInput) ValidateAccountInput() error {
 	accInput.removeBlankSpaces()
 
-	err := accInput.inputEmpty()
+	err := accInput.validateInputEmpty()
 	if err != nil {
 		return err
 	}
 
-	err = accInput.secretLen()
+	err = accInput.validateSecretLen()
 	if err != nil {
 		return err
 	}
 
-	err = accInput.cpfFormat()
-	if err != nil {
-		return err
-	}
-
-	err = accInput.cpfLen()
+	err = accInput.CPF.ValidateInput()
 	if err != nil {
 		return err
 	}
@@ -77,8 +71,8 @@ func (accInput *AccountInput) ValidateAccountInput() error {
 	return nil
 }
 
-//inputEmpty validates if the user has filled the required fields
-func (accInput *AccountInput) inputEmpty() error {
+//validateInputEmpty validates if the user has filled the required fields
+func (accInput *AccountInput) validateInputEmpty() error {
 	if accInput.Name == "" || accInput.CPF == "" || accInput.Secret == "" {
 		return domainerr.ErrEmptyInput
 	}
@@ -86,27 +80,9 @@ func (accInput *AccountInput) inputEmpty() error {
 }
 
 //secretLen validates the secret length
-func (accInput *AccountInput) secretLen() error {
+func (accInput *AccountInput) validateSecretLen() error {
 	if len(accInput.Secret) < 8 {
 		return domainerr.ErrSmallSecret
-	}
-	return nil
-}
-
-//cpfLen validates the CPF length
-func (accInput *AccountInput) cpfLen() error {
-	if len(accInput.CPF) != 11 {
-		return domainerr.ErrCPFLen
-	}
-	return nil
-}
-
-//cpfLen validates if the CPF has only numbers
-func (accInput *AccountInput) cpfFormat() error {
-	for _, v := range accInput.CPF {
-		if !unicode.IsDigit(v) {
-			return domainerr.ErrCPFFormat
-		}
 	}
 	return nil
 }
@@ -114,6 +90,6 @@ func (accInput *AccountInput) cpfFormat() error {
 //removesBlankSpaces removes blank spaces of account fields
 func (accInput *AccountInput) removeBlankSpaces() {
 	accInput.Name = strings.TrimSpace(accInput.Name)
-	accInput.CPF = strings.TrimSpace(accInput.CPF)
+	accInput.CPF = vos.CPF(strings.TrimSpace(accInput.CPF.String()))
 	accInput.Secret = strings.TrimSpace(accInput.Secret)
 }
