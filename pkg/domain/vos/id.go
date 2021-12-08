@@ -23,8 +23,8 @@ func NewUUID() UUID {
 }
 
 // IsValidUUID validates uuid
-func IsValidUUID(id string) error {
-	_, err := uuid.Parse(id)
+func IsValidUUID(id UUID) error {
+	_, err := uuid.Parse(string(id))
 	if err != nil {
 		return ErrInvalidID
 	}

@@ -73,14 +73,14 @@ func (accController accountController) FetchAccounts(w http.ResponseWriter, r *h
 func (accController accountController) GetBalance(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
-	id := params["account_id"]
+	id := vos.UUID(params["account_id"])
 	err := vos.IsValidUUID(id)
 	if err != nil {
 		responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), accController.log)
 		return
 	}
 
-	balance, err := accController.accUseCase.GetBalance(r.Context(), vos.UUID(id))
+	balance, err := accController.accUseCase.GetBalance(r.Context(), id)
 
 	if err != nil {
 		if err == domainerr.ErrAccNotFound {

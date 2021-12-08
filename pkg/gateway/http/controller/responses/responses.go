@@ -7,7 +7,7 @@ import (
 )
 
 type errJSON struct {
-	Erro string `json:"error"`
+	Err string `json:"error"`
 }
 
 //SendResponse sends formatted json response to request
@@ -22,6 +22,6 @@ func SendResponse(w http.ResponseWriter, statusCode int, data interface{}, log *
 
 func ErrorJSON(err error) *errJSON {
 	return &errJSON{
-		Erro: err.Error(),
+		Err: err.Error(),
 	}
 }
