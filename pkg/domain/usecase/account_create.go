@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"strings"
@@ -23,6 +24,10 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *A
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
+	err := accInput.ValidateAccountInput()
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", entities.ErrBadAccRequest, err)
+	}
 	hashSecret, err := vos.GetHashSecret(accInput.Secret)
 	if err != nil {
 		return nil, err
@@ -54,7 +59,7 @@ func (accInput *AccountInput) ValidateAccountInput() error {
 		return err
 	}
 
-	err = accInput.validateSecretLen()
+	err = vos.ValidateSecretLen(accInput.Secret)
 	if err != nil {
 		return err
 	}
@@ -71,14 +76,6 @@ func (accInput *AccountInput) ValidateAccountInput() error {
 func (accInput *AccountInput) validateInputEmpty() error {
 	if accInput.Name == "" || accInput.CPF == "" || accInput.Secret == "" {
 		return entities.ErrEmptyInput
-	}
-	return nil
-}
-
-//secretLen validates the secret length
-func (accInput *AccountInput) validateSecretLen() error {
-	if len(accInput.Secret) < 8 {
-		return vos.ErrSmallSecret
 	}
 	return nil
 }

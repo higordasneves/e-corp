@@ -16,14 +16,14 @@ func Authenticate(authUC usecase.AuthUseCase, next http.HandlerFunc, log *logrus
 	return func(w http.ResponseWriter, r *http.Request) {
 		header := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 		if len(header) != 2 {
-			responses.SendResponse(w, http.StatusUnauthorized, responses.ErrorJSON(ErrTokenFormat), log)
+			responses.SendError(w, http.StatusUnauthorized, ErrTokenFormat, log)
 			return
 		}
 
 		tokenString := header[1]
 		claims, err := authUC.ValidateToken(tokenString)
 		if err != nil {
-			responses.SendResponse(w, http.StatusUnauthorized, responses.ErrorJSON(err), log)
+			responses.SendError(w, http.StatusUnauthorized, err, log)
 			return
 		}
 

@@ -8,11 +8,12 @@ import (
 )
 
 var (
-	ErrCreateAcc  = errors.New("an unexpected error occurred while creating account")
-	ErrFetchAcc   = errors.New("an unexpected error occurred while fetching accounts")
-	ErrGetBalance = errors.New("an unexpected error occurred while getting account balance")
-	ErrGetAccount = errors.New("an unexpected error occurred")
-	ErrTruncDB    = errors.New("an unexpected error occurred while deleting tables")
+	ErrCreateAcc     = errors.New("an unexpected error occurred while creating account")
+	ErrFetchAcc      = errors.New("an unexpected error occurred while fetching accounts")
+	ErrGetBalance    = errors.New("an unexpected error occurred while getting account balance")
+	ErrUpdateBalance = errors.New("an unexpected error occurred while updating account balance")
+	ErrGetAccount    = errors.New("an unexpected error occurred")
+	ErrTruncDB       = errors.New("an unexpected error occurred while deleting tables")
 )
 
 type AccountRepo interface {

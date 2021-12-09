@@ -30,15 +30,15 @@ func (accRepo account) CreateAccount(ctx context.Context, acc *entities.Account)
 		" VALUES ($1, $2, $3, $4, $5, $6)", acc.ID.String(), acc.CPF, acc.Name, acc.Secret, int64(acc.Balance), acc.CreatedAt)
 
 	var pgErr *pgconn.PgError
-	errors.As(err, &pgErr)
 
 	if err != nil {
-		if pgErr.Code == pgerrcode.UniqueViolation {
-			return entities.ErrAccAlreadyExists
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.UniqueViolation {
+				return fmt.Errorf("%w:%s", entities.ErrBadAccRequest, entities.ErrAccAlreadyExists)
+			}
 		}
-		return fmt.Errorf("%w:%s", repository.ErrCreateAcc, err)
+		return fmt.Errorf("unexpected sql error occurred while creating account: %s", err)
 	}
-
 	return nil
 }
 
@@ -56,14 +56,14 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]entities.Account, e
 
 	defer rows.Close()
 	if err != nil {
-		return nil, fmt.Errorf("%w:%s", repository.ErrFetchAcc, err)
+		return nil, fmt.Errorf("unexpected sql error occurred while fetching account: %s", err)
 	}
 
 	for rows.Next() {
 		var acc entities.Account
 		err = rows.Scan(&acc.ID, &acc.Name, &acc.CPF, &acc.Balance, &acc.CreatedAt)
 		if err != nil {
-			return nil, fmt.Errorf("%w:%s", repository.ErrFetchAcc, err)
+			return nil, fmt.Errorf("unexpected sql error occurred while fetching account: %s", err)
 		}
 		accList = append(accList, acc)
 	}
@@ -81,10 +81,9 @@ func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (int, error)
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return 0, entities.ErrAccNotFound
+			return 0, fmt.Errorf("%s: %w", entities.ErrBadAccRequest, entities.ErrAccNotFound)
 		}
-		accRepo.log.WithError(err).Println(repository.ErrGetBalance)
-		return 0, repository.ErrGetBalance
+		return 0, fmt.Errorf("unexpected sql error occurred while getting balance: %s", err)
 	}
 
 	return balance, nil
@@ -101,10 +100,9 @@ func (accRepo account) UpdateBalance(ctx context.Context, id vos.UUID) (int, err
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return 0, entities.ErrAccNotFound
+			return 0, fmt.Errorf("%s: %w", entities.ErrBadAccRequest, entities.ErrAccNotFound)
 		}
-		accRepo.log.WithError(err).Println(repository.ErrGetBalance)
-		return 0, repository.ErrGetBalance
+		return 0, fmt.Errorf("unexpected sql error occurred while updating account: %s", err)
 	}
 
 	return balance, nil
@@ -126,10 +124,10 @@ func (accRepo account) GetAccount(ctx context.Context, cpf vos.CPF) (*entities.A
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, entities.ErrAccNotFound
+			return nil, fmt.Errorf("%s: %w", entities.ErrBadAccRequest, entities.ErrAccNotFound)
 		}
-		accRepo.log.WithError(err).Println(repository.ErrGetBalance)
-		return nil, repository.ErrGetAccount
+
+		return nil, fmt.Errorf("unexpected sql error occurred while getting account: %s", err)
 	}
 
 	return &acc, nil

@@ -7,9 +7,11 @@ import (
 )
 
 var (
-	ErrOriginAccID    = errors.New("invalid origin account ID")
-	ErrDestAccID      = errors.New("invalid destination account ID")
-	ErrTransferAmount = errors.New("invalid transfer amount, value must be greater than 0")
+	//ErrBadTransferRequest generic error for bad requests
+	ErrBadTransferRequest = errors.New("bad request")
+	ErrOriginAccID        = errors.New("invalid origin account ID")
+	ErrDestAccID          = errors.New("invalid destination account ID")
+	ErrTransferAmount     = errors.New("invalid transfer amount, value must be greater than 0")
 )
 
 //Transfer represents a banking transfer

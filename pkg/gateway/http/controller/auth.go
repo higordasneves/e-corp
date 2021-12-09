@@ -27,13 +27,13 @@ func NewAuthController(authUseCase usecase.AuthUseCase, log *logrus.Logger) Auth
 func (authCtrl authController) Login(w http.ResponseWriter, r *http.Request) {
 	bodyRequest, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), authCtrl.log)
+		responses.SendError(w, http.StatusBadRequest, err, authCtrl.log)
 		return
 	}
 
 	var loginInput usecase.LoginInput
 	if err = json.Unmarshal(bodyRequest, &loginInput); err != nil {
-		responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), authCtrl.log)
+		responses.SendError(w, http.StatusBadRequest, err, authCtrl.log)
 		return
 	}
 
@@ -41,10 +41,10 @@ func (authCtrl authController) Login(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if err == entities.ErrAccNotFound || err == vos.ErrInvalidPass {
-			responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), authCtrl.log)
+			responses.SendError(w, http.StatusBadRequest, err, authCtrl.log)
 			return
 		}
-		responses.SendResponse(w, http.StatusInternalServerError, responses.ErrorJSON(err), authCtrl.log)
+		responses.SendError(w, http.StatusInternalServerError, err, authCtrl.log)
 		return
 	}
 	responses.SendResponse(w, http.StatusOK, token, authCtrl.log)

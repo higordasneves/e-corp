@@ -35,3 +35,11 @@ func (hashSecret Secret) CompareHashSecret(secret string) error {
 	}
 	return nil
 }
+
+//ValidateSecretLen validates the secret length
+func ValidateSecretLen(secret string) error {
+	if len(secret) < 8 {
+		return ErrSmallSecret
+	}
+	return nil
+}
