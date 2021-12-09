@@ -2,8 +2,7 @@ package usecase
 
 import (
 	"context"
-	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
-	"github.com/higordasneves/e-corp/pkg/domain/models"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	repomock "github.com/higordasneves/e-corp/pkg/repository/mock"
@@ -56,7 +55,7 @@ func TestAccountUseCase_ValidateAccountInput(t *testing.T) {
 				Secret: "passwor",
 			},
 			want:        nil,
-			expectedErr: domainerr.ErrSmallSecret,
+			expectedErr: entities.ErrSmallSecret,
 		},
 		{
 			name: "empty field",
@@ -66,7 +65,7 @@ func TestAccountUseCase_ValidateAccountInput(t *testing.T) {
 				Secret: "password",
 			},
 			want:        nil,
-			expectedErr: domainerr.ErrEmptyInput,
+			expectedErr: entities.ErrEmptyInput,
 		},
 		{
 			name: "CPF format",
@@ -76,7 +75,7 @@ func TestAccountUseCase_ValidateAccountInput(t *testing.T) {
 				Secret: "password",
 			},
 			want:        nil,
-			expectedErr: domainerr.ErrCPFFormat,
+			expectedErr: vos.ErrCPFFormat,
 		},
 		{
 			name: "CPF length",
@@ -86,7 +85,7 @@ func TestAccountUseCase_ValidateAccountInput(t *testing.T) {
 				Secret: "password",
 			},
 			want:        nil,
-			expectedErr: domainerr.ErrCPFLen,
+			expectedErr: vos.ErrCPFLen,
 		},
 	}
 	for _, test := range tests {
@@ -115,7 +114,7 @@ func TestAccountUseCase_CreateAccount(t *testing.T) {
 	tests := []struct {
 		name        string
 		accInput    *AccountInput
-		want        *models.AccountOutput
+		want        *entities.AccountOutput
 		expectedErr error
 	}{
 		{
@@ -125,7 +124,7 @@ func TestAccountUseCase_CreateAccount(t *testing.T) {
 				CPF:    "33344455566",
 				Secret: "password",
 			},
-			want: &models.AccountOutput{
+			want: &entities.AccountOutput{
 				Name:      "Elliot",
 				CPF:       "333.444.555-66",
 				Balance:   10000,
@@ -141,7 +140,7 @@ func TestAccountUseCase_CreateAccount(t *testing.T) {
 				Secret: "password",
 			},
 			want:        nil,
-			expectedErr: domainerr.ErrAccAlreadyExists,
+			expectedErr: entities.ErrAccAlreadyExists,
 		},
 		{
 			name: "database generic error",
@@ -156,7 +155,7 @@ func TestAccountUseCase_CreateAccount(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		accRepo := repomock.NewAccountRepo([]models.Account{}, test.expectedErr)
+		accRepo := repomock.NewAccountRepo([]entities.Account{}, test.expectedErr)
 		accUseCase := NewAccountUseCase(accRepo, log)
 		acc, err := accUseCase.CreateAccount(context.Background(), test.accInput)
 

@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"github.com/higordasneves/e-corp/pkg/domain/models"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	repomock "github.com/higordasneves/e-corp/pkg/repository/mock"
@@ -22,7 +22,7 @@ func TestAccountUseCase_FetchAccounts(t *testing.T) {
 		IDs = append(IDs, vos.NewUUID())
 	}
 
-	accounts := []models.Account{
+	accounts := []entities.Account{
 		{
 			ID:        IDs[0],
 			Name:      "Elliot",
@@ -57,33 +57,33 @@ func TestAccountUseCase_FetchAccounts(t *testing.T) {
 		},
 	}
 
-	want := []models.AccountOutput{
+	want := []entities.AccountOutput{
 		{
 			ID:        IDs[0],
 			Name:      "Elliot",
 			CPF:       "555.666.777-80",
-			Balance:   97000.00,
+			Balance:   9700000,
 			CreatedAt: accountsDate,
 		},
 		{
 			ID:        IDs[1],
 			Name:      "Elliot",
 			CPF:       "555.666.777-81",
-			Balance:   55964.00,
+			Balance:   5596400,
 			CreatedAt: accountsDate,
 		},
 		{
 			ID:        IDs[2],
 			Name:      "Elliot",
 			CPF:       "555.666.777-82",
-			Balance:   55345.13,
+			Balance:   5534513,
 			CreatedAt: accountsDate,
 		},
 		{
 			ID:        IDs[3],
 			Name:      "Elliot",
 			CPF:       "555.666.777-83",
-			Balance:   123.50,
+			Balance:   12350,
 			CreatedAt: accountsDate,
 		},
 	}

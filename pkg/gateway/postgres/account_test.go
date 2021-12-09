@@ -2,8 +2,7 @@ package postgres
 
 import (
 	"context"
-	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
-	"github.com/higordasneves/e-corp/pkg/domain/models"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	"reflect"
@@ -16,12 +15,12 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 	ctxDB := context.Background()
 	tests := []struct {
 		name string
-		acc  *models.Account
+		acc  *entities.Account
 		err  error
 	}{
 		{
 			name: "with success",
-			acc: &models.Account{
+			acc: &entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455566",
@@ -33,7 +32,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 		},
 		{
 			name: "check error account already exists",
-			acc: &models.Account{
+			acc: &entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455566",
@@ -41,11 +40,11 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
 			},
-			err: domainerr.ErrAccAlreadyExists,
+			err: entities.ErrAccAlreadyExists,
 		},
 		{
 			name: "invalid id",
-			acc: &models.Account{
+			acc: &entities.Account{
 				ID:        "invalid",
 				Name:      "Elliot",
 				CPF:       "33344455567",
@@ -71,7 +70,7 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 	accRepo := NewAccountRepo(dbTest, logTest)
 	ctxDB := context.Background()
 
-	accounts := []models.Account{
+	accounts := []entities.Account{
 		{
 			ID:        vos.NewUUID(),
 			Name:      "Elliot",
@@ -89,13 +88,13 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 			CreatedAt: time.Now().Truncate(time.Second),
 		},
 	}
-	var want []models.Account
+	var want []entities.Account
 	for _, acc := range accounts {
 		err := accRepo.CreateAccount(ctxDB, &acc)
 		if err != nil {
 			t.Error("error inserting accounts")
 		}
-		want = append(want, models.Account{
+		want = append(want, entities.Account{
 			ID:        acc.ID,
 			Name:      acc.Name,
 			CPF:       acc.CPF,
@@ -121,14 +120,14 @@ func TestAccRepo_GetBalance(t *testing.T) {
 	ctxDB := context.Background()
 	tests := []struct {
 		name        string
-		acc         *models.Account
+		acc         *entities.Account
 		insert      bool
 		expectedErr bool
 		err         error
 	}{
 		{
 			name: "with success",
-			acc: &models.Account{
+			acc: &entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455567",
@@ -142,7 +141,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 		},
 		{
 			name: "with success balance 0",
-			acc: &models.Account{
+			acc: &entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455568",
@@ -156,7 +155,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 		},
 		{
 			name: "account not found",
-			acc: &models.Account{
+			acc: &entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455569",
@@ -166,11 +165,11 @@ func TestAccRepo_GetBalance(t *testing.T) {
 			},
 			insert:      false,
 			expectedErr: true,
-			err:         domainerr.ErrAccNotFound,
+			err:         entities.ErrAccNotFound,
 		},
 		{
 			name: "invalid id",
-			acc: &models.Account{
+			acc: &entities.Account{
 				ID:        "invalid",
 				Name:      "Elliot",
 				CPF:       "33344455570",
@@ -196,8 +195,8 @@ func TestAccRepo_GetBalance(t *testing.T) {
 				t.Errorf("got: %v, want: %v", err, test.err)
 			}
 
-			if !test.expectedErr && *result != test.acc.Balance {
-				t.Errorf("got: %v, want: %v", *result, test.acc.Balance)
+			if !test.expectedErr && result != test.acc.Balance {
+				t.Errorf("got: %v, want: %v", result, test.acc.Balance)
 			}
 		})
 	}
@@ -208,14 +207,14 @@ func TestAccRepo_GetAccount(t *testing.T) {
 	ctxDB := context.Background()
 	tests := []struct {
 		name        string
-		acc         *models.Account
+		acc         *entities.Account
 		insert      bool
 		expectedErr bool
 		err         error
 	}{
 		{
 			name: "with success",
-			acc: &models.Account{
+			acc: &entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455567",
@@ -229,7 +228,7 @@ func TestAccRepo_GetAccount(t *testing.T) {
 		},
 		{
 			name: "account not found",
-			acc: &models.Account{
+			acc: &entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455568",
@@ -239,7 +238,7 @@ func TestAccRepo_GetAccount(t *testing.T) {
 			},
 			insert:      false,
 			expectedErr: true,
-			err:         domainerr.ErrAccNotFound,
+			err:         entities.ErrAccNotFound,
 		},
 	}
 

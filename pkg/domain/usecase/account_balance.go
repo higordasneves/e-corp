@@ -6,15 +6,15 @@ import (
 	"time"
 )
 
-func (accUseCase accountUseCase) GetBalance(ctx context.Context, id vos.UUID) (*vos.Currency, error) {
+func (accUseCase accountUseCase) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
 	balance, err := accUseCase.accountRepo.GetBalance(ctx, id)
 
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	balance.ConvertFromCents()
+
 	return balance, nil
 }

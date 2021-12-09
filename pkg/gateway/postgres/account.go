@@ -3,8 +3,8 @@ package postgres
 import (
 	"context"
 	"errors"
-	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
-	"github.com/higordasneves/e-corp/pkg/domain/models"
+	"fmt"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	"github.com/jackc/pgconn"
@@ -24,7 +24,7 @@ func NewAccountRepo(dbPool *pgxpool.Pool, log *logrus.Logger) repository.Account
 }
 
 //CreateAccount inserts account in database
-func (accRepo account) CreateAccount(ctx context.Context, acc *models.Account) error {
+func (accRepo account) CreateAccount(ctx context.Context, acc *entities.Account) error {
 	_, err := accRepo.dbPool.Exec(ctx, "INSERT INTO accounts "+
 		"(id, cpf, name, secret, balance, created_at)"+
 		" VALUES ($1, $2, $3, $4, $5, $6)", acc.ID.String(), acc.CPF, acc.Name, acc.Secret, int64(acc.Balance), acc.CreatedAt)
@@ -34,16 +34,15 @@ func (accRepo account) CreateAccount(ctx context.Context, acc *models.Account) e
 
 	if err != nil {
 		if pgErr.Code == pgerrcode.UniqueViolation {
-			return domainerr.ErrAccAlreadyExists
+			return entities.ErrAccAlreadyExists
 		}
-		accRepo.log.WithError(err).Println(repository.ErrCreateAcc)
-		return repository.ErrCreateAcc
+		return fmt.Errorf("%w:%s", repository.ErrCreateAcc, err)
 	}
 
 	return nil
 }
 
-func (accRepo account) FetchAccounts(ctx context.Context) ([]models.Account, error) {
+func (accRepo account) FetchAccounts(ctx context.Context) ([]entities.Account, error) {
 	accCount := accRepo.dbPool.QueryRow(ctx, "select count(*) as count from accounts")
 
 	var count int
@@ -51,66 +50,83 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]models.Account, err
 	if err != nil {
 		return nil, err
 	}
-	accList := make([]models.Account, 0, count)
+	accList := make([]entities.Account, 0, count)
 
 	rows, err := accRepo.dbPool.Query(ctx, "select id, name, cpf, balance::numeric as balance, created_at from accounts")
 
 	defer rows.Close()
 	if err != nil {
-		accRepo.log.WithError(err).Println(repository.ErrFetchAcc)
-		return nil, repository.ErrFetchAcc
+		return nil, fmt.Errorf("%w:%s", repository.ErrFetchAcc, err)
 	}
 
 	for rows.Next() {
-		var acc models.Account
+		var acc entities.Account
 		err = rows.Scan(&acc.ID, &acc.Name, &acc.CPF, &acc.Balance, &acc.CreatedAt)
 		if err != nil {
-
-			accRepo.log.WithError(err).Println("repository.ErrFetchAcc")
-			return nil, repository.ErrFetchAcc
+			return nil, fmt.Errorf("%w:%s", repository.ErrFetchAcc, err)
 		}
 		accList = append(accList, acc)
 	}
 	return accList, nil
 }
 
-func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (*vos.Currency, error) {
+func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
 	row := accRepo.dbPool.QueryRow(ctx,
-		`select balance::numeric as balance
+		`select balance
 			from accounts
 			where id = $1`, id.String())
 
-	var balance vos.Currency
+	var balance int
 	err := row.Scan(&balance)
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, domainerr.ErrAccNotFound
+			return 0, entities.ErrAccNotFound
 		}
 		accRepo.log.WithError(err).Println(repository.ErrGetBalance)
-		return nil, repository.ErrGetBalance
+		return 0, repository.ErrGetBalance
 	}
 
-	return &balance, nil
+	return balance, nil
 }
 
-func (accRepo account) GetAccount(ctx context.Context, cpf vos.CPF) (*models.Account, error) {
+func (accRepo account) UpdateBalance(ctx context.Context, id vos.UUID) (int, error) {
+	row := accRepo.dbPool.QueryRow(ctx,
+		`select balance
+			from accounts
+			where id = $1`, id.String())
+
+	var balance int
+	err := row.Scan(&balance)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return 0, entities.ErrAccNotFound
+		}
+		accRepo.log.WithError(err).Println(repository.ErrGetBalance)
+		return 0, repository.ErrGetBalance
+	}
+
+	return balance, nil
+}
+
+func (accRepo account) GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error) {
 	row := accRepo.dbPool.QueryRow(ctx,
 		`select id
 			, name
 			, cpf
 			, secret
-			, balance::numeric as balance
+			, balance
 			, created_at
 			from accounts
 			where cpf = $1`, cpf)
 
-	var acc models.Account
+	var acc entities.Account
 	err := row.Scan(&acc.ID, &acc.Name, &acc.CPF, &acc.Secret, &acc.Balance, &acc.CreatedAt)
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, domainerr.ErrAccNotFound
+			return nil, entities.ErrAccNotFound
 		}
 		accRepo.log.WithError(err).Println(repository.ErrGetBalance)
 		return nil, repository.ErrGetAccount

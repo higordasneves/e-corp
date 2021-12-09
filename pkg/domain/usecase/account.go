@@ -2,16 +2,16 @@ package usecase
 
 import (
 	"context"
-	"github.com/higordasneves/e-corp/pkg/domain/models"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	"github.com/sirupsen/logrus"
 )
 
 type AccountUseCase interface {
-	CreateAccount(ctx context.Context, input *AccountInput) (*models.AccountOutput, error)
-	FetchAccounts(ctx context.Context) ([]models.AccountOutput, error)
-	GetBalance(ctx context.Context, id vos.UUID) (*vos.Currency, error)
+	CreateAccount(ctx context.Context, input *AccountInput) (*entities.AccountOutput, error)
+	FetchAccounts(ctx context.Context) ([]entities.AccountOutput, error)
+	GetBalance(ctx context.Context, id vos.UUID) (int, error)
 }
 
 type accountUseCase struct {

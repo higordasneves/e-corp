@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/dgrijalva/jwt-go"
-	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"time"
 )
@@ -28,7 +28,7 @@ func (authUC authUseCase) Login(ctx context.Context, input *LoginInput) (*Token,
 
 	err = acc.CompareHashSecret(input.Secret)
 	if err != nil {
-		return nil, domainerr.ErrInvalidPass
+		return nil, entities.ErrInvalidPass
 	}
 
 	return authUC.createAccToken(acc.ID)
@@ -47,7 +47,7 @@ func (authUC authUseCase) createAccToken(accID vos.UUID) (*Token, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	ss, err := token.SignedString([]byte(authUC.secretKey))
 	if err != nil {
-		return nil, domainerr.ErrUnexpected
+		return nil, err
 	}
 	accToken := Token(ss)
 	return &accToken, nil

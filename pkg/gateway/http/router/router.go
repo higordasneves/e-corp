@@ -33,6 +33,7 @@ func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.Au
 	router.HandleFunc("/accounts/{account_id}/balance", accController.GetBalance).Methods(http.MethodGet)
 
 	//transfer
+	router.HandleFunc("/transfers", middleware.Authenticate(authUseCase, tController.Transfer, log)).Methods(http.MethodPost)
 	router.HandleFunc("/transfers", middleware.Authenticate(authUseCase, tController.GetTransfers, log)).Methods(http.MethodGet)
 
 	//login

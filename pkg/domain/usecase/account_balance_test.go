@@ -2,8 +2,7 @@ package usecase
 
 import (
 	"context"
-	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
-	"github.com/higordasneves/e-corp/pkg/domain/models"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	repomock "github.com/higordasneves/e-corp/pkg/repository/mock"
@@ -15,33 +14,33 @@ import (
 func TestAccountUseCase_GetBalance(t *testing.T) {
 	log := logrus.New()
 
-	accInfo := make(map[vos.Currency]vos.UUID, 3)
+	accInfo := make(map[int]vos.UUID, 3)
 	accInfo[162000] = vos.NewUUID()
 	accInfo[561300] = vos.NewUUID()
 
-	accounts := make([]models.Account, 0, 3)
+	accounts := make([]entities.Account, 0, 3)
 	for i, v := range accInfo {
-		accounts = append(accounts, models.Account{ID: v, Balance: i})
+		accounts = append(accounts, entities.Account{ID: v, Balance: i})
 	}
 
 	tests := []struct {
 		name        string
 		id          vos.UUID
-		want        vos.Currency
+		want        int
 		expectedErr error
 		dbErr       error
 	}{
 		{
 			name:        "with success 1",
 			id:          accInfo[162000],
-			want:        vos.Currency(1620),
+			want:        162000,
 			expectedErr: nil,
 			dbErr:       nil,
 		},
 		{
 			name:        "with success 2",
 			id:          accInfo[561300],
-			want:        vos.Currency(5613),
+			want:        561300,
 			expectedErr: nil,
 			dbErr:       nil,
 		},
@@ -49,13 +48,13 @@ func TestAccountUseCase_GetBalance(t *testing.T) {
 			name:        "err account not found",
 			id:          vos.NewUUID(),
 			want:        0,
-			expectedErr: domainerr.ErrAccNotFound,
+			expectedErr: entities.ErrAccNotFound,
 			dbErr:       nil,
 		},
 		{
 			name:        "database generic error",
 			id:          accInfo[561300],
-			want:        vos.Currency(5613),
+			want:        561300,
 			expectedErr: repository.ErrGetBalance,
 			dbErr:       repository.ErrGetBalance,
 		},
@@ -79,8 +78,8 @@ func TestAccountUseCase_GetBalance(t *testing.T) {
 				}
 			}
 
-			if err == nil && *balance != test.want {
-				t.Errorf("got %v, want %v", *balance, test.want)
+			if err == nil && balance != test.want {
+				t.Errorf("got %v, want %v", balance, test.want)
 			}
 		})
 	}

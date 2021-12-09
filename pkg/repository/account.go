@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
-	"github.com/higordasneves/e-corp/pkg/domain/models"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
@@ -16,8 +16,8 @@ var (
 )
 
 type AccountRepo interface {
-	CreateAccount(context.Context, *models.Account) error
-	FetchAccounts(ctx context.Context) ([]models.Account, error)
-	GetBalance(ctx context.Context, id vos.UUID) (*vos.Currency, error)
-	GetAccount(ctx context.Context, cpf vos.CPF) (*models.Account, error)
+	CreateAccount(context.Context, *entities.Account) error
+	FetchAccounts(ctx context.Context) ([]entities.Account, error)
+	GetBalance(ctx context.Context, id vos.UUID) (int, error)
+	GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error)
 }

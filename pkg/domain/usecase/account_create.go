@@ -2,14 +2,13 @@ package usecase
 
 import (
 	"context"
-	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
-	"github.com/higordasneves/e-corp/pkg/domain/models"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"strings"
 	"time"
 )
 
-const balanceInit vos.Currency = 10000
+const balanceInit = 1000000
 
 //AccountInput represents information necessary to create a bank account
 type AccountInput struct {
@@ -20,12 +19,12 @@ type AccountInput struct {
 
 //CreateAccount validates and handles user input and creates a formatted account,
 //then calls the function to insert the account into the database
-func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *AccountInput) (*models.AccountOutput, error) {
+func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *AccountInput) (*entities.AccountOutput, error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
 	accID := vos.NewUUID()
-	account := &models.Account{
+	account := &entities.Account{
 		ID:        accID,
 		Name:      accInput.Name,
 		CPF:       accInput.CPF,
@@ -36,11 +35,10 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *A
 
 	err := account.GetHashSecret()
 	if err != nil {
-		accUseCase.log.WithError(err).Println(domainerr.ErrUnexpected)
-		return nil, domainerr.ErrUnexpected
+		accUseCase.log.WithError(err).Println(err)
+		return nil, err
 	}
 
-	account.Balance.ConvertToCents()
 	err = accUseCase.accountRepo.CreateAccount(ctx, account)
 
 	if err != nil {
@@ -74,7 +72,7 @@ func (accInput *AccountInput) ValidateAccountInput() error {
 //validateInputEmpty validates if the user has filled the required fields
 func (accInput *AccountInput) validateInputEmpty() error {
 	if accInput.Name == "" || accInput.CPF == "" || accInput.Secret == "" {
-		return domainerr.ErrEmptyInput
+		return entities.ErrEmptyInput
 	}
 	return nil
 }
@@ -82,7 +80,7 @@ func (accInput *AccountInput) validateInputEmpty() error {
 //secretLen validates the secret length
 func (accInput *AccountInput) validateSecretLen() error {
 	if len(accInput.Secret) < 8 {
-		return domainerr.ErrSmallSecret
+		return entities.ErrSmallSecret
 	}
 	return nil
 }

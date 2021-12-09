@@ -1,4 +1,4 @@
-package models
+package entities
 
 import (
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
@@ -10,6 +10,6 @@ type Transfer struct {
 	ID                   vos.UUID
 	AccountOriginID      vos.UUID
 	AccountDestinationID vos.UUID
-	Amount               vos.Currency
+	Amount               int
 	CreatedAt            time.Time
 }

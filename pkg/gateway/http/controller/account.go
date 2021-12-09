@@ -3,7 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	domainerr "github.com/higordasneves/e-corp/pkg/domain/errors"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/responses"
@@ -50,7 +50,7 @@ func (accController accountController) CreateAccount(w http.ResponseWriter, r *h
 
 	account, err := accController.accUseCase.CreateAccount(r.Context(), &accountInput)
 	if err != nil {
-		if err == domainerr.ErrAccAlreadyExists {
+		if err == entities.ErrAccAlreadyExists {
 			responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), accController.log)
 			return
 		}
@@ -83,7 +83,7 @@ func (accController accountController) GetBalance(w http.ResponseWriter, r *http
 	balance, err := accController.accUseCase.GetBalance(r.Context(), id)
 
 	if err != nil {
-		if err == domainerr.ErrAccNotFound {
+		if err == entities.ErrAccNotFound {
 			responses.SendResponse(w, http.StatusNotFound, responses.ErrorJSON(err), accController.log)
 			return
 		}
@@ -91,7 +91,7 @@ func (accController accountController) GetBalance(w http.ResponseWriter, r *http
 		return
 	}
 
-	balanceResponse := map[string]*vos.Currency{"balance": balance}
+	balanceResponse := map[string]int{"balance": balance}
 	responses.SendResponse(w, http.StatusOK, balanceResponse, accController.log)
 
 }
