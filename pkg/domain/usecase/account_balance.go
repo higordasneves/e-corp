@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+//GetBalance returns a bank account balance
 func (accUseCase accountUseCase) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()

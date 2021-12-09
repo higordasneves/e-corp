@@ -10,8 +10,12 @@ type (
 	CPF string
 )
 
-var ErrCPFLen = errors.New("the CPF must be 11 characters long")
-var ErrCPFFormat = errors.New("the CPF must contain only numbers")
+var (
+	//ErrCPFLen occurs when the cpf received have invalid length
+	ErrCPFLen = errors.New("the CPF must be 11 characters long")
+	//ErrCPFFormat occurs when the cpf contains invalid characters
+	ErrCPFFormat = errors.New("the CPF must contain only numbers")
+)
 
 var cpfModel = regexp.MustCompile(`^([\d]{3})([\d]{3})([\d]{3})([\d]{2})$`)
 

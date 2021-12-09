@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/responses"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -39,7 +40,7 @@ func (authCtrl authController) Login(w http.ResponseWriter, r *http.Request) {
 	token, err := authCtrl.authUseCase.Login(r.Context(), &loginInput)
 
 	if err != nil {
-		if err == entities.ErrAccNotFound || err == entities.ErrInvalidPass {
+		if err == entities.ErrAccNotFound || err == vos.ErrInvalidPass {
 			responses.SendResponse(w, http.StatusBadRequest, responses.ErrorJSON(err), authCtrl.log)
 			return
 		}

@@ -78,7 +78,7 @@ func (accInput *AccountInput) validateInputEmpty() error {
 //secretLen validates the secret length
 func (accInput *AccountInput) validateSecretLen() error {
 	if len(accInput.Secret) < 8 {
-		return entities.ErrSmallSecret
+		return vos.ErrSmallSecret
 	}
 	return nil
 }

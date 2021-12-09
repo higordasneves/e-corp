@@ -55,7 +55,7 @@ func TestAccountUseCase_ValidateAccountInput(t *testing.T) {
 				Secret: "passwor",
 			},
 			want:        nil,
-			expectedErr: entities.ErrSmallSecret,
+			expectedErr: vos.ErrSmallSecret,
 		},
 		{
 			name: "empty field",

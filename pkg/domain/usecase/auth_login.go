@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"time"
 )
@@ -28,7 +27,7 @@ func (authUC authUseCase) Login(ctx context.Context, input *LoginInput) (*Token,
 
 	err = acc.Secret.CompareHashSecret(input.Secret)
 	if err != nil {
-		return nil, entities.ErrInvalidPass
+		return nil, vos.ErrInvalidPass
 	}
 
 	return authUC.createAccToken(acc.ID)

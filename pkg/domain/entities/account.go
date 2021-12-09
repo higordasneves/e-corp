@@ -7,11 +7,12 @@ import (
 )
 
 var (
-	ErrAccNotFound      = errors.New("account not found")
+	//ErrAccNotFound occurs when trying to obtain information from a non-existent account
+	ErrAccNotFound = errors.New("account not found")
+	//ErrAccAlreadyExists occurs when trying to create an account that already exists
 	ErrAccAlreadyExists = errors.New("account already exists")
-	ErrEmptyInput       = errors.New("the name, document and password fields are required")
-	ErrSmallSecret      = errors.New("the password must be at least 8 characters long")
-	ErrInvalidPass      = errors.New("invalid password")
+	//ErrEmptyInput occurs when fields required to create an account aren't filled
+	ErrEmptyInput = errors.New("the name, document and password fields are required")
 )
 
 //Account represents a banking account
