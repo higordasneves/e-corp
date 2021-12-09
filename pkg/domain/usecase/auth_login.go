@@ -26,7 +26,7 @@ func (authUC authUseCase) Login(ctx context.Context, input *LoginInput) (*Token,
 		return nil, err
 	}
 
-	err = acc.CompareHashSecret(input.Secret)
+	err = acc.Secret.CompareHashSecret(input.Secret)
 	if err != nil {
 		return nil, entities.ErrInvalidPass
 	}

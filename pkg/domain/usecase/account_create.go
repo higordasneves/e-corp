@@ -23,20 +23,18 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *A
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
-	accID := vos.NewUUID()
-	account := &entities.Account{
-		ID:        accID,
-		Name:      accInput.Name,
-		CPF:       accInput.CPF,
-		Secret:    accInput.Secret,
-		Balance:   balanceInit,
-		CreatedAt: time.Now().Truncate(time.Second),
+	hashSecret, err := vos.GetHashSecret(accInput.Secret)
+	if err != nil {
+		return nil, err
 	}
 
-	err := account.GetHashSecret()
-	if err != nil {
-		accUseCase.log.WithError(err).Println(err)
-		return nil, err
+	account := &entities.Account{
+		ID:        vos.NewUUID(),
+		Name:      accInput.Name,
+		CPF:       accInput.CPF,
+		Secret:    hashSecret,
+		Balance:   balanceInit,
+		CreatedAt: time.Now().Truncate(time.Second),
 	}
 
 	err = accUseCase.accountRepo.CreateAccount(ctx, account)

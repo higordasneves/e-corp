@@ -9,7 +9,6 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
-
 	"net/http"
 )
 

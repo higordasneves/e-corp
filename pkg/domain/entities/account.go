@@ -3,7 +3,6 @@ package entities
 import (
 	"errors"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
@@ -20,7 +19,7 @@ type Account struct {
 	ID        vos.UUID
 	Name      string
 	CPF       vos.CPF
-	Secret    string
+	Secret    vos.Secret
 	Balance   int
 	CreatedAt time.Time
 }
@@ -32,24 +31,6 @@ type AccountOutput struct {
 	CPF       string    `json:"cpf"`
 	Balance   int       `json:"balance"`
 	CreatedAt time.Time `json:"created_at"`
-}
-
-//GetHashSecret returns hash of password
-func (acc *Account) GetHashSecret() error {
-	hashSecret, err := bcrypt.GenerateFromPassword([]byte(acc.Secret), 10)
-	if err != nil {
-		return err
-	}
-	acc.Secret = string(hashSecret)
-	return nil
-}
-
-func (acc *Account) CompareHashSecret(secret string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(acc.Secret), []byte(secret))
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 //GetAccOutput formats and return only pertinent information from account
