@@ -1,8 +1,14 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+)
+
+var (
+	ErrTokenFormat  = errors.New("invalid token format")
+	ErrTokenInvalid = errors.New("invalid token")
 )
 
 func (authUC authUseCase) ValidateToken(tokenString string) (*jwt.StandardClaims, error) {
