@@ -11,6 +11,11 @@ func (accUseCase accountUseCase) GetBalance(ctx context.Context, id vos.UUID) (i
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
+	err := vos.IsValidUUID(id)
+	if err != nil {
+		return 0, err
+	}
+
 	balance, err := accUseCase.accountRepo.GetBalance(ctx, id)
 
 	if err != nil {

@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"strings"
@@ -26,7 +25,7 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *A
 
 	err := accInput.ValidateAccountInput()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %s", entities.ErrBadAccRequest, err)
+		return nil, err
 	}
 	hashSecret, err := vos.GetHashSecret(accInput.Secret)
 	if err != nil {

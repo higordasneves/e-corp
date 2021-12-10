@@ -25,10 +25,10 @@ func (cpf CPF) String() string {
 
 //ValidateInput validates a CPF
 func (cpf CPF) ValidateInput() error {
-	if err := cpf.validateInputLen(); err != nil {
+	if err := cpf.validateInputFormat(); err != nil {
 		return err
 	}
-	return cpf.validateInputFormat()
+	return cpf.validateInputLen()
 }
 
 //validateInputLen validates the CPF length

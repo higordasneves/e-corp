@@ -10,7 +10,7 @@ type (
 )
 
 var (
-	ErrInvalidID = errors.New("error, invalid id")
+	ErrInvalidID = errors.New("invalid id")
 )
 
 func (id UUID) String() string {

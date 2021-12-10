@@ -62,11 +62,6 @@ func (accController accountController) GetBalance(w http.ResponseWriter, r *http
 
 	params := mux.Vars(r)
 	id := vos.UUID(params["account_id"])
-	err := vos.IsValidUUID(id)
-	if err != nil {
-		responses.SendError(w, http.StatusBadRequest, err, accController.log)
-		return
-	}
 
 	balance, err := accController.accUseCase.GetBalance(r.Context(), id)
 	if err != nil {

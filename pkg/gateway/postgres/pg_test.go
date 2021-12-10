@@ -17,11 +17,11 @@ var logTest *logrus.Logger
 
 func TestMain(m *testing.M) {
 
-	dbCfg := &config.DatabaseConfig{}
-	dbCfg.LoadEnv()
-	dbCfg.Host = "localhost"
-	dbCfg.Name = "ecorp_test"
-	dbCfg.SSLMode = "prefer"
+	cfg := &config.Config{}
+	cfg.LoadEnv()
+	cfg.DB.Host = "localhost"
+	cfg.DB.Name = "ecorp_test"
+	cfg.DB.SSLMode = "prefer"
 
 	logTest = logrus.New()
 
@@ -36,9 +36,9 @@ func TestMain(m *testing.M) {
 		Repository: "postgres",
 		Tag:        "latest",
 		Env: []string{
-			"POSTGRES_PASSWORD=" + dbCfg.Password,
-			"POSTGRES_USER=" + dbCfg.User,
-			"POSTGRES_DB=" + dbCfg.Name,
+			"POSTGRES_PASSWORD=" + cfg.DB.Password,
+			"POSTGRES_USER=" + cfg.DB.User,
+			"POSTGRES_DB=" + cfg.DB.Name,
 			"listen_addresses = '*'",
 		},
 	})
@@ -49,8 +49,8 @@ func TestMain(m *testing.M) {
 
 	_ = resource.Expire(90) // Tell docker to hard kill the container in 90 seconds
 
-	dbCfg.Port = resource.GetPort("5432/tcp")
-	dbDNS := dbCfg.DNS()
+	cfg.DB.Port = resource.GetPort("5432/tcp")
+	dbDNS := cfg.DB.DNS()
 	logTest.Info("Connecting to database on url: ", dbDNS)
 
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet

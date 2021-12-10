@@ -14,6 +14,9 @@ import (
 
 func main() {
 	log := logrus.New()
+	log.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+	})
 
 	cfg := config.Config{}
 	cfg.LoadEnv()

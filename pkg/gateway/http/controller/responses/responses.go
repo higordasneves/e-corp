@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/repository"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -28,12 +30,35 @@ func SendResponse(w http.ResponseWriter, statusCode int, data interface{}, log *
 
 func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 	var statusCode int
+	var dbError *repository.DBError
 
 	switch {
 	case errors.Is(err, entities.ErrAccNotFound):
 		statusCode = http.StatusNotFound
-	case errors.Is(err, entities.ErrBadAccRequest):
+	case errors.Is(err, entities.ErrEmptyInput):
 		statusCode = http.StatusBadRequest
+	case errors.Is(err, entities.ErrAccAlreadyExists):
+		statusCode = http.StatusBadRequest
+	case errors.Is(err, entities.ErrOriginAccID):
+		statusCode = http.StatusBadRequest
+	case errors.Is(err, entities.ErrDestAccID):
+		statusCode = http.StatusBadRequest
+	case errors.Is(err, entities.ErrTransferAmount):
+		statusCode = http.StatusBadRequest
+	case errors.Is(err, vos.ErrCPFFormat):
+		statusCode = http.StatusBadRequest
+	case errors.Is(err, vos.ErrCPFLen):
+		statusCode = http.StatusBadRequest
+	case errors.Is(err, vos.ErrInvalidPass):
+		statusCode = http.StatusBadRequest
+	case errors.Is(err, vos.ErrSmallSecret):
+		statusCode = http.StatusBadRequest
+	case errors.Is(err, vos.ErrInvalidID):
+		statusCode = http.StatusBadRequest
+	case errors.As(err, &dbError):
+		statusCode = http.StatusInternalServerError
+		log.WithField("query", dbError.Query).WithError(dbError.Err).Error("unexpected sql error has occurred")
+		err = ErrUnexpected
 	default:
 		statusCode = http.StatusInternalServerError
 		log.WithError(err).Println(ErrUnexpected)

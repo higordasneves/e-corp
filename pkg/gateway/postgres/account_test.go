@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
@@ -52,15 +53,28 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
 			},
-			err: repository.ErrCreateAcc,
+			err: repository.NewDBError(repository.QueryRefCreateAcc, errors.New("any sql error")),
 		},
 	}
 	defer ClearDB()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			result := accRepo.CreateAccount(ctxDB, test.acc)
-			if result != test.err {
-				t.Errorf("got: %v, want: %v", result, test.err)
+			var GotDBError *repository.DBError
+			var WantDBError *repository.DBError
+
+			resultErr := accRepo.CreateAccount(ctxDB, test.acc)
+
+			switch {
+			case errors.As(resultErr, &GotDBError) && !errors.As(test.err, &WantDBError):
+				t.Errorf("didn't want sql error, but got the error: %v", resultErr)
+			case !errors.As(resultErr, &GotDBError) && errors.As(test.err, &WantDBError):
+				t.Error("wanted sql error but didn't get one")
+			case errors.As(resultErr, &GotDBError) && errors.As(test.err, &WantDBError):
+				if GotDBError.Query != WantDBError.Query {
+					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
+				}
+			case resultErr != test.err:
+				t.Errorf("got error: %v, want error: %v", resultErr, test.err)
 			}
 		})
 	}
@@ -107,7 +121,7 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 
 	result, err := accRepo.FetchAccounts(ctxDB)
 	if err != nil {
-		t.Errorf("got: %v, want: %v", err, nil)
+		t.Errorf("didn't want sql error, but got the error: %v", err)
 	}
 
 	if !reflect.DeepEqual(want, result) {
@@ -179,11 +193,15 @@ func TestAccRepo_GetBalance(t *testing.T) {
 			},
 			insert:      false,
 			expectedErr: true,
-			err:         repository.ErrGetBalance,
+			err:         repository.NewDBError(repository.QueryRefGetBalance, errors.New("any sql error")),
 		},
 	}
 
 	defer ClearDB()
+
+	var GotDBError *repository.DBError
+	var WantDBError *repository.DBError
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			if test.insert {
@@ -191,11 +209,14 @@ func TestAccRepo_GetBalance(t *testing.T) {
 			}
 
 			result, err := accRepo.GetBalance(context.Background(), test.acc.ID)
-			if test.expectedErr && err != test.err {
-				t.Errorf("got: %v, want: %v", err, test.err)
-			}
-
-			if !test.expectedErr && result != test.acc.Balance {
+			switch {
+			case errors.As(err, &GotDBError) && errors.As(test.err, &WantDBError):
+				if GotDBError.Query != WantDBError.Query {
+					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
+				}
+			case err != test.err:
+				t.Errorf("got error: %v, want: %v", err, test.err)
+			case !test.expectedErr && result != test.acc.Balance:
 				t.Errorf("got: %v, want: %v", result, test.acc.Balance)
 			}
 		})

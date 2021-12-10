@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/repository"
 	repomock "github.com/higordasneves/e-corp/pkg/repository/mock"
 	"github.com/sirupsen/logrus"
 	"reflect"
@@ -101,7 +101,7 @@ func TestAccountUseCase_FetchAccounts(t *testing.T) {
 	})
 
 	t.Run("expect database error", func(t *testing.T) {
-		accRepo := repomock.NewAccountRepo(accounts, repository.ErrFetchAcc)
+		accRepo := repomock.NewAccountRepo(accounts, errors.New("any db error"))
 		accUseCase := NewAccountUseCase(accRepo, log)
 		_, err := accUseCase.FetchAccounts(context.Background())
 		if err == nil {

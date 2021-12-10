@@ -7,8 +7,6 @@ import (
 )
 
 var (
-	//ErrBadAccRequest generic error for bad requests
-	ErrBadAccRequest = errors.New("bad request")
 	//ErrAccNotFound occurs when trying to obtain information from a non-existent account
 	ErrAccNotFound = errors.New("account not found")
 	//ErrAccAlreadyExists occurs when trying to create an account that already exists

@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/repository"
 	repomock "github.com/higordasneves/e-corp/pkg/repository/mock"
 	"github.com/sirupsen/logrus"
 
@@ -28,40 +28,35 @@ func TestAccountUseCase_GetBalance(t *testing.T) {
 		id          vos.UUID
 		want        int
 		expectedErr error
-		dbErr       error
 	}{
 		{
 			name:        "with success 1",
 			id:          accInfo[162000],
 			want:        162000,
 			expectedErr: nil,
-			dbErr:       nil,
 		},
 		{
 			name:        "with success 2",
 			id:          accInfo[561300],
 			want:        561300,
 			expectedErr: nil,
-			dbErr:       nil,
 		},
 		{
 			name:        "err account not found",
 			id:          vos.NewUUID(),
 			want:        0,
 			expectedErr: entities.ErrAccNotFound,
-			dbErr:       nil,
 		},
 		{
 			name:        "database generic error",
 			id:          accInfo[561300],
 			want:        561300,
-			expectedErr: repository.ErrGetBalance,
-			dbErr:       repository.ErrGetBalance,
+			expectedErr: errors.New("any db error"),
 		},
 	}
 
 	for _, test := range tests {
-		accRepo := repomock.NewAccountRepo(accounts, test.dbErr)
+		accRepo := repomock.NewAccountRepo(accounts, test.expectedErr)
 		accUseCase := NewAccountUseCase(accRepo, log)
 		balance, err := accUseCase.GetBalance(context.Background(), test.id)
 
