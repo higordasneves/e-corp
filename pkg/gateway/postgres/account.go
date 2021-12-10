@@ -10,16 +10,14 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/sirupsen/logrus"
 )
 
 type account struct {
 	dbPool *pgxpool.Pool
-	log    *logrus.Logger
 }
 
-func NewAccountRepo(dbPool *pgxpool.Pool, log *logrus.Logger) repository.AccountRepo {
-	return &account{dbPool, log}
+func NewAccountRepo(dbPool *pgxpool.Pool) repository.AccountRepo {
+	return &account{dbPool}
 }
 
 //CreateAccount inserts account in database

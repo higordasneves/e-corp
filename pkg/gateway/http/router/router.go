@@ -14,15 +14,15 @@ import (
 
 //GetHTTPHandler returns HTTP handler with all routes
 func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.AuthConfig) *mux.Router {
-	accRepo := postgres.NewAccountRepo(dbPool, log)
-	accUseCase := usecase.NewAccountUseCase(accRepo, log)
+	accRepo := postgres.NewAccountRepo(dbPool)
+	accUseCase := usecase.NewAccountUseCase(accRepo)
 	accController := controller.NewAccountController(accUseCase, log)
 
-	tRepo := postgres.NewTransferRepository(dbPool, log)
-	tUseCase := usecase.NewTransferUseCase(accRepo, tRepo, log)
+	tRepo := postgres.NewTransferRepository(dbPool)
+	tUseCase := usecase.NewTransferUseCase(accRepo, tRepo)
 	tController := controller.NewTransferController(tUseCase, log)
 
-	authUseCase := usecase.NewAuthUseCase(accRepo, log, cfgAuth)
+	authUseCase := usecase.NewAuthUseCase(accRepo, cfgAuth)
 	authController := controller.NewAuthController(authUseCase, log)
 
 	router := mux.NewRouter()
