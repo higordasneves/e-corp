@@ -6,13 +6,10 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	repomock "github.com/higordasneves/e-corp/pkg/repository/mock"
-	"github.com/sirupsen/logrus"
-
 	"testing"
 )
 
 func TestAccountUseCase_GetBalance(t *testing.T) {
-	log := logrus.New()
 
 	accInfo := make(map[int]vos.UUID, 3)
 	accInfo[162000] = vos.NewUUID()
@@ -57,7 +54,7 @@ func TestAccountUseCase_GetBalance(t *testing.T) {
 
 	for _, test := range tests {
 		accRepo := repomock.NewAccountRepo(accounts, test.expectedErr)
-		accUseCase := NewAccountUseCase(accRepo, log)
+		accUseCase := NewAccountUseCase(accRepo)
 		balance, err := accUseCase.GetBalance(context.Background(), test.id)
 
 		t.Run(test.name, func(t *testing.T) {

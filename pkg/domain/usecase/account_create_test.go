@@ -7,7 +7,6 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	repomock "github.com/higordasneves/e-corp/pkg/repository/mock"
-	"github.com/sirupsen/logrus"
 	"reflect"
 	"testing"
 	"time"
@@ -111,7 +110,6 @@ func TestAccountUseCase_ValidateAccountInput(t *testing.T) {
 }
 
 func TestAccountUseCase_CreateAccount(t *testing.T) {
-	log := logrus.New()
 	tests := []struct {
 		name        string
 		accInput    *AccountInput
@@ -157,7 +155,7 @@ func TestAccountUseCase_CreateAccount(t *testing.T) {
 
 	for _, test := range tests {
 		accRepo := repomock.NewAccountRepo([]entities.Account{}, test.expectedErr)
-		accUseCase := NewAccountUseCase(accRepo, log)
+		accUseCase := NewAccountUseCase(accRepo)
 		acc, err := accUseCase.CreateAccount(context.Background(), test.accInput)
 
 		t.Run(test.name, func(t *testing.T) {

@@ -6,15 +6,12 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	repomock "github.com/higordasneves/e-corp/pkg/repository/mock"
-	"github.com/sirupsen/logrus"
 	"reflect"
 	"testing"
 	"time"
 )
 
 func TestAccountUseCase_FetchAccounts(t *testing.T) {
-
-	log := logrus.New()
 	accountsDate := time.Date(2015, time.June, 24, 23, 59, 0, 0, time.UTC)
 	IDs := make([]vos.UUID, 0, 4)
 
@@ -90,7 +87,7 @@ func TestAccountUseCase_FetchAccounts(t *testing.T) {
 
 	t.Run("with success", func(t *testing.T) {
 		accRepo := repomock.NewAccountRepo(accounts, nil)
-		accUseCase := NewAccountUseCase(accRepo, log)
+		accUseCase := NewAccountUseCase(accRepo)
 		result, err := accUseCase.FetchAccounts(context.Background())
 		if err != nil {
 			t.Errorf("didn't want an error, but got the error: %v", err)
@@ -102,7 +99,7 @@ func TestAccountUseCase_FetchAccounts(t *testing.T) {
 
 	t.Run("expect database error", func(t *testing.T) {
 		accRepo := repomock.NewAccountRepo(accounts, errors.New("any db error"))
-		accUseCase := NewAccountUseCase(accRepo, log)
+		accUseCase := NewAccountUseCase(accRepo)
 		_, err := accUseCase.FetchAccounts(context.Background())
 		if err == nil {
 			t.Error("wanted an error but didn't get one")

@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccRepo_CreateAccount(t *testing.T) {
-	accRepo := NewAccountRepo(dbTest, logTest)
+	accRepo := NewAccountRepo(dbTest)
 	ctxDB := context.Background()
 	tests := []struct {
 		name string
@@ -81,7 +81,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 }
 
 func TestAccRepo_FetchAccounts(t *testing.T) {
-	accRepo := NewAccountRepo(dbTest, logTest)
+	accRepo := NewAccountRepo(dbTest)
 	ctxDB := context.Background()
 
 	accounts := []entities.Account{
@@ -130,7 +130,7 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 }
 
 func TestAccRepo_GetBalance(t *testing.T) {
-	accRepo := NewAccountRepo(dbTest, logTest)
+	accRepo := NewAccountRepo(dbTest)
 	ctxDB := context.Background()
 	tests := []struct {
 		name        string
@@ -224,7 +224,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 }
 
 func TestAccRepo_GetAccount(t *testing.T) {
-	accRepo := NewAccountRepo(dbTest, logTest)
+	accRepo := NewAccountRepo(dbTest)
 	ctxDB := context.Background()
 	tests := []struct {
 		name        string
