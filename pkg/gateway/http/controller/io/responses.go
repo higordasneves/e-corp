@@ -1,4 +1,4 @@
-package responses
+package io
 
 import (
 	"encoding/json"
@@ -33,6 +33,12 @@ func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 	var dbError *repository.DBError
 
 	switch {
+	case errors.Is(err, ErrReadRequest):
+		statusCode = http.StatusBadRequest
+	case errors.Is(err, ErrTokenFormat) || errors.Is(err, ErrTokenInvalid):
+		statusCode = http.StatusUnauthorized
+	case errors.Is(err, ErrReadRequest):
+		statusCode = http.StatusBadRequest
 	case errors.Is(err, entities.ErrAccNotFound):
 		statusCode = http.StatusNotFound
 	case errors.Is(err, entities.ErrEmptyInput):

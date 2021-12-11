@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/responses"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/io"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
@@ -14,14 +14,14 @@ func Authenticate(authUC usecase.AuthUseCase, next http.HandlerFunc, log *logrus
 	return func(w http.ResponseWriter, r *http.Request) {
 		header := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 		if len(header) != 2 {
-			responses.SendError(w, http.StatusUnauthorized, usecase.ErrTokenFormat, log)
+			io.HandleError(w, io.ErrTokenFormat, log)
 			return
 		}
 
 		tokenString := header[1]
 		claims, err := authUC.ValidateToken(tokenString)
 		if err != nil {
-			responses.SendError(w, http.StatusUnauthorized, fmt.Errorf("%w: %s", usecase.ErrTokenInvalid, err), log)
+			io.HandleError(w, fmt.Errorf("%w: %s", io.ErrTokenInvalid, err), log)
 			return
 		}
 

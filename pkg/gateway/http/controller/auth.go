@@ -1,13 +1,9 @@
 package controller
 
 import (
-	"encoding/json"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/responses"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/io"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -25,27 +21,17 @@ func NewAuthController(authUseCase usecase.AuthUseCase, log *logrus.Logger) Auth
 }
 
 func (authCtrl authController) Login(w http.ResponseWriter, r *http.Request) {
-	bodyRequest, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		responses.SendError(w, http.StatusBadRequest, err, authCtrl.log)
-		return
-	}
-
 	var loginInput usecase.LoginInput
-	if err = json.Unmarshal(bodyRequest, &loginInput); err != nil {
-		responses.SendError(w, http.StatusBadRequest, err, authCtrl.log)
+	if err := io.ReadRequestBody(r, &loginInput); err != nil {
+		io.HandleError(w, err, authCtrl.log)
 		return
 	}
 
 	token, err := authCtrl.authUseCase.Login(r.Context(), &loginInput)
 
 	if err != nil {
-		if err == entities.ErrAccNotFound || err == vos.ErrInvalidPass {
-			responses.SendError(w, http.StatusBadRequest, err, authCtrl.log)
-			return
-		}
-		responses.SendError(w, http.StatusInternalServerError, err, authCtrl.log)
+		io.HandleError(w, err, authCtrl.log)
 		return
 	}
-	responses.SendResponse(w, http.StatusOK, token, authCtrl.log)
+	io.SendResponse(w, http.StatusOK, token, authCtrl.log)
 }
