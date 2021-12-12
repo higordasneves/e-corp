@@ -11,4 +11,5 @@ type AccountRepo interface {
 	FetchAccounts(ctx context.Context) ([]entities.Account, error)
 	GetBalance(ctx context.Context, id vos.UUID) (int, error)
 	GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error)
+	UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error
 }

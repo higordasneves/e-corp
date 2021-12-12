@@ -51,6 +51,10 @@ func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 		statusCode = http.StatusBadRequest
 	case errors.Is(err, entities.ErrTransferAmount):
 		statusCode = http.StatusBadRequest
+	case errors.Is(err, entities.ErrSelfTransfer):
+		statusCode = http.StatusBadRequest
+	case errors.Is(err, entities.ErrTransferInsufficientFunds):
+		statusCode = http.StatusBadRequest
 	case errors.Is(err, vos.ErrCPFFormat):
 		statusCode = http.StatusBadRequest
 	case errors.Is(err, vos.ErrCPFLen):
@@ -63,8 +67,8 @@ func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 		statusCode = http.StatusBadRequest
 	case errors.As(err, &dbError):
 		statusCode = http.StatusInternalServerError
-		log.WithField("query", dbError.Query).WithError(dbError.Err).Error("unexpected sql error has occurred")
-		err = ErrUnexpected
+		log.WithField("query", dbError.Query).WithError(dbError.DBErr).Error("unexpected sql error has occurred")
+		err = dbError.GenericErr
 	default:
 		statusCode = http.StatusInternalServerError
 		log.WithError(err).Println(ErrUnexpected)
