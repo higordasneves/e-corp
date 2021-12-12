@@ -11,6 +11,7 @@ const (
 	QueryRefGetAcc        = "GetAccount"
 	QueryRefGetBalance    = "GetBalance"
 	QueryRefUpdateBalance = "UpdateBalance"
+	QueryRefTransfer      = "Transfer"
 )
 
 var (

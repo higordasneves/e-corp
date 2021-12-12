@@ -19,7 +19,7 @@ type Config struct {
 }
 
 type AuthConfig struct {
-	Duration  time.Duration `env:"AUTH_DURATION" env-default:"20m"`
+	Duration  time.Duration `env:"AUTH_DURATION" env-default:"60m"`
 	SecretKey string        `env:"AUTH_KEY" env-default:"replace_with_your_key"`
 }
 

@@ -17,6 +17,5 @@ func ReadRequestBody(r *http.Request, obj interface{}) error {
 	if err := json.NewDecoder(r.Body).Decode(&obj); err != nil {
 		return fmt.Errorf("%w: %s", ErrReadRequest, err)
 	}
-
 	return nil
 }
