@@ -16,9 +16,9 @@ var (
 
 //Transfer represents a banking transfer
 type Transfer struct {
-	ID                   vos.UUID
-	AccountOriginID      vos.UUID
-	AccountDestinationID vos.UUID
-	Amount               int
-	CreatedAt            time.Time
+	ID                   vos.UUID  `json:"id"`
+	AccountOriginID      vos.UUID  `json:"account_origin_id"`
+	AccountDestinationID vos.UUID  `json:"account_destination_id"`
+	Amount               int       `json:"amount"`
+	CreatedAt            time.Time `json:"created_at"`
 }

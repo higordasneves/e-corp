@@ -10,7 +10,7 @@ import (
 
 type TransferController interface {
 	Transfer(w http.ResponseWriter, r *http.Request)
-	GetTransfers(w http.ResponseWriter, r *http.Request)
+	FetchTransfers(w http.ResponseWriter, r *http.Request)
 }
 
 type transferController struct {
@@ -39,6 +39,20 @@ func (tController transferController) Transfer(w http.ResponseWriter, r *http.Re
 	io.SendResponse(w, http.StatusCreated, transfer, tController.log)
 }
 
-func (tController transferController) GetTransfers(w http.ResponseWriter, r *http.Request) {
-	panic("implement me!")
+func (tController transferController) FetchTransfers(w http.ResponseWriter, r *http.Request) {
+	accountOriginID := fmt.Sprint(r.Context().Value("subject"))
+	transferList, err := tController.tUseCase.FetchTransfers(r.Context(), accountOriginID)
+
+	if err != nil {
+		io.HandleError(w, err, tController.log)
+		return
+	}
+
+	if len(transferList) > 0 {
+		io.SendResponse(w, http.StatusOK, transferList, tController.log)
+
+	} else {
+		noTransfers := &map[string]string{"msg": "no transfers"}
+		io.SendResponse(w, http.StatusOK, noTransfers, tController.log)
+	}
 }

@@ -8,7 +8,7 @@ import (
 
 type TransferUseCase interface {
 	Transfer(ctx context.Context, transferInput *TransferInput) (*entities.Transfer, error)
-	GetTransfers(ctx context.Context, cpf string)
+	FetchTransfers(ctx context.Context, id string) ([]entities.Transfer, error)
 }
 
 type transferUseCase struct {

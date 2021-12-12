@@ -34,7 +34,7 @@ func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.Au
 
 	//transfer
 	router.HandleFunc("/transfers", middleware.Authenticate(authUseCase, tController.Transfer, log)).Methods(http.MethodPost)
-	router.HandleFunc("/transfers", middleware.Authenticate(authUseCase, tController.GetTransfers, log)).Methods(http.MethodGet)
+	router.HandleFunc("/transfers", middleware.Authenticate(authUseCase, tController.FetchTransfers, log)).Methods(http.MethodGet)
 
 	//login
 	router.HandleFunc("/login", authController.Login).Methods(http.MethodPost)
