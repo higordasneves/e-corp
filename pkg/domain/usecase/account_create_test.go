@@ -173,7 +173,7 @@ func TestAccountUseCase_CreateAccount(t *testing.T) {
 
 			if err == nil {
 				acc.CreatedAt = acc.CreatedAt.Truncate(time.Hour)
-				if vos.IsValidUUID(acc.ID) != nil {
+				if vos.IsValidUUID(acc.ID.String()) != nil {
 					t.Error("account was created with invalid id")
 				}
 				test.want.ID = acc.ID

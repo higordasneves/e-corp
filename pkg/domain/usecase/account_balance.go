@@ -11,7 +11,7 @@ func (accUseCase accountUseCase) GetBalance(ctx context.Context, id vos.UUID) (i
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
-	err := vos.IsValidUUID(id)
+	err := vos.IsValidUUID(id.String())
 	if err != nil {
 		return 0, err
 	}

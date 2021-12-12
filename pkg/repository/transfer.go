@@ -2,10 +2,11 @@ package repository
 
 import (
 	"context"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
 )
 
 type TransferRepo interface {
-	Transfer(ctx context.Context, accOriID vos.UUID, accDestID vos.UUID, amount vos.Currency)
+	CreateTransfer(ctx context.Context, transfer *entities.Transfer) error
 	GetTransfers(ctx context.Context, cpf string)
+	Transfer(ctx context.Context, ctxChan chan context.Context, errChan chan error) error
 }
