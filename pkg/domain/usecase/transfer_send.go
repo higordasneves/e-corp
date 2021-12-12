@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"strings"
@@ -34,6 +35,11 @@ func (tUseCase transferUseCase) Transfer(ctx context.Context, transferInput *Tra
 		CreatedAt:            time.Now().Truncate(time.Second),
 	}
 
+	err = tUseCase.validateAccounts(ctx, transfer)
+	if err != nil {
+		return nil, err
+	}
+
 	ctxChan := make(chan context.Context)
 	errChan := make(chan error)
 
@@ -42,7 +48,25 @@ func (tUseCase transferUseCase) Transfer(ctx context.Context, transferInput *Tra
 		if !ok {
 			return
 		}
-		errChan <- tUseCase.transferRepo.CreateTransfer(ctxWithValue, transfer)
+
+		err = tUseCase.transferRepo.CreateTransfer(ctxWithValue, transfer)
+		if err != nil {
+			errChan <- err
+			return
+		}
+
+		err = tUseCase.accountRepo.UpdateBalance(ctxWithValue, transfer.AccountOriginID, -transfer.Amount)
+		if err != nil {
+			errChan <- err
+			return
+		}
+
+		err = tUseCase.accountRepo.UpdateBalance(ctxWithValue, transfer.AccountDestinationID, transfer.Amount)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		errChan <- nil
 	}()
 
 	err = tUseCase.transferRepo.Transfer(ctx, ctxChan, errChan)
@@ -51,6 +75,30 @@ func (tUseCase transferUseCase) Transfer(ctx context.Context, transferInput *Tra
 	}
 
 	return transfer, nil
+}
+
+//validateAccounts validates existence of the accounts involved and balance sufficiency
+func (tUseCase transferUseCase) validateAccounts(ctx context.Context, transfer *entities.Transfer) error {
+	_, err := tUseCase.accountRepo.GetBalance(ctx, transfer.AccountDestinationID)
+	if err != nil {
+		if err == entities.ErrAccNotFound {
+			return fmt.Errorf("destination %w", err)
+		}
+		return err
+	}
+
+	originBalance, err := tUseCase.accountRepo.GetBalance(ctx, transfer.AccountOriginID)
+	if err != nil {
+		if err == entities.ErrAccNotFound {
+			return fmt.Errorf("origin %w", err)
+		}
+		return err
+	}
+
+	if transfer.Amount > originBalance {
+		return entities.ErrTransferInsufficientFunds
+	}
+	return nil
 }
 
 //ValidateInput validates transfer input

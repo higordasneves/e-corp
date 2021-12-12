@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	"github.com/jackc/pgtype/pgxtype"
@@ -30,7 +29,7 @@ func (tRepo transfer) CreateTransfer(ctx context.Context, transfer *entities.Tra
 		 VALUES ($1, $2, $3, $4, $5)`, transfer.ID.String(), transfer.AccountOriginID.String(), transfer.AccountDestinationID.String(), int(transfer.Amount), transfer.CreatedAt)
 
 	if err != nil {
-		return fmt.Errorf("unexpected sql error occurred while creating transfer: %s", err)
+		return repository.NewDBError(repository.QueryRefCreateTransfer, err, repository.ErrUnexpected)
 	}
 	return nil
 }
