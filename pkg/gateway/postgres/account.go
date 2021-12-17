@@ -94,13 +94,17 @@ func (accRepo account) UpdateBalance(ctx context.Context, id vos.UUID, transacti
 	if tx := ctx.Value("dbConnection"); tx != nil {
 		db = tx.(*pgxpool.Tx)
 	}
-	_, err := db.Exec(ctx,
+	rows, err := db.Exec(ctx,
 		`update accounts
 			set balance = balance + $1
 			where id = $2`, transactionAmount, id.String())
 
 	if err != nil {
 		return repository.NewDBError(repository.QueryRefUpdateBalance, err, repository.ErrUnexpected)
+	}
+
+	if rows.RowsAffected() == 0 {
+		return entities.ErrZeroRowsAffectedUpdateBalance
 	}
 
 	return nil

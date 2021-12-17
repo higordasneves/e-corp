@@ -44,5 +44,4 @@ func main() {
 
 	r := router.GetHTTPHandler(dbPool, log, &cfg.Auth)
 	log.Fatal(http.ListenAndServe(":5000", r))
-
 }

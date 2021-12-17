@@ -13,6 +13,8 @@ var (
 	ErrAccAlreadyExists = errors.New("account already exists")
 	//ErrEmptyInput occurs when fields required to create an account aren't filled
 	ErrEmptyInput = errors.New("the name, document and password fields are required")
+	//ErrZeroRowsAffectedUpdateBalance occurs when zero rows affected in update balance query
+	ErrZeroRowsAffectedUpdateBalance = errors.New("zero rows affected in update balance query")
 )
 
 //Account represents a banking account

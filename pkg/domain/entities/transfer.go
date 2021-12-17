@@ -12,6 +12,8 @@ var (
 	ErrSelfTransfer              = errors.New("the destination account must be different from the origin account")
 	ErrTransferAmount            = errors.New("invalid transfer amount, value must be greater than 0")
 	ErrTransferInsufficientFunds = errors.New("insufficient funds")
+	//ErrZeroRowsAffectedCreateTransfer occurs when zero rows affected in create transfer query
+	ErrZeroRowsAffectedCreateTransfer = errors.New("zero rows affected in create transfer query")
 )
 
 //Transfer represents a banking transfer

@@ -33,6 +33,7 @@ func (accController accountController) CreateAccount(w http.ResponseWriter, r *h
 	}
 
 	account, err := accController.accUseCase.CreateAccount(r.Context(), &accountInput)
+
 	if err != nil {
 		io.HandleError(w, err, accController.log)
 		return
