@@ -53,7 +53,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
 			},
-			err: repository.NewDBError(repository.QueryRefCreateAcc, errors.New("any sql error")),
+			err: repository.NewDBError(repository.QueryRefCreateAcc, errors.New("any sql error"), errors.New("unexpected error")),
 		},
 	}
 	defer ClearDB()
@@ -170,12 +170,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 		{
 			name: "account not found",
 			acc: &entities.Account{
-				ID:        vos.NewUUID(),
-				Name:      "Elliot",
-				CPF:       "33344455569",
-				Secret:    "password",
-				Balance:   0,
-				CreatedAt: time.Now().Truncate(time.Second),
+				ID: vos.NewUUID(),
 			},
 			insert:      false,
 			expectedErr: true,
@@ -184,16 +179,11 @@ func TestAccRepo_GetBalance(t *testing.T) {
 		{
 			name: "invalid id",
 			acc: &entities.Account{
-				ID:        "invalid",
-				Name:      "Elliot",
-				CPF:       "33344455570",
-				Secret:    "password",
-				Balance:   0,
-				CreatedAt: time.Now().Truncate(time.Second),
+				ID: "invalid",
 			},
 			insert:      false,
 			expectedErr: true,
-			err:         repository.NewDBError(repository.QueryRefGetBalance, errors.New("any sql error")),
+			err:         repository.NewDBError(repository.QueryRefGetBalance, errors.New("any sql error"), errors.New("unexpected error")),
 		},
 	}
 
@@ -218,6 +208,101 @@ func TestAccRepo_GetBalance(t *testing.T) {
 				t.Errorf("got error: %v, want: %v", err, test.err)
 			case !test.expectedErr && result != test.acc.Balance:
 				t.Errorf("got: %v, want: %v", result, test.acc.Balance)
+			}
+		})
+	}
+}
+
+func TestAccRepo_UpdateBalance(t *testing.T) {
+	accRepo := NewAccountRepo(dbTest)
+	ctxDB := context.Background()
+	tests := []struct {
+		name         string
+		acc          *entities.Account
+		updateAmount int
+		insert       bool
+		expectedErr  bool
+		err          error
+	}{
+		{
+			name: "with success outbound",
+			acc: &entities.Account{
+				ID:        vos.NewUUID(),
+				Name:      "Elliot",
+				CPF:       "33344455567",
+				Secret:    "password",
+				Balance:   7000,
+				CreatedAt: time.Now().Truncate(time.Second),
+			},
+			updateAmount: -5000,
+			insert:       true,
+			expectedErr:  false,
+			err:          nil,
+		},
+		{
+			name: "with success inbound",
+			acc: &entities.Account{
+				ID:        vos.NewUUID(),
+				Name:      "Elliot",
+				CPF:       "33344455568",
+				Secret:    "password",
+				Balance:   0,
+				CreatedAt: time.Now().Truncate(time.Second),
+			},
+			updateAmount: 5000,
+			insert:       true,
+			expectedErr:  false,
+			err:          nil,
+		},
+		{
+			name: "account not found",
+			acc: &entities.Account{
+				ID: vos.NewUUID(),
+			},
+			updateAmount: 1000,
+			insert:       false,
+			expectedErr:  true,
+			err:          entities.ErrZeroRowsAffectedUpdateBalance,
+		},
+		{
+			name: "invalid id",
+			acc: &entities.Account{
+				ID: "invalid",
+			},
+			updateAmount: 1000,
+			insert:       false,
+			expectedErr:  true,
+			err:          repository.NewDBError(repository.QueryRefUpdateBalance, errors.New("any sql error"), errors.New("unexpected error")),
+		},
+	}
+
+	defer ClearDB()
+
+	var GotDBError *repository.DBError
+	var WantDBError *repository.DBError
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.insert {
+				_ = accRepo.CreateAccount(ctxDB, test.acc)
+			}
+
+			err := accRepo.UpdateBalance(context.Background(), test.acc.ID, test.updateAmount)
+
+			switch {
+			case errors.As(err, &GotDBError) && errors.As(test.err, &WantDBError):
+				if GotDBError.Query != WantDBError.Query {
+					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
+				}
+			case err != test.err:
+				t.Errorf("got error: %v, want: %v", err, test.err)
+			case !test.expectedErr:
+				gotBalance, errGetBalance := accRepo.GetBalance(ctxDB, test.acc.ID)
+				if errGetBalance != nil {
+					t.Error("unexpected error in get balance query")
+				} else if gotBalance != test.acc.Balance+test.updateAmount {
+					t.Errorf("got: %v, want: %v", gotBalance, test.acc.Balance+test.updateAmount)
+				}
 			}
 		})
 	}
@@ -250,12 +335,7 @@ func TestAccRepo_GetAccount(t *testing.T) {
 		{
 			name: "account not found",
 			acc: &entities.Account{
-				ID:        vos.NewUUID(),
-				Name:      "Elliot",
-				CPF:       "33344455568",
-				Secret:    "password",
-				Balance:   0,
-				CreatedAt: time.Now().Truncate(time.Second),
+				ID: vos.NewUUID(),
 			},
 			insert:      false,
 			expectedErr: true,
