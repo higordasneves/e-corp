@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
@@ -110,6 +109,8 @@ func TestAccountUseCase_ValidateAccountInput(t *testing.T) {
 }
 
 func TestAccountUseCase_CreateAccount(t *testing.T) {
+	ctx := context.Background()
+
 	tests := []struct {
 		name        string
 		accInput    *AccountInput
@@ -149,14 +150,14 @@ func TestAccountUseCase_CreateAccount(t *testing.T) {
 				Secret: "password",
 			},
 			want:        nil,
-			expectedErr: repository.NewDBError(repository.QueryRefCreateAcc, errors.New("any db error")),
+			expectedErr: repository.ErrUnexpected,
 		},
 	}
 
 	for _, test := range tests {
 		accRepo := repomock.NewAccountRepo([]entities.Account{}, test.expectedErr)
 		accUseCase := NewAccountUseCase(accRepo)
-		acc, err := accUseCase.CreateAccount(context.Background(), test.accInput)
+		acc, err := accUseCase.CreateAccount(ctx, test.accInput)
 
 		t.Run(test.name, func(t *testing.T) {
 			t.Helper()

@@ -2,60 +2,62 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/repository"
 	repomock "github.com/higordasneves/e-corp/pkg/repository/mock"
 	"testing"
 )
 
 func TestAccountUseCase_GetBalance(t *testing.T) {
-
-	accInfo := make(map[int]vos.UUID, 3)
-	accInfo[162000] = vos.NewUUID()
-	accInfo[561300] = vos.NewUUID()
+	ctx := context.Background()
 
 	accounts := make([]entities.Account, 0, 3)
-	for i, v := range accInfo {
-		accounts = append(accounts, entities.Account{ID: v, Balance: i})
-	}
 
 	tests := []struct {
 		name        string
 		id          vos.UUID
+		insert      bool
 		want        int
 		expectedErr error
 	}{
 		{
 			name:        "with success 1",
-			id:          accInfo[162000],
+			id:          vos.NewUUID(),
+			insert:      true,
 			want:        162000,
 			expectedErr: nil,
 		},
 		{
 			name:        "with success 2",
-			id:          accInfo[561300],
+			id:          vos.NewUUID(),
+			insert:      true,
 			want:        561300,
 			expectedErr: nil,
 		},
 		{
 			name:        "err account not found",
 			id:          vos.NewUUID(),
+			insert:      false,
 			want:        0,
 			expectedErr: entities.ErrAccNotFound,
 		},
 		{
 			name:        "database generic error",
-			id:          accInfo[561300],
+			id:          vos.NewUUID(),
+			insert:      false,
 			want:        561300,
-			expectedErr: errors.New("any db error"),
+			expectedErr: repository.ErrUnexpected,
 		},
 	}
 
 	for _, test := range tests {
+		if test.insert {
+			accounts = append(accounts, entities.Account{ID: test.id, Balance: test.want})
+		}
 		accRepo := repomock.NewAccountRepo(accounts, test.expectedErr)
 		accUseCase := NewAccountUseCase(accRepo)
-		balance, err := accUseCase.GetBalance(context.Background(), test.id)
+		balance, err := accUseCase.GetBalance(ctx, test.id)
 
 		t.Run(test.name, func(t *testing.T) {
 			t.Helper()
@@ -70,7 +72,7 @@ func TestAccountUseCase_GetBalance(t *testing.T) {
 				}
 			}
 
-			if err == nil && balance != test.want {
+			if test.expectedErr == nil && balance != test.want {
 				t.Errorf("got %v, want %v", balance, test.want)
 			}
 		})

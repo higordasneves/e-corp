@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/repository"
 	"time"
 )
 
@@ -12,6 +13,7 @@ type AccountRepo interface {
 	FetchAccounts(ctx context.Context) ([]entities.Account, error)
 	GetBalance(ctx context.Context, id vos.UUID) (int, error)
 	GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error)
+	UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error
 }
 
 type account struct {
@@ -28,8 +30,8 @@ func (accRepo account) CreateAccount(context.Context, *entities.Account) error {
 }
 
 func (accRepo account) FetchAccounts(context.Context) ([]entities.Account, error) {
-	if accRepo.err != nil {
-		return nil, accRepo.err
+	if accRepo.err == repository.ErrUnexpected {
+		return nil, repository.ErrUnexpected
 	}
 
 	accountsList := make([]entities.Account, 0, len(accRepo.accounts))
@@ -49,8 +51,8 @@ func (accRepo account) FetchAccounts(context.Context) ([]entities.Account, error
 func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	if accRepo.err != nil {
-		return 0, accRepo.err
+	if accRepo.err == repository.ErrUnexpected {
+		return 0, repository.ErrUnexpected
 	}
 
 	for _, acc := range accRepo.accounts {
@@ -62,5 +64,32 @@ func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (int, error)
 }
 
 func (accRepo account) GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error) {
-	panic("implement me")
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if accRepo.err == repository.ErrUnexpected {
+		return nil, repository.ErrUnexpected
+	}
+
+	for _, acc := range accRepo.accounts {
+		if cpf == acc.CPF {
+			return &acc, nil
+		}
+	}
+	return nil, entities.ErrAccNotFound
+}
+
+func (accRepo account) UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if accRepo.err != nil {
+		return accRepo.err
+	}
+
+	for _, acc := range accRepo.accounts {
+		if id == acc.ID {
+			acc.Balance += transactionAmount
+			return nil
+		}
+	}
+	return entities.ErrZeroRowsAffectedUpdateBalance
 }
