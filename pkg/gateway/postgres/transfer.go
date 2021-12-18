@@ -25,16 +25,12 @@ func (tRepo transferRepo) CreateTransfer(ctx context.Context, transfer *entities
 		db = tx.(*pgxpool.Tx)
 	}
 
-	rows, err := db.Exec(ctx, `INSERT INTO transfers 
+	_, err := db.Exec(ctx, `INSERT INTO transfers 
 		(id, account_origin_id, account_destination_id, amount, created_at)
 		 VALUES ($1, $2, $3, $4, $5)`, transfer.ID.String(), transfer.AccountOriginID.String(), transfer.AccountDestinationID.String(), transfer.Amount, transfer.CreatedAt)
 
 	if err != nil {
 		return repository.NewDBError(repository.QueryRefCreateTransfer, err, repository.ErrUnexpected)
-	}
-
-	if rows.RowsAffected() == 0 {
-		return entities.ErrZeroRowsAffectedCreateTransfer
 	}
 
 	return nil

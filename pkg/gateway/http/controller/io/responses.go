@@ -65,7 +65,7 @@ func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 		statusCode = http.StatusBadRequest
 	case errors.Is(err, vos.ErrInvalidID):
 		statusCode = http.StatusBadRequest
-	case errors.Is(err, entities.ErrZeroRowsAffectedUpdateBalance) || errors.Is(err, entities.ErrZeroRowsAffectedCreateTransfer):
+	case errors.Is(err, entities.ErrZeroRowsAffectedUpdateBalance):
 		statusCode = http.StatusInternalServerError
 		err = ErrUnexpected
 	case errors.As(err, &dbError):
