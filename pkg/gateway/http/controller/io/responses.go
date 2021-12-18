@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	"github.com/sirupsen/logrus"
@@ -35,7 +36,7 @@ func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 	switch {
 	case errors.Is(err, ErrReadRequest):
 		statusCode = http.StatusBadRequest
-	case errors.Is(err, ErrTokenFormat) || errors.Is(err, ErrTokenInvalid):
+	case errors.Is(err, ErrTokenFormat) || errors.Is(err, usecase.ErrTokenInvalid):
 		statusCode = http.StatusUnauthorized
 	case errors.Is(err, ErrReadRequest):
 		statusCode = http.StatusBadRequest

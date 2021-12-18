@@ -8,9 +8,8 @@ import (
 )
 
 var (
-	ErrReadRequest  = errors.New("invalid request body")
-	ErrTokenFormat  = errors.New("invalid token format")
-	ErrTokenInvalid = errors.New("invalid token")
+	ErrReadRequest = errors.New("invalid request body")
+	ErrTokenFormat = errors.New("invalid token format")
 )
 
 func ReadRequestBody(r *http.Request, obj interface{}) error {

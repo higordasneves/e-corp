@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/io"
 	"github.com/sirupsen/logrus"
@@ -21,7 +20,7 @@ func Authenticate(authUC usecase.AuthUseCase, next http.HandlerFunc, log *logrus
 		tokenString := header[1]
 		claims, err := authUC.ValidateToken(tokenString)
 		if err != nil {
-			io.HandleError(w, fmt.Errorf("%w: %s", io.ErrTokenInvalid, err), log)
+			io.HandleError(w, err, log)
 			return
 		}
 
