@@ -12,7 +12,7 @@ import (
 func TestAccountUseCase_GetBalance(t *testing.T) {
 	ctx := context.Background()
 
-	accounts := make([]entities.Account, 0, 3)
+	accounts := make([]entities.Account, 0, 10)
 
 	tests := []struct {
 		name        string

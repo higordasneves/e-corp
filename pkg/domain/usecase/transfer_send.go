@@ -69,7 +69,7 @@ func (tUseCase transferUseCase) Transfer(ctx context.Context, transferInput *Tra
 		errChan <- nil
 	}()
 
-	err = tUseCase.transferRepo.Transfer(ctx, ctxChan, errChan)
+	err = tUseCase.transferRepo.PerformTransaction(ctx, ctxChan, errChan)
 	if err != nil {
 		return nil, err
 	}

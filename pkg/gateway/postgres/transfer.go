@@ -36,7 +36,7 @@ func (tRepo transferRepo) CreateTransfer(ctx context.Context, transfer *entities
 	return nil
 }
 
-func (tRepo transferRepo) Transfer(ctx context.Context, ctxChan chan context.Context, errChan chan error) error {
+func (tRepo transferRepo) PerformTransaction(ctx context.Context, ctxChan chan context.Context, errChan chan error) error {
 	return PerformTransaction(ctx, ctxChan, tRepo.dbPool, errChan)
 }
 

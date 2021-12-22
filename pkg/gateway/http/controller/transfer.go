@@ -3,7 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/io"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -23,8 +23,8 @@ func NewTransferController(tUseCase usecase.TransferUseCase, log *logrus.Logger)
 }
 func (tController transferController) Transfer(w http.ResponseWriter, r *http.Request) {
 	var transferInput usecase.TransferInput
-	if err := io.ReadRequestBody(r, &transferInput); err != nil {
-		io.HandleError(w, err, tController.log)
+	if err := interpreter.ReadRequestBody(r, &transferInput); err != nil {
+		interpreter.HandleError(w, err, tController.log)
 		return
 	}
 
@@ -33,10 +33,10 @@ func (tController transferController) Transfer(w http.ResponseWriter, r *http.Re
 
 	transfer, err := tController.tUseCase.Transfer(r.Context(), &transferInput)
 	if err != nil {
-		io.HandleError(w, err, tController.log)
+		interpreter.HandleError(w, err, tController.log)
 		return
 	}
-	io.SendResponse(w, http.StatusCreated, transfer, tController.log)
+	interpreter.SendResponse(w, http.StatusCreated, transfer, tController.log)
 }
 
 func (tController transferController) FetchTransfers(w http.ResponseWriter, r *http.Request) {
@@ -44,15 +44,15 @@ func (tController transferController) FetchTransfers(w http.ResponseWriter, r *h
 	transferList, err := tController.tUseCase.FetchTransfers(r.Context(), accountOriginID)
 
 	if err != nil {
-		io.HandleError(w, err, tController.log)
+		interpreter.HandleError(w, err, tController.log)
 		return
 	}
 
 	if len(transferList) > 0 {
-		io.SendResponse(w, http.StatusOK, transferList, tController.log)
+		interpreter.SendResponse(w, http.StatusOK, transferList, tController.log)
 
 	} else {
 		noTransfers := &map[string]string{"msg": "no transfers"}
-		io.SendResponse(w, http.StatusOK, noTransfers, tController.log)
+		interpreter.SendResponse(w, http.StatusOK, noTransfers, tController.log)
 	}
 }

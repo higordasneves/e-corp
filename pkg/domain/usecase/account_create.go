@@ -27,6 +27,7 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *A
 	if err != nil {
 		return nil, err
 	}
+
 	hashSecret, err := vos.GetHashSecret(accInput.Secret)
 	if err != nil {
 		return nil, err
@@ -46,6 +47,7 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *A
 	if err != nil {
 		return nil, err
 	}
+
 	return account.GetAccOutput(), nil
 }
 

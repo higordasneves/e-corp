@@ -21,6 +21,7 @@ func (authUC authUseCase) ValidateToken(tokenString string) (*jwt.StandardClaims
 	if err != nil {
 		return nil, fmt.Errorf("%w:%s", ErrTokenInvalid, err)
 	}
+
 	claims, ok := token.Claims.(*jwt.StandardClaims)
 	if !(ok && token.Valid) {
 		return nil, fmt.Errorf("%w:%s", ErrTokenInvalid, err)

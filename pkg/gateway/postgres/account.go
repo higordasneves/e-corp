@@ -94,6 +94,7 @@ func (accRepo account) UpdateBalance(ctx context.Context, id vos.UUID, transacti
 	if tx := ctx.Value("dbConnection"); tx != nil {
 		db = tx.(*pgxpool.Tx)
 	}
+
 	rows, err := db.Exec(ctx,
 		`update accounts
 			set balance = balance + $1

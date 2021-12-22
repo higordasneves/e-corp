@@ -9,7 +9,7 @@ import (
 )
 
 type AccountRepo interface {
-	CreateAccount(context.Context, *entities.Account) error
+	CreateAccount(ctx context.Context, acc *entities.Account) error
 	FetchAccounts(ctx context.Context) ([]entities.Account, error)
 	GetBalance(ctx context.Context, id vos.UUID) (int, error)
 	GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error)
@@ -18,19 +18,19 @@ type AccountRepo interface {
 
 type account struct {
 	accounts []entities.Account
-	err      error
+	dbError  error
 }
 
-func NewAccountRepo(accounts []entities.Account, err error) AccountRepo {
-	return &account{accounts, err}
+func NewAccountRepo(accounts []entities.Account, dbError error) AccountRepo {
+	return &account{accounts, dbError}
 }
 
 func (accRepo account) CreateAccount(context.Context, *entities.Account) error {
-	return accRepo.err
+	return accRepo.dbError
 }
 
 func (accRepo account) FetchAccounts(context.Context) ([]entities.Account, error) {
-	if accRepo.err == repository.ErrUnexpected {
+	if accRepo.dbError == repository.ErrUnexpected {
 		return nil, repository.ErrUnexpected
 	}
 
@@ -51,7 +51,7 @@ func (accRepo account) FetchAccounts(context.Context) ([]entities.Account, error
 func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	if accRepo.err == repository.ErrUnexpected {
+	if accRepo.dbError == repository.ErrUnexpected {
 		return 0, repository.ErrUnexpected
 	}
 
@@ -63,10 +63,9 @@ func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (int, error)
 	return 0, entities.ErrAccNotFound
 }
 
-func (accRepo account) GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error) {
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-	if accRepo.err == repository.ErrUnexpected {
+func (accRepo account) GetAccount(_ context.Context, cpf vos.CPF) (*entities.Account, error) {
+
+	if accRepo.dbError == repository.ErrUnexpected {
 		return nil, repository.ErrUnexpected
 	}
 
@@ -78,11 +77,9 @@ func (accRepo account) GetAccount(ctx context.Context, cpf vos.CPF) (*entities.A
 	return nil, entities.ErrAccNotFound
 }
 
-func (accRepo account) UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error {
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-	if accRepo.err != nil {
-		return accRepo.err
+func (accRepo account) UpdateBalance(_ context.Context, id vos.UUID, transactionAmount int) error {
+	if accRepo.dbError != nil {
+		return accRepo.dbError
 	}
 
 	for _, acc := range accRepo.accounts {

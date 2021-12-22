@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/io"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -22,16 +22,16 @@ func NewAuthController(authUseCase usecase.AuthUseCase, log *logrus.Logger) Auth
 
 func (authCtrl authController) Login(w http.ResponseWriter, r *http.Request) {
 	var loginInput usecase.LoginInput
-	if err := io.ReadRequestBody(r, &loginInput); err != nil {
-		io.HandleError(w, err, authCtrl.log)
+	if err := interpreter.ReadRequestBody(r, &loginInput); err != nil {
+		interpreter.HandleError(w, err, authCtrl.log)
 		return
 	}
 
 	token, err := authCtrl.authUseCase.Login(r.Context(), &loginInput)
 
 	if err != nil {
-		io.HandleError(w, err, authCtrl.log)
+		interpreter.HandleError(w, err, authCtrl.log)
 		return
 	}
-	io.SendResponse(w, http.StatusOK, token, authCtrl.log)
+	interpreter.SendResponse(w, http.StatusOK, token, authCtrl.log)
 }
