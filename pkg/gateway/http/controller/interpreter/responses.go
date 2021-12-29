@@ -16,7 +16,7 @@ type errJSON struct {
 }
 
 var (
-	ErrUnexpected = errors.New("an unexpected error has occurred")
+	ErrUnexpected = errors.New("an unexpected error occurred")
 )
 
 //SendResponse sends formatted json response to request

@@ -18,7 +18,7 @@ const (
 
 var (
 	ErrTruncDB    = errors.New("an unexpected error occurred while deleting tables")
-	ErrUnexpected = errors.New("unexpected error occurred")
+	ErrUnexpected = errors.New("an unexpected error occurred")
 )
 
 type DBError struct {
