@@ -12,8 +12,7 @@ import (
 )
 
 func TestAccRepo_CreateAccount(t *testing.T) {
-	accRepo := NewAccountRepo(dbTest)
-	ctxDB := context.Background()
+
 	tests := []struct {
 		name string
 		acc  *entities.Account
@@ -56,33 +55,33 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 			err: repository.NewDBError(repository.QueryRefCreateAcc, errors.New("any sql error"), errors.New("unexpected error")),
 		},
 	}
+
 	defer ClearDB()
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			var GotDBError *repository.DBError
 			var WantDBError *repository.DBError
 
-			resultErr := accRepo.CreateAccount(ctxDB, test.acc)
+			accRepo := NewAccountRepo(dbTest)
+			ctxDB := context.Background()
+			resultErr := accRepo.CreateAccount(ctxDB, tt.acc)
 
 			switch {
-			case errors.As(resultErr, &GotDBError) && !errors.As(test.err, &WantDBError):
-				t.Errorf("didn't want sql error, but got the error: %v", resultErr)
-			case !errors.As(resultErr, &GotDBError) && errors.As(test.err, &WantDBError):
-				t.Error("wanted sql error but didn't get one")
-			case errors.As(resultErr, &GotDBError) && errors.As(test.err, &WantDBError):
+			case errors.As(resultErr, &GotDBError) && errors.As(tt.err, &WantDBError):
 				if GotDBError.Query != WantDBError.Query {
 					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
 				}
-			case resultErr != test.err:
-				t.Errorf("got error: %v, want error: %v", resultErr, test.err)
+			case resultErr != tt.err:
+				t.Errorf("got error: %v, want error: %v", resultErr, tt.err)
 			}
 		})
 	}
 }
 
 func TestAccRepo_FetchAccounts(t *testing.T) {
+	// setup
 	accRepo := NewAccountRepo(dbTest)
-	ctxDB := context.Background()
 
 	accounts := []entities.Account{
 		{
@@ -104,7 +103,7 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 	}
 	var want []entities.Account
 	for _, acc := range accounts {
-		err := accRepo.CreateAccount(ctxDB, &acc)
+		err := accRepo.CreateAccount(context.Background(), &acc)
 		if err != nil {
 			t.Error("error inserting accounts")
 		}
@@ -119,19 +118,19 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 
 	defer ClearDB()
 
-	result, err := accRepo.FetchAccounts(ctxDB)
+	// execute
+	result, err := accRepo.FetchAccounts(context.Background())
 	if err != nil {
 		t.Errorf("didn't want sql error, but got the error: %v", err)
 	}
 
+	//assert
 	if !reflect.DeepEqual(want, result) {
 		t.Errorf("got: %v, want: %v", result, want)
 	}
 }
 
 func TestAccRepo_GetBalance(t *testing.T) {
-	accRepo := NewAccountRepo(dbTest)
-	ctxDB := context.Background()
 	tests := []struct {
 		name        string
 		acc         *entities.Account
@@ -192,30 +191,34 @@ func TestAccRepo_GetBalance(t *testing.T) {
 	var GotDBError *repository.DBError
 	var WantDBError *repository.DBError
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			if test.insert {
-				_ = accRepo.CreateAccount(ctxDB, test.acc)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			// setup
+			accRepo := NewAccountRepo(dbTest)
+			if tt.insert {
+				_ = accRepo.CreateAccount(context.Background(), tt.acc)
 			}
 
-			result, err := accRepo.GetBalance(context.Background(), test.acc.ID)
+			// execute
+			result, err := accRepo.GetBalance(context.Background(), tt.acc.ID)
+
+			// assert
 			switch {
-			case errors.As(err, &GotDBError) && errors.As(test.err, &WantDBError):
+			case errors.As(err, &GotDBError) && errors.As(tt.err, &WantDBError):
 				if GotDBError.Query != WantDBError.Query {
 					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
 				}
-			case err != test.err:
-				t.Errorf("got error: %v, want: %v", err, test.err)
-			case !test.expectedErr && result != test.acc.Balance:
-				t.Errorf("got: %v, want: %v", result, test.acc.Balance)
+			case err != tt.err:
+				t.Errorf("got error: %v, want: %v", err, tt.err)
+			case !tt.expectedErr && result != tt.acc.Balance:
+				t.Errorf("got: %v, want: %v", result, tt.acc.Balance)
 			}
 		})
 	}
 }
 
 func TestAccRepo_UpdateBalance(t *testing.T) {
-	accRepo := NewAccountRepo(dbTest)
-	ctxDB := context.Background()
 	tests := []struct {
 		name         string
 		acc          *entities.Account
@@ -281,27 +284,31 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 	var GotDBError *repository.DBError
 	var WantDBError *repository.DBError
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			if test.insert {
-				_ = accRepo.CreateAccount(ctxDB, test.acc)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// setup
+			accRepo := NewAccountRepo(dbTest)
+			if tt.insert {
+				_ = accRepo.CreateAccount(context.Background(), tt.acc)
 			}
 
-			err := accRepo.UpdateBalance(context.Background(), test.acc.ID, test.updateAmount)
+			// execute
+			err := accRepo.UpdateBalance(context.Background(), tt.acc.ID, tt.updateAmount)
 
+			// assert
 			switch {
-			case errors.As(err, &GotDBError) && errors.As(test.err, &WantDBError):
+			case errors.As(err, &GotDBError) && errors.As(tt.err, &WantDBError):
 				if GotDBError.Query != WantDBError.Query {
 					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
 				}
-			case err != test.err:
-				t.Errorf("got error: %v, want: %v", err, test.err)
-			case !test.expectedErr:
-				gotBalance, errGetBalance := accRepo.GetBalance(ctxDB, test.acc.ID)
+			case err != tt.err:
+				t.Errorf("got error: %v, want: %v", err, tt.err)
+			case !tt.expectedErr:
+				gotBalance, errGetBalance := accRepo.GetBalance(context.Background(), tt.acc.ID)
 				if errGetBalance != nil {
 					t.Error("unexpected error in get balance query")
-				} else if gotBalance != test.acc.Balance+test.updateAmount {
-					t.Errorf("got: %v, want: %v", gotBalance, test.acc.Balance+test.updateAmount)
+				} else if gotBalance != tt.acc.Balance+tt.updateAmount {
+					t.Errorf("got: %v, want: %v", gotBalance, tt.acc.Balance+tt.updateAmount)
 				}
 			}
 		})
@@ -309,8 +316,6 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 }
 
 func TestAccRepo_GetAccount(t *testing.T) {
-	accRepo := NewAccountRepo(dbTest)
-	ctxDB := context.Background()
 	tests := []struct {
 		name        string
 		acc         *entities.Account
@@ -344,19 +349,23 @@ func TestAccRepo_GetAccount(t *testing.T) {
 	}
 
 	defer ClearDB()
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			if test.insert {
-				_ = accRepo.CreateAccount(ctxDB, test.acc)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// setup
+			accRepo := NewAccountRepo(dbTest)
+			if tt.insert {
+				_ = accRepo.CreateAccount(context.Background(), tt.acc)
 			}
 
-			result, err := accRepo.GetAccount(context.Background(), test.acc.CPF)
-			if test.expectedErr && err != test.err {
-				t.Errorf("got: %v, want: %v", err, test.err)
+			// execute
+			result, err := accRepo.GetAccount(context.Background(), tt.acc.CPF)
+			if tt.expectedErr && err != tt.err {
+				t.Errorf("got: %v, want: %v", err, tt.err)
 			}
 
-			if !test.expectedErr && reflect.DeepEqual(&result, test.acc) {
-				t.Errorf("got: %v, want: %v", &result, test.acc)
+			// assert
+			if !tt.expectedErr && reflect.DeepEqual(&result, tt.acc) {
+				t.Errorf("got: %v, want: %v", &result, tt.acc)
 			}
 		})
 	}

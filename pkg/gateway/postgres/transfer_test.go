@@ -13,10 +13,7 @@ import (
 )
 
 func TestTransferRepo_CreateTransfer(t *testing.T) {
-	accRepo := NewAccountRepo(dbTest)
-	tRepo := NewTransferRepository(dbTest)
-	ctxDB := context.Background()
-
+	// setup
 	accOriginID := vos.NewUUID()
 	accDestinationID := vos.NewUUID()
 
@@ -38,6 +35,9 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 			CreatedAt: time.Now().Truncate(time.Second),
 		},
 	}
+
+	accRepo := NewAccountRepo(dbTest)
+	ctxDB := context.Background()
 
 	for _, acc := range accounts {
 		err := accRepo.CreateAccount(ctxDB, &acc)
@@ -75,30 +75,32 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 		},
 	}
 	defer ClearDB()
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// setup
+			tRepo := NewTransferRepository(dbTest)
+
+			// execute
+			resultErr := tRepo.CreateTransfer(context.Background(), &tt.transfer)
+
+			// assert
 			var GotDBError *repository.DBError
 			var WantDBError *repository.DBError
 
-			resultErr := tRepo.CreateTransfer(ctxDB, &test.transfer)
-
 			switch {
-			case errors.As(resultErr, &GotDBError) && errors.As(test.expectedErr, &WantDBError):
+			case errors.As(resultErr, &GotDBError) && errors.As(tt.expectedErr, &WantDBError):
 				if GotDBError.Query != WantDBError.Query {
 					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
 				}
-			case resultErr != test.expectedErr:
-				t.Errorf("got error: %v want: %v", resultErr, test.expectedErr)
+			case resultErr != tt.expectedErr:
+				t.Errorf("got error: %v want: %v", resultErr, tt.expectedErr)
 			}
 		})
 	}
 }
 
 func TestTransferRepo_FetchTransfers(t *testing.T) {
-	accRepo := NewAccountRepo(dbTest)
-	tRepo := NewTransferRepository(dbTest)
-	ctxDB := context.Background()
-
+	// setup
 	accOriginID := vos.NewUUID()
 	accDestinationID := vos.NewUUID()
 
@@ -121,12 +123,17 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 		},
 	}
 
+	accRepo := NewAccountRepo(dbTest)
+	ctxDB := context.Background()
 	for _, acc := range accounts {
 		err := accRepo.CreateAccount(ctxDB, &acc)
 		if err != nil {
 			t.Fatal("error inserting accounts")
 		}
 	}
+
+	tRepo := NewTransferRepository(dbTest)
+
 	var want []entities.Transfer
 	for i := 0; i < 1000; i++ {
 		transfer := &entities.Transfer{
@@ -145,7 +152,10 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 
 	defer ClearDB()
 
-	result, err := tRepo.FetchTransfers(ctxDB, accOriginID)
+	//execute
+	result, err := tRepo.FetchTransfers(context.Background(), accOriginID)
+
+	// assert
 	if err != nil {
 		t.Errorf("didn't want sql error, but got the error: %v", err)
 	}
