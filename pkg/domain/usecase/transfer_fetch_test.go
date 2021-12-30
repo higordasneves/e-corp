@@ -2,17 +2,18 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	repomock "github.com/higordasneves/e-corp/pkg/repository/mock"
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
 func TestTransferUseCase_FetchTransfers(t *testing.T) {
+	t.Parallel()
+
 	firstAccountID := vos.NewUUID()
 	secondAccountID := vos.NewUUID()
 	thirdAccountID := vos.NewUUID()
@@ -131,21 +132,22 @@ func TestTransferUseCase_FetchTransfers(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
-		accRepo := repomock.NewAccountRepo(accounts, nil)
-		tRepo := repomock.NewTransferRepo(transfers, test.dbErr)
-		tUseCase := NewTransferUseCase(accRepo, tRepo)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-		t.Run(test.name, func(t *testing.T) {
-			t.Helper()
-			results, err := tUseCase.FetchTransfers(context.Background(), test.id)
+			// setup
+			accRepo := repomock.NewAccountRepo(accounts, nil)
+			tRepo := repomock.NewTransferRepo(transfers, tt.dbErr)
+			tUseCase := NewTransferUseCase(accRepo, tRepo)
 
-			switch {
-			case !errors.Is(err, test.expectedErr):
-				t.Errorf("got error: %v, expected %v", err, test.expectedErr)
-			case !reflect.DeepEqual(results, test.want):
-				t.Errorf("got %v \n want %v", results, test.want)
-			}
+			// execute
+			results, err := tUseCase.FetchTransfers(context.Background(), tt.id)
+
+			// assert
+			assert.ErrorIs(t, err, tt.expectedErr)
+			assert.Equal(t, tt.want, results)
 		})
 	}
 

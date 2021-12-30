@@ -12,11 +12,9 @@ import (
 )
 
 func TestAuthUseCase_Login(t *testing.T) {
-	ctx := context.Background()
+	t.Parallel()
 
-	cfg := config.Config{}
-	cfg.LoadEnv()
-
+	//setup
 	accounts := []entities.Account{
 		{
 			CPF:    "44455566677",
@@ -83,14 +81,25 @@ func TestAuthUseCase_Login(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			accRepo := repomock.NewAccountRepo(accounts, test.expectedErr)
-			authUC := NewAuthUseCase(accRepo, &cfg.Auth)
-			_, err := authUC.Login(ctx, &test.login)
+	cfg := config.Config{}
+	cfg.LoadEnv()
 
-			if err != test.expectedErr {
-				t.Errorf("got error: %v, want error: %v", err, test.expectedErr)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			// setup
+			accRepo := repomock.NewAccountRepo(accounts, tt.expectedErr)
+			authUC := NewAuthUseCase(accRepo, &cfg.Auth)
+
+			//execute
+			ctx := context.Background()
+			_, err := authUC.Login(ctx, &tt.login)
+
+			//assert
+			if err != tt.expectedErr {
+				t.Errorf("got error: %v, want error: %v", err, tt.expectedErr)
 			}
 		})
 	}

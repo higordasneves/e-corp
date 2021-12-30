@@ -2,17 +2,18 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
 	repomock "github.com/higordasneves/e-corp/pkg/repository/mock"
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
 func TestTransferUseCase_Transfer(t *testing.T) {
+	t.Parallel()
+
 	accOriginID := vos.NewUUID()
 	accDestinationID := vos.NewUUID()
 
@@ -146,27 +147,26 @@ func TestTransferUseCase_Transfer(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			t.Helper()
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			// setup
 			accRepo := repomock.NewAccountRepo(accounts, nil)
-			tRepo := repomock.NewTransferRepo([]entities.Transfer{}, test.dbErr)
+			tRepo := repomock.NewTransferRepo([]entities.Transfer{}, tt.dbErr)
 			tUseCase := NewTransferUseCase(accRepo, tRepo)
 
-			result, err := tUseCase.Transfer(context.Background(), &test.transferInput)
-
+			// execute
+			result, err := tUseCase.Transfer(context.Background(), &tt.transferInput)
 			if err == nil {
-				test.want.ID = result.ID
-				test.want.CreatedAt = result.CreatedAt
+				tt.want.ID = result.ID
+				tt.want.CreatedAt = result.CreatedAt
 			}
 
-			switch {
-			case !errors.Is(err, test.expectedErr):
-				t.Errorf("got error: %v, expected error: %v", err, test.expectedErr)
-			case test.expectedErr == nil && !reflect.DeepEqual(result, test.want):
-				t.Errorf("got: %v, want: %v", result, test.want)
-			}
+			// assert
+			assert.ErrorIs(t, err, tt.expectedErr)
+			assert.Equal(t, tt.want, result)
 		})
 	}
-
 }

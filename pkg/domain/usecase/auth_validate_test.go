@@ -12,10 +12,7 @@ import (
 )
 
 func TestAuthUseCase_Validate(t *testing.T) {
-	ctx := context.Background()
-
-	cfg := config.Config{}
-	cfg.LoadEnv()
+	t.Parallel()
 
 	accounts := []entities.Account{
 		{
@@ -40,7 +37,7 @@ func TestAuthUseCase_Validate(t *testing.T) {
 		name        string
 		login       LoginInput
 		expectedErr error
-		funcToken   func(input LoginInput, authUC AuthUseCase) Token
+		setup       func(ctx context.Context, input LoginInput, authUC AuthUseCase) Token
 	}{
 		{
 			name: "with success",
@@ -49,7 +46,7 @@ func TestAuthUseCase_Validate(t *testing.T) {
 				Secret: "123456",
 			},
 			expectedErr: nil,
-			funcToken: func(input LoginInput, authUC AuthUseCase) Token {
+			setup: func(ctx context.Context, input LoginInput, authUC AuthUseCase) Token {
 				token, err := authUC.Login(ctx, &input)
 				if err != nil {
 					logrus.Fatal("unexpected login error")
@@ -64,24 +61,31 @@ func TestAuthUseCase_Validate(t *testing.T) {
 				Secret: "654321",
 			},
 			expectedErr: ErrTokenInvalid,
-			funcToken: func(input LoginInput, authUC AuthUseCase) Token {
+			setup: func(ctx context.Context, input LoginInput, authUC AuthUseCase) Token {
 				return "invalid_token"
 			},
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			accRepo := repomock.NewAccountRepo(accounts, test.expectedErr)
+	cfg := config.Config{}
+	cfg.LoadEnv()
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			// setup
+			accRepo := repomock.NewAccountRepo(accounts, tt.expectedErr)
 			authUC := NewAuthUseCase(accRepo, &cfg.Auth)
-			_, err := authUC.Login(ctx, &test.login)
+			token := tt.setup(context.Background(), tt.login, authUC)
 
-			token := test.funcToken(test.login, authUC)
+			// execute
+			_, err := authUC.ValidateToken(string(token))
 
-			_, err = authUC.ValidateToken(string(token))
-
-			if !errors.Is(err, test.expectedErr) {
-				t.Errorf("got error: %v, want error: %v", err, test.expectedErr)
+			// assert
+			if !errors.Is(err, tt.expectedErr) {
+				t.Errorf("got error: %v, want error: %v", err, tt.expectedErr)
 			}
 		})
 	}
