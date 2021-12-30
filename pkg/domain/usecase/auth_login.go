@@ -25,6 +25,11 @@ func (authUC authUseCase) Login(ctx context.Context, input *LoginInput) (*Token,
 		return nil, err
 	}
 
+	err = input.CPF.ValidateInput()
+	if err != nil {
+		return nil, err
+	}
+
 	err = acc.Secret.CompareHashSecret(input.Secret)
 	if err != nil {
 		return nil, vos.ErrInvalidPass
