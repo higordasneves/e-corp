@@ -26,18 +26,19 @@ func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.Au
 	authController := controller.NewAuthController(authUseCase, log)
 
 	router := mux.NewRouter()
+	apiVersion := "/api/v0"
 
 	//account
-	router.HandleFunc("/accounts", accController.CreateAccount).Methods(http.MethodPost)
-	router.HandleFunc("/accounts", accController.FetchAccounts).Methods(http.MethodGet)
-	router.HandleFunc("/accounts/{account_id}/balance", accController.GetBalance).Methods(http.MethodGet)
+	router.HandleFunc(apiVersion+"/accounts", accController.CreateAccount).Methods(http.MethodPost)
+	router.HandleFunc(apiVersion+"/accounts", accController.FetchAccounts).Methods(http.MethodGet)
+	router.HandleFunc(apiVersion+"/accounts/{account_id}/balance", accController.GetBalance).Methods(http.MethodGet)
 
 	//transfer
-	router.HandleFunc("/transfers", middleware.Authenticate(authUseCase, tController.Transfer, log)).Methods(http.MethodPost)
-	router.HandleFunc("/transfers", middleware.Authenticate(authUseCase, tController.FetchTransfers, log)).Methods(http.MethodGet)
+	router.HandleFunc(apiVersion+"/transfers", middleware.Authenticate(authUseCase, tController.Transfer, log)).Methods(http.MethodPost)
+	router.HandleFunc(apiVersion+"/transfers", middleware.Authenticate(authUseCase, tController.FetchTransfers, log)).Methods(http.MethodGet)
 
 	//login
-	router.HandleFunc("/login", authController.Login).Methods(http.MethodPost)
+	router.HandleFunc(apiVersion+"/login", authController.Login).Methods(http.MethodPost)
 
 	return router
 }
