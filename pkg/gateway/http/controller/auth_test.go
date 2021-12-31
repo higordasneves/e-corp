@@ -4,26 +4,23 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	ucmock "github.com/higordasneves/e-corp/pkg/domain/usecase/mock"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
+	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
-func TestAuthController_LoginWithSuccess(t *testing.T) {
-	accountList := []entities.Account{
-		{CPF: "44455566678",
-			Secret: "12345678"},
-	}
-	var token usecase.Token = "fake_token"
-
+func TestAuthController_Login(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		authUC usecase.AuthUseCase
 	}
@@ -32,7 +29,7 @@ func TestAuthController_LoginWithSuccess(t *testing.T) {
 		name         string
 		requestBody  *bytes.Reader
 		fields       fields
-		want         usecase.Token
+		want         string
 		expectedCode int
 	}{
 		{
@@ -41,61 +38,14 @@ func TestAuthController_LoginWithSuccess(t *testing.T) {
 			fields: fields{
 				authUC: ucmock.AuthUseCase{
 					AuthLogin: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
-						for _, account := range accountList {
-							if account.CPF == input.CPF {
-								if account.Secret.String() != input.Secret {
-									return nil, vos.ErrInvalidPass
-								}
-								return &token, nil
-							}
-						}
-						return nil, entities.ErrAccNotFound
+						var token usecase.Token = "fake_token"
+						return &token, nil
 					},
 				},
 			},
-			want:         token,
+			want:         `"fake_token"`,
 			expectedCode: http.StatusOK,
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Helper()
-
-			authUC := tt.fields.authUC
-			authCtrl := NewAuthController(authUC, logTest)
-
-			//execute
-			router := mux.NewRouter()
-			router.HandleFunc("/login", authCtrl.Login).Methods(http.MethodPost)
-			req := httptest.NewRequest(http.MethodPost, "/login", tt.requestBody)
-			response := httptest.NewRecorder()
-			router.ServeHTTP(response, req)
-
-			var responseBody usecase.Token
-			err := decodeResponse(response, &responseBody)
-			require.NoError(t, err)
-
-			//assert
-			assert.Equal(t, tt.want, responseBody)
-			assert.Equal(t, tt.expectedCode, response.Code)
-		})
-	}
-}
-
-func TestAuthController_LoginWithError(t *testing.T) {
-
-	type fields struct {
-		authUC usecase.AuthUseCase
-	}
-
-	tests := []struct {
-		name         string
-		requestBody  *bytes.Reader
-		fields       fields
-		want         errJSON
-		expectedCode int
-	}{
 		{
 			name:        "when account not found should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566690", "secret": "12345678"}`)),
@@ -106,7 +56,7 @@ func TestAuthController_LoginWithError(t *testing.T) {
 					},
 				},
 			},
-			want:         errorJSON(entities.ErrAccNotFound),
+			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrAccNotFound),
 			expectedCode: http.StatusNotFound,
 		},
 		{
@@ -119,7 +69,7 @@ func TestAuthController_LoginWithError(t *testing.T) {
 					},
 				},
 			},
-			want:         errorJSON(vos.ErrInvalidPass),
+			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrInvalidPass),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -132,7 +82,7 @@ func TestAuthController_LoginWithError(t *testing.T) {
 					},
 				},
 			},
-			want:         errorJSON(vos.ErrCPFFormat),
+			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrCPFFormat),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -145,31 +95,32 @@ func TestAuthController_LoginWithError(t *testing.T) {
 					},
 				},
 			},
-			want:         errorJSON(interpreter.ErrUnexpected),
+
+			want:         fmt.Sprintf(`{"error": "%s"}`, interpreter.ErrUnexpected),
 			expectedCode: http.StatusInternalServerError,
 		},
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Helper()
+			t.Parallel()
 
+			// setup
 			authUC := tt.fields.authUC
 			authCtrl := NewAuthController(authUC, logTest)
 
-			//execute
 			router := mux.NewRouter()
 			router.HandleFunc("/login", authCtrl.Login).Methods(http.MethodPost)
 			req := httptest.NewRequest(http.MethodPost, "/login", tt.requestBody)
 			response := httptest.NewRecorder()
+
+			// execute
 			router.ServeHTTP(response, req)
 
-			var responseBody errJSON
-			err := decodeResponse(response, &responseBody)
-			require.NoError(t, err)
-
-			//assert
-			assert.Equal(t, tt.want, responseBody)
+			// assert
+			ja := jsonassert.New(t)
+			ja.Assertf(strings.TrimSpace(response.Body.String()), tt.want)
 			assert.Equal(t, tt.expectedCode, response.Code)
 		})
 	}

@@ -13,6 +13,7 @@ require (
 	github.com/jackc/pgtype v1.8.1
 	github.com/jackc/pgx/v4 v4.13.0
 	github.com/joho/godotenv v1.3.0
+	github.com/kinbiko/jsonassert v1.1.0
 	github.com/lib/pq v1.10.4
 	github.com/ory/dockertest/v3 v3.8.0
 	github.com/sirupsen/logrus v1.8.1

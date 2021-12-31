@@ -3,52 +3,23 @@ package controller
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	ucmock "github.com/higordasneves/e-corp/pkg/domain/usecase/mock"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
+	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
 
-func TestAccountController_FetchAccountsWithSuccess(t *testing.T) {
-	accountsList := []entities.AccountOutput{
-		{
-			ID:        vos.NewUUID(),
-			Name:      "Elliot",
-			CPF:       "555.666.777-80",
-			Balance:   9700000,
-			CreatedAt: time.Now().Truncate(time.Second),
-		},
-		{
-			ID:        vos.NewUUID(),
-			Name:      "Mr. Robot",
-			CPF:       "555.666.777-81",
-			Balance:   5596400,
-			CreatedAt: time.Now().Truncate(time.Second),
-		},
-		{
-			ID:        vos.NewUUID(),
-			Name:      "WhiteRose",
-			CPF:       "555.666.777-82",
-			Balance:   5534513,
-			CreatedAt: time.Now().Truncate(time.Second),
-		},
-		{
-			ID:        vos.NewUUID(),
-			Name:      "Darlene",
-			CPF:       "555.666.777-83",
-			Balance:   12350,
-			CreatedAt: time.Now().Truncate(time.Second),
-		},
-	}
-
+func TestAccountController_FetchAccounts(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		accUseCase usecase.AccountUseCase
 	}
@@ -56,7 +27,7 @@ func TestAccountController_FetchAccountsWithSuccess(t *testing.T) {
 	tests := []struct {
 		name         string
 		fields       fields
-		want         []entities.AccountOutput
+		want         string
 		expectedCode int
 	}{
 		{
@@ -64,11 +35,43 @@ func TestAccountController_FetchAccountsWithSuccess(t *testing.T) {
 			fields: fields{
 				accUseCase: ucmock.AccountUseCase{
 					Fetch: func(ctx context.Context) ([]entities.AccountOutput, error) {
-						return accountsList, nil
+						return []entities.AccountOutput{
+							{
+								ID:        "uuid1",
+								Name:      "Elliot",
+								CPF:       "555.666.777-80",
+								Balance:   9700000,
+								CreatedAt: time.Now().Truncate(time.Second),
+							},
+							{
+								ID:        "uuid2",
+								Name:      "Mr. Robot",
+								CPF:       "555.666.777-81",
+								Balance:   5596400,
+								CreatedAt: time.Now().Truncate(time.Second),
+							},
+							{
+								ID:        "uuid3",
+								Name:      "WhiteRose",
+								CPF:       "555.666.777-82",
+								Balance:   5534513,
+								CreatedAt: time.Now().Truncate(time.Second),
+							},
+							{
+								ID:        "uuid4",
+								Name:      "Darlene",
+								CPF:       "555.666.777-83",
+								Balance:   12350,
+								CreatedAt: time.Now().Truncate(time.Second),
+							},
+						}, nil
 					},
 				},
 			},
-			want:         accountsList,
+			want: `[{"id":"uuid1","name":"Elliot","cpf":"555.666.777-80","balance":9700000,"created_at":"<<PRESENCE>>"},
+					{"id":"uuid2","name":"Mr. Robot","cpf":"555.666.777-81","balance":5596400,"created_at":"<<PRESENCE>>"},
+					{"id":"uuid3","name":"WhiteRose","cpf":"555.666.777-82","balance":5534513,"created_at":"<<PRESENCE>>"},
+					{"id":"uuid4","name":"Darlene","cpf":"555.666.777-83","balance":12350,"created_at":"<<PRESENCE>>"}]`,
 			expectedCode: 200,
 		},
 		{
@@ -80,50 +83,9 @@ func TestAccountController_FetchAccountsWithSuccess(t *testing.T) {
 					},
 				},
 			},
-			want:         []entities.AccountOutput{},
+			want:         `[]`,
 			expectedCode: 200,
 		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
-			t.Helper()
-
-			accUseCase := test.fields.accUseCase
-			accCtrl := NewAccountController(accUseCase, logTest)
-
-			router := mux.NewRouter()
-			router.HandleFunc("/accounts", accCtrl.FetchAccounts).Methods(http.MethodGet)
-
-			req := httptest.NewRequest(http.MethodGet, "/accounts", nil)
-			response := httptest.NewRecorder()
-
-			router.ServeHTTP(response, req)
-
-			var responseBody []entities.AccountOutput
-			err := decodeResponse(response, &responseBody)
-			if err != nil {
-				require.NoError(t, err)
-			}
-
-			assert.Equal(t, test.want, responseBody)
-			assert.Equal(t, test.expectedCode, response.Code)
-		})
-	}
-}
-
-func TestAccountController_FetchAccountsWithError(t *testing.T) {
-	type fields struct {
-		accUseCase usecase.AccountUseCase
-	}
-
-	tests := []struct {
-		name         string
-		fields       fields
-		want         errJSON
-		expectedCode int
-	}{
 		{
 			name: "unexpected error",
 			fields: fields{
@@ -133,16 +95,18 @@ func TestAccountController_FetchAccountsWithError(t *testing.T) {
 					},
 				},
 			},
-			want:         errorJSON(interpreter.ErrUnexpected),
+			want:         fmt.Sprintf(`{"error": "%s"}`, interpreter.ErrUnexpected),
 			expectedCode: 500,
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			t.Helper()
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-			accUseCase := test.fields.accUseCase
+			// setup
+			accUseCase := tt.fields.accUseCase
 			accCtrl := NewAccountController(accUseCase, logTest)
 
 			router := mux.NewRouter()
@@ -151,16 +115,13 @@ func TestAccountController_FetchAccountsWithError(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/accounts", nil)
 			response := httptest.NewRecorder()
 
+			// execute
 			router.ServeHTTP(response, req)
 
-			var responseBody errJSON
-			err := decodeResponse(response, &responseBody)
-			if err != nil {
-				require.NoError(t, err)
-			}
-
-			assert.Equal(t, test.want, responseBody)
-			assert.Equal(t, test.expectedCode, response.Code)
+			// assert
+			ja := jsonassert.New(t)
+			ja.Assertf(strings.TrimSpace(response.Body.String()), tt.want)
+			assert.Equal(t, tt.expectedCode, response.Code)
 		})
 	}
 }

@@ -3,22 +3,25 @@ package controller
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	ucmock "github.com/higordasneves/e-corp/pkg/domain/usecase/mock"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
 
 const balanceInit = 1000000
 
-func TestAccountController_CreateAccountWithSuccess(t *testing.T) {
+func TestAccountController_CreateAccount(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		accUseCase usecase.AccountUseCase
 	}
@@ -27,7 +30,7 @@ func TestAccountController_CreateAccountWithSuccess(t *testing.T) {
 		name         string
 		requestBody  *bytes.Reader
 		fields       fields
-		want         entities.AccountOutput
+		want         string
 		expectedCode int
 	}{
 		{
@@ -46,54 +49,9 @@ func TestAccountController_CreateAccountWithSuccess(t *testing.T) {
 					},
 				},
 			},
-			want: entities.AccountOutput{
-				ID:        "uuid1",
-				Name:      "Elliot",
-				CPF:       "444.555.666-78",
-				Balance:   balanceInit,
-				CreatedAt: time.Now().Truncate(time.Minute),
-			},
+			want:         fmt.Sprintf(`{"id": "uuid1", "name": "Elliot", "cpf": "444.555.666-78", "balance": %v, "created_at": "<<PRESENCE>>"}`, balanceInit),
 			expectedCode: http.StatusCreated,
 		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Helper()
-			t.Parallel()
-
-			accUseCase := tt.fields.accUseCase
-			accController := NewAccountController(accUseCase, logTest)
-
-			router := mux.NewRouter()
-			router.HandleFunc("/accounts", accController.CreateAccount).Methods(http.MethodPost)
-			req := httptest.NewRequest(http.MethodPost, "/accounts", tt.requestBody)
-			response := httptest.NewRecorder()
-			router.ServeHTTP(response, req)
-
-			var requestBody entities.AccountOutput
-			err := decodeResponse(response, &requestBody)
-			require.NoError(t, err)
-
-			assert.Equal(t, tt.want, requestBody)
-			assert.Equal(t, tt.expectedCode, response.Code)
-		})
-	}
-}
-
-func TestAccountController_CreateAccountWithError(t *testing.T) {
-	type fields struct {
-		accUseCase usecase.AccountUseCase
-	}
-
-	tests := []struct {
-		name         string
-		requestBody  *bytes.Reader
-		fields       fields
-		want         errJSON
-		expectedCode int
-	}{
 		{
 			name:        "when account already exists should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"44455566678", "secret":"12345678"}`)),
@@ -104,7 +62,7 @@ func TestAccountController_CreateAccountWithError(t *testing.T) {
 					},
 				},
 			},
-			want:         errorJSON(entities.ErrAccAlreadyExists),
+			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrAccAlreadyExists),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -117,7 +75,7 @@ func TestAccountController_CreateAccountWithError(t *testing.T) {
 					},
 				},
 			},
-			want:         errorJSON(vos.ErrCPFLen),
+			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrCPFLen),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -130,7 +88,7 @@ func TestAccountController_CreateAccountWithError(t *testing.T) {
 					},
 				},
 			},
-			want:         errorJSON(vos.ErrCPFFormat),
+			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrCPFFormat),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -143,7 +101,7 @@ func TestAccountController_CreateAccountWithError(t *testing.T) {
 					},
 				},
 			},
-			want:         errorJSON(vos.ErrSmallSecret),
+			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrSmallSecret),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -156,7 +114,7 @@ func TestAccountController_CreateAccountWithError(t *testing.T) {
 					},
 				},
 			},
-			want:         errorJSON(entities.ErrEmptyInput),
+			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrEmptyInput),
 			expectedCode: http.StatusBadRequest,
 		},
 	}
@@ -164,9 +122,9 @@ func TestAccountController_CreateAccountWithError(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Helper()
 			t.Parallel()
 
+			// setup
 			accUseCase := tt.fields.accUseCase
 			accController := NewAccountController(accUseCase, logTest)
 
@@ -174,13 +132,13 @@ func TestAccountController_CreateAccountWithError(t *testing.T) {
 			router.HandleFunc("/accounts", accController.CreateAccount).Methods(http.MethodPost)
 			req := httptest.NewRequest(http.MethodPost, "/accounts", tt.requestBody)
 			response := httptest.NewRecorder()
+
+			//execute
 			router.ServeHTTP(response, req)
 
-			var requestBody errJSON
-			err := decodeResponse(response, &requestBody)
-			require.NoError(t, err)
-
-			assert.Equal(t, tt.want, requestBody)
+			//assert
+			ja := jsonassert.New(t)
+			ja.Assertf(strings.TrimSpace(response.Body.String()), tt.want)
 			assert.Equal(t, tt.expectedCode, response.Code)
 		})
 	}
