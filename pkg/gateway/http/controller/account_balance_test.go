@@ -32,21 +32,23 @@ func TestAccountController_GetBalance(t *testing.T) {
 		{
 			name: "with success, balance of 9700000 cents",
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					GetAccBalance: func(ctx context.Context, id vos.UUID) (int, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
 						return 9700000, nil
 					},
 				},
 			},
-			accID:        "uuid1",
-			want:         `{"balance": 9700000}`,
+			accID: "uuid1",
+			want: `{"balance": 9700000}
+
+`,
 			expectedCode: 200,
 		},
 		{
 			name: "with success, balance of 5534513 cents",
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					GetAccBalance: func(ctx context.Context, id vos.UUID) (int, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
 						return 5534513, nil
 					},
 				},
@@ -59,8 +61,8 @@ func TestAccountController_GetBalance(t *testing.T) {
 			name:  "account not found",
 			accID: vos.NewUUID(),
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					GetAccBalance: func(ctx context.Context, id vos.UUID) (int, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
 						return 0, entities.ErrAccNotFound
 					},
 				},
@@ -72,8 +74,8 @@ func TestAccountController_GetBalance(t *testing.T) {
 			name:  "invalid id",
 			accID: "invalid",
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					GetAccBalance: func(ctx context.Context, id vos.UUID) (int, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
 						return 0, vos.ErrInvalidID
 					},
 				},

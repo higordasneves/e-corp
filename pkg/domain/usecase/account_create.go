@@ -81,7 +81,7 @@ func (accInput *AccountInput) validateInputEmpty() error {
 	return nil
 }
 
-//removesBlankSpaces removes blank spaces of account fields
+//removeBlankSpaces removes blank spaces of account fields
 func (accInput *AccountInput) removeBlankSpaces() {
 	accInput.Name = strings.TrimSpace(accInput.Name)
 	accInput.CPF = vos.CPF(strings.TrimSpace(accInput.CPF.String()))

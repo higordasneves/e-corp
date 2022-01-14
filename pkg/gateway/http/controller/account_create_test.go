@@ -37,8 +37,8 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			name:        "with success",
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"44455566678", "secret":"12345678"}`)),
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					Create: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return &entities.AccountOutput{
 							ID:        "uuid1",
 							Name:      input.Name,
@@ -56,8 +56,8 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			name:        "when account already exists should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"44455566678", "secret":"12345678"}`)),
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					Create: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return nil, entities.ErrAccAlreadyExists
 					},
 				},
@@ -69,8 +69,8 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			name:        "invalid cpf length should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"111", "secret":"12345678"}`)),
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					Create: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return nil, vos.ErrCPFLen
 					},
 				},
@@ -82,8 +82,8 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			name:        "invalid cpf format should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"111.233", "secret":"12345678"}`)),
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					Create: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return nil, vos.ErrCPFFormat
 					},
 				},
@@ -95,8 +95,8 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			name:        "invalid secret length should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"44455566678", "secret":"123456"}`)),
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					Create: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return nil, vos.ErrSmallSecret
 					},
 				},
@@ -108,8 +108,8 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			name:        "empty required fields should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"name":"", "cpf":"", "secret":""}`)),
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					Create: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return nil, entities.ErrEmptyInput
 					},
 				},

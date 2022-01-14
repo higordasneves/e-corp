@@ -40,8 +40,8 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "with success",
 			fields: fields{
-				tUseCase: ucmock.TransferUseCase{
-					Send: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
+				tUseCase: &ucmock.TransferUseCase{
+					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return &entities.Transfer{
 							ID:                   "transfer_id",
 							AccountOriginID:      vos.UUID(transferInput.AccountOriginID),
@@ -66,8 +66,8 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "same account id in origin and destination should return an error and status code 400",
 			fields: fields{
-				tUseCase: ucmock.TransferUseCase{
-					Send: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
+				tUseCase: &ucmock.TransferUseCase{
+					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return nil, entities.ErrSelfTransfer
 					},
 				},
@@ -82,8 +82,8 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "invalid destination id should return an error and status code 400",
 			fields: fields{
-				tUseCase: ucmock.TransferUseCase{
-					Send: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
+				tUseCase: &ucmock.TransferUseCase{
+					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return nil, entities.ErrDestAccID
 					},
 				},
@@ -98,8 +98,8 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "invalid origin id should return an error and status code 400",
 			fields: fields{
-				tUseCase: ucmock.TransferUseCase{
-					Send: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
+				tUseCase: &ucmock.TransferUseCase{
+					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return nil, entities.ErrOriginAccID
 					},
 				},
@@ -114,8 +114,8 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "when transfer amount < 0 should return an error and status code 400",
 			fields: fields{
-				tUseCase: ucmock.TransferUseCase{
-					Send: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
+				tUseCase: &ucmock.TransferUseCase{
+					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return nil, entities.ErrTransferAmount
 					},
 				},
@@ -130,8 +130,8 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "when origin account balance < transfer amount should return an error and status code 400",
 			fields: fields{
-				tUseCase: ucmock.TransferUseCase{
-					Send: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
+				tUseCase: &ucmock.TransferUseCase{
+					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return nil, entities.ErrTransferInsufficientFunds
 					},
 				},
@@ -146,8 +146,8 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "when destination account doesn't exists should return an error and status code 400",
 			fields: fields{
-				tUseCase: ucmock.TransferUseCase{
-					Send: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
+				tUseCase: &ucmock.TransferUseCase{
+					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return nil, entities.ErrAccNotFound
 					},
 				},

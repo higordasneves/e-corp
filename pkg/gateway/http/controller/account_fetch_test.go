@@ -33,8 +33,8 @@ func TestAccountController_FetchAccounts(t *testing.T) {
 		{
 			name: "with success",
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					Fetch: func(ctx context.Context) ([]entities.AccountOutput, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					FetchAccountsFunc: func(ctx context.Context) ([]entities.AccountOutput, error) {
 						return []entities.AccountOutput{
 							{
 								ID:        "uuid1",
@@ -77,8 +77,8 @@ func TestAccountController_FetchAccounts(t *testing.T) {
 		{
 			name: "empty database",
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					Fetch: func(ctx context.Context) ([]entities.AccountOutput, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					FetchAccountsFunc: func(ctx context.Context) ([]entities.AccountOutput, error) {
 						return []entities.AccountOutput{}, nil
 					},
 				},
@@ -89,8 +89,8 @@ func TestAccountController_FetchAccounts(t *testing.T) {
 		{
 			name: "unexpected error",
 			fields: fields{
-				accUseCase: ucmock.AccountUseCase{
-					Fetch: func(ctx context.Context) ([]entities.AccountOutput, error) {
+				accUseCase: &ucmock.AccountUseCase{
+					FetchAccountsFunc: func(ctx context.Context) ([]entities.AccountOutput, error) {
 						return nil, errors.New("unknown error")
 					},
 				},

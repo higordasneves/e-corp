@@ -7,6 +7,8 @@ import (
 	"github.com/higordasneves/e-corp/pkg/repository"
 )
 
+//go:generate moq -skip-ensure -stub -out mock/account.go -pkg ucmock ./../../domain/usecase AccountUseCase:AccountUseCase
+
 type AccountUseCase interface {
 	CreateAccount(ctx context.Context, input *AccountInput) (*entities.AccountOutput, error)
 	FetchAccounts(ctx context.Context) ([]entities.AccountOutput, error)

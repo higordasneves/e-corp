@@ -36,8 +36,8 @@ func TestAuthController_Login(t *testing.T) {
 			name:        "with success",
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566678", "secret": "12345678"}`)),
 			fields: fields{
-				authUC: ucmock.AuthUseCase{
-					AuthLogin: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
+				authUC: &ucmock.AuthUseCase{
+					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
 						var token usecase.Token = "fake_token"
 						return &token, nil
 					},
@@ -50,8 +50,8 @@ func TestAuthController_Login(t *testing.T) {
 			name:        "when account not found should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566690", "secret": "12345678"}`)),
 			fields: fields{
-				authUC: ucmock.AuthUseCase{
-					AuthLogin: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
+				authUC: &ucmock.AuthUseCase{
+					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
 						return nil, entities.ErrAccNotFound
 					},
 				},
@@ -63,8 +63,8 @@ func TestAuthController_Login(t *testing.T) {
 			name:        "invalid password should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566690", "secret": "123456"}`)),
 			fields: fields{
-				authUC: ucmock.AuthUseCase{
-					AuthLogin: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
+				authUC: &ucmock.AuthUseCase{
+					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
 						return nil, vos.ErrInvalidPass
 					},
 				},
@@ -76,8 +76,8 @@ func TestAuthController_Login(t *testing.T) {
 			name:        "invalid cpf format should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"cpf": "444.555.666-90", "secret": "12345678"}`)),
 			fields: fields{
-				authUC: ucmock.AuthUseCase{
-					AuthLogin: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
+				authUC: &ucmock.AuthUseCase{
+					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
 						return nil, vos.ErrCPFFormat
 					},
 				},
@@ -89,8 +89,8 @@ func TestAuthController_Login(t *testing.T) {
 			name:        "unknown error should return status code 500",
 			requestBody: bytes.NewReader([]byte(`{"cpf": "444.555.666-90", "secret": "12345678"}`)),
 			fields: fields{
-				authUC: ucmock.AuthUseCase{
-					AuthLogin: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
+				authUC: &ucmock.AuthUseCase{
+					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
 						return nil, errors.New("something")
 					},
 				},

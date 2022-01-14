@@ -39,8 +39,8 @@ func TestTransferController_FetchTransfers(t *testing.T) {
 		{
 			name: "with success",
 			fields: fields{
-				tUseCase: ucmock.TransferUseCase{
-					Fetch: func(ctx context.Context, id string) ([]entities.Transfer, error) {
+				tUseCase: &ucmock.TransferUseCase{
+					FetchTransfersFunc: func(ctx context.Context, id string) ([]entities.Transfer, error) {
 						return []entities.Transfer{
 							{
 								ID:                   "transfer_id1",
@@ -79,8 +79,8 @@ func TestTransferController_FetchTransfers(t *testing.T) {
 		{
 			name: "no transfers, should return empty list and status code 200",
 			fields: fields{
-				tUseCase: ucmock.TransferUseCase{
-					Fetch: func(ctx context.Context, id string) ([]entities.Transfer, error) {
+				tUseCase: &ucmock.TransferUseCase{
+					FetchTransfersFunc: func(ctx context.Context, id string) ([]entities.Transfer, error) {
 						return []entities.Transfer{}, nil
 					},
 				},
@@ -92,8 +92,8 @@ func TestTransferController_FetchTransfers(t *testing.T) {
 		{
 			name: "unknown error should return unexpected error and status code 500",
 			fields: fields{
-				tUseCase: ucmock.TransferUseCase{
-					Fetch: func(ctx context.Context, id string) ([]entities.Transfer, error) {
+				tUseCase: &ucmock.TransferUseCase{
+					FetchTransfersFunc: func(ctx context.Context, id string) ([]entities.Transfer, error) {
 						return nil, errors.New("new error")
 					},
 				},
