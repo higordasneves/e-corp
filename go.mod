@@ -1,6 +1,6 @@
 module github.com/higordasneves/e-corp
 
-go 1.17
+go 1.23
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
