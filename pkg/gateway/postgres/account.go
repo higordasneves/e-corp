@@ -3,14 +3,15 @@ package postgres
 import (
 	"context"
 	"errors"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/repository"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/repository"
 )
 
 type account struct {
@@ -21,10 +22,10 @@ func NewAccountRepo(dbPool *pgxpool.Pool) repository.AccountRepo {
 	return &account{dbPool}
 }
 
-//CreateAccount inserts account in database
+// CreateAccount inserts account in database
 func (accRepo account) CreateAccount(ctx context.Context, acc *entities.Account) error {
 	_, err := accRepo.dbPool.Exec(ctx, "INSERT INTO accounts "+
-		"(id, cpf, name, secret, balance, created_at)"+
+		"(id, document_number, name, secret, balance, created_at)"+
 		" VALUES ($1, $2, $3, $4, $5, $6)", acc.ID.String(), acc.CPF, acc.Name, acc.Secret, int64(acc.Balance), acc.CreatedAt)
 
 	var pgErr *pgconn.PgError
@@ -50,7 +51,7 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]entities.Account, e
 	}
 	accList := make([]entities.Account, 0, count)
 
-	rows, err := accRepo.dbPool.Query(ctx, "select id, name, cpf, balance::numeric as balance, created_at from accounts")
+	rows, err := accRepo.dbPool.Query(ctx, "select id, name, document_number, balance::numeric as balance, created_at from accounts")
 
 	defer rows.Close()
 	if err != nil {
@@ -115,12 +116,12 @@ func (accRepo account) GetAccount(ctx context.Context, cpf vos.CPF) (*entities.A
 	row := accRepo.dbPool.QueryRow(ctx,
 		`select id
 			, name
-			, cpf
+			, document_number
 			, secret
 			, balance
 			, created_at
 			from accounts
-			where cpf = $1`, cpf)
+			where document_number = $1`, cpf)
 
 	var acc entities.Account
 	err := row.Scan(&acc.ID, &acc.Name, &acc.CPF, &acc.Secret, &acc.Balance, &acc.CreatedAt)
