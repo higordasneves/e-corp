@@ -7,12 +7,12 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/middleware"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
-//GetHTTPHandler returns HTTP handler with all routes
+// GetHTTPHandler returns HTTP handler with all routes
 func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.AuthConfig) *mux.Router {
 	accRepo := postgres.NewAccountRepo(dbPool)
 	accUseCase := usecase.NewAccountUseCase(accRepo)

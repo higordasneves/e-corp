@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/repository"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ory/dockertest/v3"
 	"github.com/sirupsen/logrus"
 	"os"
@@ -56,7 +56,7 @@ func TestMain(m *testing.M) {
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	pool.MaxWait = 90 * time.Second
 	if err = pool.Retry(func() error {
-		dbTest, err = pgxpool.Connect(context.Background(), dbDNS)
+		dbTest, err = pgxpool.New(context.Background(), dbDNS)
 		if err != nil {
 			return err
 		}

@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
 
-	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
@@ -26,7 +26,7 @@ func main() {
 	dbDNS := cfg.DB.DNS()
 	log.Info("Accessing database")
 	ctxDB := context.Background()
-	dbPool, err := pgxpool.Connect(ctxDB, dbDNS)
+	dbPool, err := pgxpool.New(ctxDB, dbDNS)
 
 	defer dbPool.Close()
 

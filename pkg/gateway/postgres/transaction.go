@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/higordasneves/e-corp/pkg/repository"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func PerformTransaction(ctx context.Context, ctxChan chan context.Context, db *pgxpool.Pool, errChan chan error) error {

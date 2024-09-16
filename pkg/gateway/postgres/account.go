@@ -3,11 +3,10 @@ package postgres
 import (
 	"context"
 	"errors"
-	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgtype/pgxtype"
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
@@ -24,9 +23,9 @@ func NewAccountRepo(dbPool *pgxpool.Pool) repository.AccountRepo {
 
 // CreateAccount inserts account in database
 func (accRepo account) CreateAccount(ctx context.Context, acc *entities.Account) error {
-	_, err := accRepo.dbPool.Exec(ctx, "INSERT INTO accounts "+
-		"(id, document_number, name, secret, balance, created_at)"+
-		" VALUES ($1, $2, $3, $4, $5, $6)", acc.ID.String(), acc.CPF, acc.Name, acc.Secret, int64(acc.Balance), acc.CreatedAt)
+	_, err := accRepo.dbPool.Exec(ctx, `INSERT INTO accounts `+
+		`(id, document_number, name, secret, balance, created_at)`+
+		` VALUES ($1, $2, $3, $4, $5, $6)`, acc.ID.String(), acc.CPF, acc.Name, acc.Secret, int64(acc.Balance), acc.CreatedAt)
 
 	var pgErr *pgconn.PgError
 
@@ -88,8 +87,12 @@ func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (int, error)
 	return balance, nil
 }
 
+type Querier interface {
+	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
+}
+
 func (accRepo account) UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error {
-	var db pgxtype.Querier
+	var db Querier
 	db = accRepo.dbPool
 
 	if tx := ctx.Value("dbConnection"); tx != nil {

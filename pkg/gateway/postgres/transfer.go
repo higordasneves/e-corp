@@ -5,8 +5,8 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/repository"
-	"github.com/jackc/pgtype/pgxtype"
-	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type transferRepo struct {
@@ -18,7 +18,7 @@ func NewTransferRepository(dbPool *pgxpool.Pool) repository.TransferRepo {
 }
 
 func (tRepo transferRepo) CreateTransfer(ctx context.Context, transfer *entities.Transfer) error {
-	var db pgxtype.Querier
+	var db Querier
 	db = tRepo.dbPool
 
 	if tx := ctx.Value("dbConnection"); tx != nil {
