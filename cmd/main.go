@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
-	"github.com/higordasneves/e-corp/pkg/gateway/config"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/router"
-	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
+	"net/http"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
-	"net/http"
+
+	"github.com/higordasneves/e-corp/pkg/gateway/config"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/router"
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
 )
 
 func main() {
