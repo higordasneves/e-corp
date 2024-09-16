@@ -12,10 +12,8 @@ import (
 	"net/http"
 )
 
-var log *logrus.Logger
-
 func main() {
-	log = logrus.New()
+	log := logrus.New()
 	log.SetFormatter(&logrus.TextFormatter{
 		FullTimestamp: true,
 	})
