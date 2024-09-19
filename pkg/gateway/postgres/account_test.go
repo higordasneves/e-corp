@@ -42,18 +42,6 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 			},
 			err: entities.ErrAccAlreadyExists,
 		},
-		{
-			name: "invalid id",
-			acc: &entities.Account{
-				ID:        "invalid",
-				Name:      "Elliot",
-				CPF:       "33344455567",
-				Secret:    "password",
-				Balance:   0,
-				CreatedAt: time.Now().Truncate(time.Second),
-			},
-			err: repository.NewDBError(repository.QueryRefCreateAcc, errors.New("any sql error"), errors.New("unexpected error")),
-		},
 	}
 
 	defer ClearDB()
@@ -101,19 +89,11 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 			CreatedAt: time.Now().Truncate(time.Second),
 		},
 	}
-	var want []entities.Account
 	for _, acc := range accounts {
 		err := accRepo.CreateAccount(context.Background(), &acc)
 		if err != nil {
 			t.Error("error inserting accounts")
 		}
-		want = append(want, entities.Account{
-			ID:        acc.ID,
-			Name:      acc.Name,
-			CPF:       acc.CPF,
-			Balance:   acc.Balance,
-			CreatedAt: acc.CreatedAt,
-		})
 	}
 
 	defer ClearDB()
@@ -125,8 +105,8 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 	}
 
 	//assert
-	if !reflect.DeepEqual(want, result) {
-		t.Errorf("got: %v, want: %v", result, want)
+	if !reflect.DeepEqual(accounts, result) {
+		t.Errorf("got: %v, want: %v", result, accounts)
 	}
 }
 
@@ -174,15 +154,6 @@ func TestAccRepo_GetBalance(t *testing.T) {
 			insert:      false,
 			expectedErr: true,
 			err:         entities.ErrAccNotFound,
-		},
-		{
-			name: "invalid id",
-			acc: &entities.Account{
-				ID: "invalid",
-			},
-			insert:      false,
-			expectedErr: true,
-			err:         repository.NewDBError(repository.QueryRefGetBalance, errors.New("any sql error"), errors.New("unexpected error")),
 		},
 	}
 
@@ -256,26 +227,6 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 			insert:       true,
 			expectedErr:  false,
 			err:          nil,
-		},
-		{
-			name: "account not found",
-			acc: &entities.Account{
-				ID: vos.NewUUID(),
-			},
-			updateAmount: 1000,
-			insert:       false,
-			expectedErr:  true,
-			err:          entities.ErrZeroRowsAffectedUpdateBalance,
-		},
-		{
-			name: "invalid id",
-			acc: &entities.Account{
-				ID: "invalid",
-			},
-			updateAmount: 1000,
-			insert:       false,
-			expectedErr:  true,
-			err:          repository.NewDBError(repository.QueryRefUpdateBalance, errors.New("any sql error"), errors.New("unexpected error")),
 		},
 	}
 

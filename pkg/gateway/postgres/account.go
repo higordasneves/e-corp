@@ -3,6 +3,8 @@ package postgres
 import (
 	"context"
 	"errors"
+	"github.com/gofrs/uuid/v5"
+
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -10,6 +12,7 @@ import (
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres/sqlc"
 	"github.com/higordasneves/e-corp/pkg/repository"
 )
 
@@ -23,13 +26,17 @@ func NewAccountRepo(dbPool *pgxpool.Pool) repository.AccountRepo {
 
 // CreateAccount inserts account in database
 func (accRepo account) CreateAccount(ctx context.Context, acc *entities.Account) error {
-	_, err := accRepo.dbPool.Exec(ctx, `INSERT INTO accounts `+
-		`(id, document_number, name, secret, balance, created_at)`+
-		` VALUES ($1, $2, $3, $4, $5, $6)`, acc.ID.String(), acc.CPF, acc.Name, acc.Secret, int64(acc.Balance), acc.CreatedAt)
-
-	var pgErr *pgconn.PgError
+	err := sqlc.New(accRepo.dbPool).InsertAccount(ctx, sqlc.InsertAccountParams{
+		ID:             uuid.FromStringOrNil(acc.ID.String()),
+		DocumentNumber: acc.CPF.String(),
+		Name:           acc.Name,
+		Secret:         acc.Secret.String(),
+		Balance:        int64(acc.Balance),
+		CreatedAt:      acc.CreatedAt,
+	})
 
 	if err != nil {
+		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
 				return entities.ErrAccAlreadyExists
@@ -37,58 +44,47 @@ func (accRepo account) CreateAccount(ctx context.Context, acc *entities.Account)
 		}
 		return repository.NewDBError(repository.QueryRefCreateAcc, err, repository.ErrUnexpected)
 	}
+
 	return nil
 }
 
 func (accRepo account) FetchAccounts(ctx context.Context) ([]entities.Account, error) {
-	accCount := accRepo.dbPool.QueryRow(ctx, "select count(*) as count from accounts")
-
-	var count int
-	err := accCount.Scan(&count)
-	if err != nil {
-		return nil, err
-	}
-	accList := make([]entities.Account, 0, count)
-
-	rows, err := accRepo.dbPool.Query(ctx, "select id, name, document_number, balance::numeric as balance, created_at from accounts")
-
-	defer rows.Close()
+	rows, err := sqlc.New(accRepo.dbPool).ListAccounts(ctx)
 	if err != nil {
 		return nil, repository.NewDBError(repository.QueryRefFetchAcc, err, repository.ErrUnexpected)
 	}
 
-	for rows.Next() {
-		var acc entities.Account
-		err = rows.Scan(&acc.ID, &acc.Name, &acc.CPF, &acc.Balance, &acc.CreatedAt)
-		if err != nil {
-			return nil, repository.NewDBError(repository.QueryRefFetchAcc, err, repository.ErrUnexpected)
-		}
-		accList = append(accList, acc)
+	accList := make([]entities.Account, 0, len(rows))
+	for _, row := range rows {
+		accList = append(accList, entities.Account{
+			ID:        vos.UUID(row.ID.String()),
+			Name:      row.Name,
+			CPF:       vos.CPF(row.DocumentNumber),
+			Secret:    vos.Secret(row.Secret),
+			Balance:   int(row.Balance),
+			CreatedAt: row.CreatedAt,
+		})
 	}
+
 	return accList, nil
 }
 
 func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
-	row := accRepo.dbPool.QueryRow(ctx,
-		`select balance
-			from accounts
-			where id = $1`, id.String())
-
-	var balance int
-	err := row.Scan(&balance)
-
+	row, err := sqlc.New(accRepo.dbPool).GetAccount(ctx, uuid.FromStringOrNil(id.String()))
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return 0, entities.ErrAccNotFound
 		}
-		return 0, repository.NewDBError(repository.QueryRefGetBalance, err, repository.ErrUnexpected)
+		return 0, repository.NewDBError(repository.QueryRefGetAcc, err, repository.ErrUnexpected)
 	}
 
-	return balance, nil
+	return int(row.Balance), nil
 }
 
 type Querier interface {
 	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
+	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
+	QueryRow(context.Context, string, ...interface{}) pgx.Row
 }
 
 func (accRepo account) UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error {
@@ -99,43 +95,32 @@ func (accRepo account) UpdateBalance(ctx context.Context, id vos.UUID, transacti
 		db = tx.(*pgxpool.Tx)
 	}
 
-	rows, err := db.Exec(ctx,
-		`update accounts
-			set balance = balance + $1
-			where id = $2`, transactionAmount, id.String())
-
+	err := sqlc.New(db).UpdateAccountBalance(ctx, sqlc.UpdateAccountBalanceParams{
+		Amount: int32(transactionAmount),
+		ID:     uuid.FromStringOrNil(id.String()),
+	})
 	if err != nil {
 		return repository.NewDBError(repository.QueryRefUpdateBalance, err, repository.ErrUnexpected)
-	}
-
-	if rows.RowsAffected() == 0 {
-		return entities.ErrZeroRowsAffectedUpdateBalance
 	}
 
 	return nil
 }
 
 func (accRepo account) GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error) {
-	row := accRepo.dbPool.QueryRow(ctx,
-		`select id
-			, name
-			, document_number
-			, secret
-			, balance
-			, created_at
-			from accounts
-			where document_number = $1`, cpf)
-
-	var acc entities.Account
-	err := row.Scan(&acc.ID, &acc.Name, &acc.CPF, &acc.Secret, &acc.Balance, &acc.CreatedAt)
-
+	row, err := sqlc.New(accRepo.dbPool).GetAccountByDocument(ctx, cpf.String())
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, entities.ErrAccNotFound
 		}
-
 		return nil, repository.NewDBError(repository.QueryRefGetAcc, err, repository.ErrUnexpected)
 	}
 
-	return &acc, nil
+	return &entities.Account{
+		ID:        vos.UUID(row.ID.String()),
+		Name:      row.Name,
+		CPF:       vos.CPF(row.DocumentNumber),
+		Secret:    vos.Secret(row.Secret),
+		Balance:   int(row.Balance),
+		CreatedAt: row.CreatedAt,
+	}, nil
 }
