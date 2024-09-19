@@ -3,8 +3,8 @@ package postgres
 import (
 	"context"
 	"errors"
-	"github.com/gofrs/uuid/v5"
 
+	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
