@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -82,7 +83,7 @@ func (tUseCase TransferUseCase) Transfer(ctx context.Context, transferInput *Tra
 func (tUseCase TransferUseCase) validateAccounts(ctx context.Context, transfer *entities.Transfer) error {
 	_, err := tUseCase.repo.GetBalance(ctx, transfer.AccountDestinationID)
 	if err != nil {
-		if err == entities.ErrAccNotFound {
+		if errors.Is(err, entities.ErrAccNotFound) {
 			return fmt.Errorf("destination %w", err)
 		}
 		return err
@@ -90,7 +91,7 @@ func (tUseCase TransferUseCase) validateAccounts(ctx context.Context, transfer *
 
 	originBalance, err := tUseCase.repo.GetBalance(ctx, transfer.AccountOriginID)
 	if err != nil {
-		if err == entities.ErrAccNotFound {
+		if errors.Is(err, entities.ErrAccNotFound) {
 			return fmt.Errorf("origin %w", err)
 		}
 		return err

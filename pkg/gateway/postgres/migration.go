@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"errors"
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/postgres"
 	_ "github.com/golang-migrate/migrate/source/file"
@@ -31,7 +32,7 @@ func Migration(migrationPath string, dbPool *pgxpool.Pool, log *logrus.Logger) e
 
 	err = m.Up()
 
-	if err == migrate.ErrNoChange {
+	if errors.Is(err, migrate.ErrNoChange) {
 		log.WithError(err).Warn(config.ErrMigrateDB)
 		return nil
 	}
