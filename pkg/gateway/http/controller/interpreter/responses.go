@@ -3,12 +3,14 @@ package interpreter
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
+
+	"github.com/sirupsen/logrus"
+
+	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/repository"
-	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 type errJSON struct {
@@ -19,7 +21,7 @@ var (
 	ErrUnexpected = errors.New("an unexpected error occurred")
 )
 
-//SendResponse sends formatted json response to request
+// SendResponse sends formatted json response to request
 func SendResponse(w http.ResponseWriter, statusCode int, data interface{}, log *logrus.Logger) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
@@ -31,7 +33,7 @@ func SendResponse(w http.ResponseWriter, statusCode int, data interface{}, log *
 
 func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 	var statusCode int
-	var dbError *repository.DBError
+	var dbError *domain.DBError
 
 	switch {
 	case errors.Is(err, ErrReadRequest):

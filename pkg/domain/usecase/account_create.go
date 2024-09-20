@@ -10,16 +10,16 @@ import (
 
 const balanceInit = 1000000
 
-//AccountInput represents information necessary to create a bank account
+// AccountInput represents information necessary to create a bank account
 type AccountInput struct {
 	Name   string  `json:"name"`
 	CPF    vos.CPF `json:"cpf"`
 	Secret string  `json:"secret"`
 }
 
-//CreateAccount validates and handles user input and creates a formatted account,
-//then calls the function to insert the account into the database
-func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *AccountInput) (*entities.AccountOutput, error) {
+// CreateAccount validates and handles user input and creates a formatted account,
+// then calls the function to insert the account into the database
+func (accUseCase AccountUseCase) CreateAccount(ctx context.Context, accInput *AccountInput) (*entities.AccountOutput, error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
@@ -51,7 +51,7 @@ func (accUseCase *accountUseCase) CreateAccount(ctx context.Context, accInput *A
 	return account.GetAccOutput(), nil
 }
 
-//ValidateAccountInput validates account input and returns if occurred an error
+// ValidateAccountInput validates account input and returns if occurred an error
 func (accInput *AccountInput) ValidateAccountInput() error {
 	accInput.removeBlankSpaces()
 
@@ -73,7 +73,7 @@ func (accInput *AccountInput) ValidateAccountInput() error {
 	return nil
 }
 
-//validateInputEmpty validates if the user has filled the required fields
+// validateInputEmpty validates if the user has filled the required fields
 func (accInput *AccountInput) validateInputEmpty() error {
 	if accInput.Name == "" || accInput.CPF == "" || accInput.Secret == "" {
 		return entities.ErrEmptyInput
@@ -81,7 +81,7 @@ func (accInput *AccountInput) validateInputEmpty() error {
 	return nil
 }
 
-//removeBlankSpaces removes blank spaces of account fields
+// removeBlankSpaces removes blank spaces of account fields
 func (accInput *AccountInput) removeBlankSpaces() {
 	accInput.Name = strings.TrimSpace(accInput.Name)
 	accInput.CPF = vos.CPF(strings.TrimSpace(accInput.CPF.String()))

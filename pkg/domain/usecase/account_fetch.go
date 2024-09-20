@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-//FetchAccounts calls the func to select all accounts
-func (accUseCase *accountUseCase) FetchAccounts(ctx context.Context) ([]entities.AccountOutput, error) {
+// FetchAccounts calls the func to select all accounts
+func (accUseCase AccountUseCase) FetchAccounts(ctx context.Context) ([]entities.AccountOutput, error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 

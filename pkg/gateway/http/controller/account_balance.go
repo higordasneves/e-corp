@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (accController accountController) GetBalance(w http.ResponseWriter, r *http.Request) {
+func (accController AccountController) GetBalance(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 	id := vos.UUID(params["account_id"])

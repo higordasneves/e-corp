@@ -1,4 +1,4 @@
-package repository
+package domain
 
 import (
 	"errors"
@@ -9,7 +9,6 @@ const (
 	QueryRefCreateAcc          = "CreateAccount"
 	QueryRefFetchAcc           = "FetchAccounts"
 	QueryRefGetAcc             = "GetAccount"
-	QueryRefGetBalance         = "GetBalance"
 	QueryRefUpdateBalance      = "UpdateBalance"
 	QueryRefPerformTransaction = "PerformTransaction"
 	QueryRefCreateTransfer     = "CreateTransfer"

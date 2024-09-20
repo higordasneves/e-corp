@@ -6,7 +6,7 @@ import (
 )
 
 // FetchAccounts reads HTTP GET request for accounts and sends response with account list or error
-func (accController accountController) FetchAccounts(w http.ResponseWriter, r *http.Request) {
+func (accController AccountController) FetchAccounts(w http.ResponseWriter, r *http.Request) {
 	accList, err := accController.accUseCase.FetchAccounts(r.Context())
 	if err != nil {
 		interpreter.HandleError(w, err, accController.log)

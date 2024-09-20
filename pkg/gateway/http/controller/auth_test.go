@@ -1,28 +1,31 @@
-package controller
+package controller_test
 
 import (
 	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	ucmock "github.com/higordasneves/e-corp/pkg/domain/usecase/mock"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
-	"github.com/kinbiko/jsonassert"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/gorilla/mux"
+	"github.com/kinbiko/jsonassert"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 )
 
 func TestAuthController_Login(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		authUC usecase.AuthUseCase
+		authUC controller.AuthUseCase
 	}
 
 	tests := []struct {
@@ -36,7 +39,7 @@ func TestAuthController_Login(t *testing.T) {
 			name:        "with success",
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566678", "secret": "12345678"}`)),
 			fields: fields{
-				authUC: &ucmock.AuthUseCase{
+				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
 						var token usecase.Token = "fake_token"
 						return &token, nil
@@ -50,7 +53,7 @@ func TestAuthController_Login(t *testing.T) {
 			name:        "when account not found should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566690", "secret": "12345678"}`)),
 			fields: fields{
-				authUC: &ucmock.AuthUseCase{
+				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
 						return nil, entities.ErrAccNotFound
 					},
@@ -63,7 +66,7 @@ func TestAuthController_Login(t *testing.T) {
 			name:        "invalid password should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566690", "secret": "123456"}`)),
 			fields: fields{
-				authUC: &ucmock.AuthUseCase{
+				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
 						return nil, vos.ErrInvalidPass
 					},
@@ -76,7 +79,7 @@ func TestAuthController_Login(t *testing.T) {
 			name:        "invalid cpf format should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"cpf": "444.555.666-90", "secret": "12345678"}`)),
 			fields: fields{
-				authUC: &ucmock.AuthUseCase{
+				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
 						return nil, vos.ErrCPFFormat
 					},
@@ -89,7 +92,7 @@ func TestAuthController_Login(t *testing.T) {
 			name:        "unknown error should return status code 500",
 			requestBody: bytes.NewReader([]byte(`{"cpf": "444.555.666-90", "secret": "12345678"}`)),
 			fields: fields{
-				authUC: &ucmock.AuthUseCase{
+				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
 						return nil, errors.New("something")
 					},
@@ -108,7 +111,7 @@ func TestAuthController_Login(t *testing.T) {
 
 			// setup
 			authUC := tt.fields.authUC
-			authCtrl := NewAuthController(authUC, logTest)
+			authCtrl := controller.NewAuthController(authUC, logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/login", authCtrl.Login).Methods(http.MethodPost)

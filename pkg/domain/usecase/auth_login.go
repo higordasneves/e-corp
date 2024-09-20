@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-//LoginInput represents information necessary to access a bank account
+// LoginInput represents information necessary to access a bank account
 type LoginInput struct {
 	CPF    vos.CPF `json:"cpf"`
 	Secret string  `json:"secret"`
@@ -15,8 +15,8 @@ type LoginInput struct {
 
 type Token string
 
-//Login validates credentials then call the func to create a token
-func (authUC authUseCase) Login(ctx context.Context, input *LoginInput) (*Token, error) {
+// Login validates credentials then call the func to create a token
+func (authUC AuthUseCase) Login(ctx context.Context, input *LoginInput) (*Token, error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
@@ -38,8 +38,8 @@ func (authUC authUseCase) Login(ctx context.Context, input *LoginInput) (*Token,
 	return authUC.createAccToken(acc.ID)
 }
 
-//createAccToken generates token for account authorization
-func (authUC authUseCase) createAccToken(accID vos.UUID) (*Token, error) {
+// createAccToken generates token for account authorization
+func (authUC AuthUseCase) createAccToken(accID vos.UUID) (*Token, error) {
 	// Create the Claims
 	claims := &jwt.StandardClaims{
 		Issuer:    "login",

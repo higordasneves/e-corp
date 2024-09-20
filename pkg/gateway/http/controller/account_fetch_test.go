@@ -1,27 +1,29 @@
-package controller
+package controller_test
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	ucmock "github.com/higordasneves/e-corp/pkg/domain/usecase/mock"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
-	"github.com/kinbiko/jsonassert"
-	"github.com/stretchr/testify/assert"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/kinbiko/jsonassert"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 )
 
 func TestAccountController_FetchAccounts(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		accUseCase usecase.AccountUseCase
+		accUseCase controller.AccountUseCase
 	}
 
 	tests := []struct {
@@ -33,7 +35,7 @@ func TestAccountController_FetchAccounts(t *testing.T) {
 		{
 			name: "with success",
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					FetchAccountsFunc: func(ctx context.Context) ([]entities.AccountOutput, error) {
 						return []entities.AccountOutput{
 							{
@@ -77,7 +79,7 @@ func TestAccountController_FetchAccounts(t *testing.T) {
 		{
 			name: "empty database",
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					FetchAccountsFunc: func(ctx context.Context) ([]entities.AccountOutput, error) {
 						return []entities.AccountOutput{}, nil
 					},
@@ -89,7 +91,7 @@ func TestAccountController_FetchAccounts(t *testing.T) {
 		{
 			name: "unexpected error",
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					FetchAccountsFunc: func(ctx context.Context) ([]entities.AccountOutput, error) {
 						return nil, errors.New("unknown error")
 					},
@@ -107,7 +109,7 @@ func TestAccountController_FetchAccounts(t *testing.T) {
 
 			// setup
 			accUseCase := tt.fields.accUseCase
-			accCtrl := NewAccountController(accUseCase, logTest)
+			accCtrl := controller.NewAccountController(accUseCase, logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/accounts", accCtrl.FetchAccounts).Methods(http.MethodGet)

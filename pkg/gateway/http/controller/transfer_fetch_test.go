@@ -1,29 +1,31 @@
-package controller
+package controller_test
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	ucmock "github.com/higordasneves/e-corp/pkg/domain/usecase/mock"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
-	"github.com/kinbiko/jsonassert"
-	"github.com/stretchr/testify/assert"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/kinbiko/jsonassert"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 )
 
 func TestTransferController_FetchTransfers(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		tUseCase usecase.TransferUseCase
+		tUseCase controller.TransferUseCase
 	}
 
 	type args struct {
@@ -39,7 +41,7 @@ func TestTransferController_FetchTransfers(t *testing.T) {
 		{
 			name: "with success",
 			fields: fields{
-				tUseCase: &ucmock.TransferUseCase{
+				tUseCase: &mocks.TransferUseCaseMock{
 					FetchTransfersFunc: func(ctx context.Context, id string) ([]entities.Transfer, error) {
 						return []entities.Transfer{
 							{
@@ -79,7 +81,7 @@ func TestTransferController_FetchTransfers(t *testing.T) {
 		{
 			name: "no transfers, should return empty list and status code 200",
 			fields: fields{
-				tUseCase: &ucmock.TransferUseCase{
+				tUseCase: &mocks.TransferUseCaseMock{
 					FetchTransfersFunc: func(ctx context.Context, id string) ([]entities.Transfer, error) {
 						return []entities.Transfer{}, nil
 					},
@@ -92,7 +94,7 @@ func TestTransferController_FetchTransfers(t *testing.T) {
 		{
 			name: "unknown error should return unexpected error and status code 500",
 			fields: fields{
-				tUseCase: &ucmock.TransferUseCase{
+				tUseCase: &mocks.TransferUseCaseMock{
 					FetchTransfersFunc: func(ctx context.Context, id string) ([]entities.Transfer, error) {
 						return nil, errors.New("new error")
 					},
@@ -111,7 +113,7 @@ func TestTransferController_FetchTransfers(t *testing.T) {
 
 			// setup
 			tUseCase := tt.fields.tUseCase
-			tCtrl := NewTransferController(tUseCase, logTest)
+			tCtrl := controller.NewTransferController(tUseCase, logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/transfers", tCtrl.FetchTransfers).Methods(http.MethodGet)

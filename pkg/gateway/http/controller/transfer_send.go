@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (tController transferController) Transfer(w http.ResponseWriter, r *http.Request) {
+func (tController TransferController) Transfer(w http.ResponseWriter, r *http.Request) {
 	var transferInput usecase.TransferInput
 	if err := interpreter.ReadRequestBody(r, &transferInput); err != nil {
 		interpreter.HandleError(w, err, tController.log)

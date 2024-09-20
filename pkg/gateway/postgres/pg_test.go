@@ -2,8 +2,8 @@ package postgres
 
 import (
 	"context"
+	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
-	"github.com/higordasneves/e-corp/pkg/repository"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ory/dockertest/v3"
 	"github.com/sirupsen/logrus"
@@ -91,6 +91,6 @@ func ClearDB() {
     accounts;`)
 
 	if err != nil {
-		logTest.WithError(err).Println(repository.ErrTruncDB)
+		logTest.WithError(err).Println(domain.ErrTruncDB)
 	}
 }

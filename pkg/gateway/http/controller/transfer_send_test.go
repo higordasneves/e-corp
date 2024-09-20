@@ -1,28 +1,31 @@
-package controller
+package controller_test
 
 import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	ucmock "github.com/higordasneves/e-corp/pkg/domain/usecase/mock"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/kinbiko/jsonassert"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/kinbiko/jsonassert"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 )
 
 func TestTransferController_Transfer(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		tUseCase usecase.TransferUseCase
+		tUseCase controller.TransferUseCase
 	}
 
 	type args struct {
@@ -40,7 +43,7 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "with success",
 			fields: fields{
-				tUseCase: &ucmock.TransferUseCase{
+				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return &entities.Transfer{
 							ID:                   "transfer_id",
@@ -66,7 +69,7 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "same account id in origin and destination should return an error and status code 400",
 			fields: fields{
-				tUseCase: &ucmock.TransferUseCase{
+				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return nil, entities.ErrSelfTransfer
 					},
@@ -82,7 +85,7 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "invalid destination id should return an error and status code 400",
 			fields: fields{
-				tUseCase: &ucmock.TransferUseCase{
+				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return nil, entities.ErrDestAccID
 					},
@@ -98,7 +101,7 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "invalid origin id should return an error and status code 400",
 			fields: fields{
-				tUseCase: &ucmock.TransferUseCase{
+				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return nil, entities.ErrOriginAccID
 					},
@@ -114,7 +117,7 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "when transfer amount < 0 should return an error and status code 400",
 			fields: fields{
-				tUseCase: &ucmock.TransferUseCase{
+				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return nil, entities.ErrTransferAmount
 					},
@@ -130,7 +133,7 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "when origin account balance < transfer amount should return an error and status code 400",
 			fields: fields{
-				tUseCase: &ucmock.TransferUseCase{
+				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return nil, entities.ErrTransferInsufficientFunds
 					},
@@ -146,7 +149,7 @@ func TestTransferController_Transfer(t *testing.T) {
 		{
 			name: "when destination account doesn't exists should return an error and status code 400",
 			fields: fields{
-				tUseCase: &ucmock.TransferUseCase{
+				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return nil, entities.ErrAccNotFound
 					},
@@ -168,7 +171,7 @@ func TestTransferController_Transfer(t *testing.T) {
 
 			// setup
 			tUseCase := tt.fields.tUseCase
-			tCtrl := NewTransferController(tUseCase, logTest)
+			tCtrl := controller.NewTransferController(tUseCase, logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/transfers", tCtrl.Transfer).Methods(http.MethodPost)

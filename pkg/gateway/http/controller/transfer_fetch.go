@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (tController transferController) FetchTransfers(w http.ResponseWriter, r *http.Request) {
+func (tController TransferController) FetchTransfers(w http.ResponseWriter, r *http.Request) {
 	accountOriginID := fmt.Sprint(r.Context().Value("subject"))
 	transferList, err := tController.tUseCase.FetchTransfers(r.Context(), accountOriginID)
 

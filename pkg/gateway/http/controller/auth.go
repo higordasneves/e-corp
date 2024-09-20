@@ -1,26 +1,33 @@
 package controller
 
 import (
+	"context"
+	"net/http"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/sirupsen/logrus"
+
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
-	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
-type AuthController interface {
-	Login(w http.ResponseWriter, r *http.Request)
+//go:generate moq -stub -pkg mocks -out mocks/auth_uc.go . AuthUseCase
+
+type AuthUseCase interface {
+	Login(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error)
+	ValidateToken(tokenString string) (*jwt.StandardClaims, error)
 }
 
-type authController struct {
-	authUseCase usecase.AuthUseCase
+type AuthController struct {
+	authUseCase AuthUseCase
 	log         *logrus.Logger
 }
 
-func NewAuthController(authUseCase usecase.AuthUseCase, log *logrus.Logger) AuthController {
-	return &authController{authUseCase: authUseCase, log: log}
+func NewAuthController(authUseCase AuthUseCase, log *logrus.Logger) AuthController {
+	return AuthController{authUseCase: authUseCase, log: log}
 }
 
-func (authCtrl authController) Login(w http.ResponseWriter, r *http.Request) {
+func (authCtrl AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	var loginInput usecase.LoginInput
 	if err := interpreter.ReadRequestBody(r, &loginInput); err != nil {
 		interpreter.HandleError(w, err, authCtrl.log)

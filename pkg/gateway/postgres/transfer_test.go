@@ -3,13 +3,14 @@ package postgres
 import (
 	"context"
 	"errors"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/repository"
 	"math/rand"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/higordasneves/e-corp/pkg/domain"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
 func TestTransferRepo_CreateTransfer(t *testing.T) {
@@ -36,7 +37,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 		},
 	}
 
-	accRepo := NewAccountRepo(dbTest)
+	accRepo := NewRepository(dbTest)
 	ctxDB := context.Background()
 
 	for _, acc := range accounts {
@@ -71,21 +72,21 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 				Amount:               rand.Int(),
 				CreatedAt:            time.Now().Truncate(time.Second),
 			},
-			expectedErr: repository.NewDBError(repository.QueryRefCreateTransfer, errors.New("any sql error"), errors.New("unexpected error")),
+			expectedErr: domain.NewDBError(domain.QueryRefCreateTransfer, errors.New("any sql error"), errors.New("unexpected error")),
 		},
 	}
 	defer ClearDB()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup
-			tRepo := NewTransferRepository(dbTest)
+			r := NewRepository(dbTest)
 
 			// execute
-			resultErr := tRepo.CreateTransfer(context.Background(), &tt.transfer)
+			resultErr := r.CreateTransfer(context.Background(), &tt.transfer)
 
 			// assert
-			var GotDBError *repository.DBError
-			var WantDBError *repository.DBError
+			var GotDBError *domain.DBError
+			var WantDBError *domain.DBError
 
 			switch {
 			case errors.As(resultErr, &GotDBError) && errors.As(tt.expectedErr, &WantDBError):
@@ -123,7 +124,7 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 		},
 	}
 
-	accRepo := NewAccountRepo(dbTest)
+	accRepo := NewRepository(dbTest)
 	ctxDB := context.Background()
 	for _, acc := range accounts {
 		err := accRepo.CreateAccount(ctxDB, &acc)
@@ -132,7 +133,7 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 		}
 	}
 
-	tRepo := NewTransferRepository(dbTest)
+	r := NewRepository(dbTest)
 
 	var want []entities.Transfer
 	for i := 0; i < 1000; i++ {
@@ -143,7 +144,7 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 			Amount:               rand.Intn(100),
 			CreatedAt:            time.Now().Truncate(time.Second),
 		}
-		err := tRepo.CreateTransfer(ctxDB, transfer)
+		err := r.CreateTransfer(ctxDB, transfer)
 		if err != nil {
 			t.Fatal("error inserting transfers")
 		}
@@ -153,7 +154,7 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 	defer ClearDB()
 
 	//execute
-	result, err := tRepo.FetchTransfers(context.Background(), accOriginID)
+	result, err := r.FetchTransfers(context.Background(), accOriginID)
 
 	// assert
 	if err != nil {

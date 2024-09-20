@@ -3,12 +3,13 @@ package postgres
 import (
 	"context"
 	"errors"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/repository"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/higordasneves/e-corp/pkg/domain"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
 func TestAccRepo_CreateAccount(t *testing.T) {
@@ -31,7 +32,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 			err: nil,
 		},
 		{
-			name: "check error account already exists",
+			name: "check error Repository already exists",
 			acc: &entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
@@ -48,10 +49,10 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var GotDBError *repository.DBError
-			var WantDBError *repository.DBError
+			var GotDBError *domain.DBError
+			var WantDBError *domain.DBError
 
-			accRepo := NewAccountRepo(dbTest)
+			accRepo := NewRepository(dbTest)
 			ctxDB := context.Background()
 			resultErr := accRepo.CreateAccount(ctxDB, tt.acc)
 
@@ -69,7 +70,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 
 func TestAccRepo_FetchAccounts(t *testing.T) {
 	// setup
-	accRepo := NewAccountRepo(dbTest)
+	accRepo := NewRepository(dbTest)
 
 	accounts := []entities.Account{
 		{
@@ -147,7 +148,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 			err:         nil,
 		},
 		{
-			name: "account not found",
+			name: "Repository not found",
 			acc: &entities.Account{
 				ID: vos.NewUUID(),
 			},
@@ -159,14 +160,14 @@ func TestAccRepo_GetBalance(t *testing.T) {
 
 	defer ClearDB()
 
-	var GotDBError *repository.DBError
-	var WantDBError *repository.DBError
+	var GotDBError *domain.DBError
+	var WantDBError *domain.DBError
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			// setup
-			accRepo := NewAccountRepo(dbTest)
+			accRepo := NewRepository(dbTest)
 			if tt.insert {
 				_ = accRepo.CreateAccount(context.Background(), tt.acc)
 			}
@@ -232,13 +233,13 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 
 	defer ClearDB()
 
-	var GotDBError *repository.DBError
-	var WantDBError *repository.DBError
+	var GotDBError *domain.DBError
+	var WantDBError *domain.DBError
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup
-			accRepo := NewAccountRepo(dbTest)
+			accRepo := NewRepository(dbTest)
 			if tt.insert {
 				_ = accRepo.CreateAccount(context.Background(), tt.acc)
 			}
@@ -289,7 +290,7 @@ func TestAccRepo_GetAccount(t *testing.T) {
 			err:         nil,
 		},
 		{
-			name: "account not found",
+			name: "Repository not found",
 			acc: &entities.Account{
 				ID: vos.NewUUID(),
 			},
@@ -303,7 +304,7 @@ func TestAccRepo_GetAccount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup
-			accRepo := NewAccountRepo(dbTest)
+			accRepo := NewRepository(dbTest)
 			if tt.insert {
 				_ = accRepo.CreateAccount(context.Background(), tt.acc)
 			}

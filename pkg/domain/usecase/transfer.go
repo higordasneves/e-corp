@@ -2,22 +2,25 @@ package usecase
 
 import (
 	"context"
+
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/repository"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
-//go:generate moq -skip-ensure -stub -out mock/transfer.go -pkg ucmock ./../../domain/usecase TransferUseCase:TransferUseCase
+type TransferUseCaseRepository interface {
+	GetBalance(ctx context.Context, id vos.UUID) (int, error)
+	GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error)
+	UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error
 
-type TransferUseCase interface {
-	Transfer(ctx context.Context, transferInput *TransferInput) (*entities.Transfer, error)
-	FetchTransfers(ctx context.Context, id string) ([]entities.Transfer, error)
+	CreateTransfer(ctx context.Context, transfer *entities.Transfer) error
+	PerformTransaction(ctx context.Context, ctxChan chan context.Context, errChan chan error) error
+	FetchTransfers(ctx context.Context, id vos.UUID) ([]entities.Transfer, error)
 }
 
-type transferUseCase struct {
-	accountRepo  repository.AccountRepo
-	transferRepo repository.TransferRepo
+type TransferUseCase struct {
+	repo TransferUseCaseRepository
 }
 
-func NewTransferUseCase(accountRepo repository.AccountRepo, transferRepo repository.TransferRepo) TransferUseCase {
-	return &transferUseCase{accountRepo: accountRepo, transferRepo: transferRepo}
+func NewTransferUseCase(r TransferUseCaseRepository) TransferUseCase {
+	return TransferUseCase{repo: r}
 }

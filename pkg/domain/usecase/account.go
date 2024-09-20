@@ -2,23 +2,22 @@ package usecase
 
 import (
 	"context"
+
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/repository"
 )
 
-//go:generate moq -skip-ensure -stub -out mock/account.go -pkg ucmock ./../../domain/usecase AccountUseCase:AccountUseCase
-
-type AccountUseCase interface {
-	CreateAccount(ctx context.Context, input *AccountInput) (*entities.AccountOutput, error)
-	FetchAccounts(ctx context.Context) ([]entities.AccountOutput, error)
+type AccountUseCaseRepository interface {
+	CreateAccount(ctx context.Context, acc *entities.Account) error
+	GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error)
 	GetBalance(ctx context.Context, id vos.UUID) (int, error)
+	FetchAccounts(ctx context.Context) ([]entities.Account, error)
 }
 
-type accountUseCase struct {
-	accountRepo repository.AccountRepo
+type AccountUseCase struct {
+	accountRepo AccountUseCaseRepository
 }
 
-func NewAccountUseCase(accountRepo repository.AccountRepo) AccountUseCase {
-	return &accountUseCase{accountRepo: accountRepo}
+func NewAccountUseCase(accountRepo AccountUseCaseRepository) AccountUseCase {
+	return AccountUseCase{accountRepo: accountRepo}
 }

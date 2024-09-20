@@ -3,7 +3,8 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/repository"
+	"github.com/higordasneves/e-corp/pkg/domain"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -11,7 +12,7 @@ func PerformTransaction(ctx context.Context, ctxChan chan context.Context, db *p
 	tx, err := db.Begin(ctx)
 	if err != nil {
 		close(ctxChan)
-		return repository.NewDBError(repository.QueryRefPerformTransaction, fmt.Errorf("cannot begin transaction, %s", err), repository.ErrUnexpected)
+		return domain.NewDBError(domain.QueryRefPerformTransaction, fmt.Errorf("cannot begin transaction, %s", err), domain.ErrUnexpected)
 	}
 
 	dbCtx := context.WithValue(ctx, "dbConnection", tx)
@@ -22,14 +23,14 @@ func PerformTransaction(ctx context.Context, ctxChan chan context.Context, db *p
 	if err != nil {
 		errRB := tx.Rollback(ctx)
 		if errRB != nil {
-			return repository.NewDBError(repository.QueryRefPerformTransaction, fmt.Errorf("%s, rollback failed too: %s", err, errRB), repository.ErrUnexpected)
+			return domain.NewDBError(domain.QueryRefPerformTransaction, fmt.Errorf("%s, rollback failed too: %s", err, errRB), domain.ErrUnexpected)
 		}
 		return err
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return repository.NewDBError(repository.QueryRefPerformTransaction, fmt.Errorf("cannot commit transaction, %s", err), repository.ErrUnexpected)
+		return domain.NewDBError(domain.QueryRefPerformTransaction, fmt.Errorf("cannot commit transaction, %s", err), domain.ErrUnexpected)
 	}
 	return nil
 }

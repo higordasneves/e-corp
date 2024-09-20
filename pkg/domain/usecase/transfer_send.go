@@ -3,21 +3,22 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"strings"
 	"time"
+
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
-//TransferInput represents information necessary to transfer money between bank accounts
+// TransferInput represents information necessary to transfer money between bank accounts
 type TransferInput struct {
 	AccountOriginID      string
 	AccountDestinationID string `json:"destinationID"`
 	Amount               int    `json:"amount"`
 }
 
-//Transfer creates a transfer and updates account balances of the clients
-func (tUseCase transferUseCase) Transfer(ctx context.Context, transferInput *TransferInput) (*entities.Transfer, error) {
+// Transfer creates a transfer and updates account balances of the clients
+func (tUseCase TransferUseCase) Transfer(ctx context.Context, transferInput *TransferInput) (*entities.Transfer, error) {
 	ctx, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 
@@ -49,19 +50,19 @@ func (tUseCase transferUseCase) Transfer(ctx context.Context, transferInput *Tra
 			return
 		}
 
-		err = tUseCase.transferRepo.CreateTransfer(ctxWithValue, transfer)
+		err = tUseCase.repo.CreateTransfer(ctxWithValue, transfer)
 		if err != nil {
 			errChan <- err
 			return
 		}
 
-		err = tUseCase.accountRepo.UpdateBalance(ctxWithValue, transfer.AccountOriginID, -transfer.Amount)
+		err = tUseCase.repo.UpdateBalance(ctxWithValue, transfer.AccountOriginID, -transfer.Amount)
 		if err != nil {
 			errChan <- err
 			return
 		}
 
-		err = tUseCase.accountRepo.UpdateBalance(ctxWithValue, transfer.AccountDestinationID, transfer.Amount)
+		err = tUseCase.repo.UpdateBalance(ctxWithValue, transfer.AccountDestinationID, transfer.Amount)
 		if err != nil {
 			errChan <- err
 			return
@@ -69,7 +70,7 @@ func (tUseCase transferUseCase) Transfer(ctx context.Context, transferInput *Tra
 		errChan <- nil
 	}()
 
-	err = tUseCase.transferRepo.PerformTransaction(ctx, ctxChan, errChan)
+	err = tUseCase.repo.PerformTransaction(ctx, ctxChan, errChan)
 	if err != nil {
 		return nil, err
 	}
@@ -77,9 +78,9 @@ func (tUseCase transferUseCase) Transfer(ctx context.Context, transferInput *Tra
 	return transfer, nil
 }
 
-//validateAccounts validates existence of the accounts involved and balance sufficiency
-func (tUseCase transferUseCase) validateAccounts(ctx context.Context, transfer *entities.Transfer) error {
-	_, err := tUseCase.accountRepo.GetBalance(ctx, transfer.AccountDestinationID)
+// validateAccounts validates existence of the accounts involved and balance sufficiency
+func (tUseCase TransferUseCase) validateAccounts(ctx context.Context, transfer *entities.Transfer) error {
+	_, err := tUseCase.repo.GetBalance(ctx, transfer.AccountDestinationID)
 	if err != nil {
 		if err == entities.ErrAccNotFound {
 			return fmt.Errorf("destination %w", err)
@@ -87,7 +88,7 @@ func (tUseCase transferUseCase) validateAccounts(ctx context.Context, transfer *
 		return err
 	}
 
-	originBalance, err := tUseCase.accountRepo.GetBalance(ctx, transfer.AccountOriginID)
+	originBalance, err := tUseCase.repo.GetBalance(ctx, transfer.AccountOriginID)
 	if err != nil {
 		if err == entities.ErrAccNotFound {
 			return fmt.Errorf("origin %w", err)
@@ -101,7 +102,7 @@ func (tUseCase transferUseCase) validateAccounts(ctx context.Context, transfer *
 	return nil
 }
 
-//ValidateInput validates transfer input
+// ValidateInput validates transfer input
 func (transferInput *TransferInput) ValidateInput() error {
 	err := vos.IsValidUUID(transferInput.AccountOriginID)
 	if err != nil {
@@ -125,7 +126,7 @@ func (transferInput *TransferInput) ValidateInput() error {
 	return nil
 }
 
-//validateBalance validates if transfer balance is greater than zero
+// validateBalance validates if transfer balance is greater than zero
 func (transferInput *TransferInput) validateBalance() error {
 	if transferInput.Amount <= 0 {
 		return entities.ErrTransferAmount
@@ -133,7 +134,7 @@ func (transferInput *TransferInput) validateBalance() error {
 	return nil
 }
 
-//removesBlankSpaces removes blank spaces of transfer fields
+// removesBlankSpaces removes blank spaces of transfer fields
 func (transferInput *TransferInput) removeBlankSpaces() {
 	transferInput.AccountOriginID = strings.TrimSpace(transferInput.AccountOriginID)
 	transferInput.AccountDestinationID = strings.TrimSpace(transferInput.AccountDestinationID)

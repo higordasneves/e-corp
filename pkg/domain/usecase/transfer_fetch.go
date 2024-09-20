@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (tUseCase transferUseCase) FetchTransfers(ctx context.Context, id string) ([]entities.Transfer, error) {
+func (tUseCase TransferUseCase) FetchTransfers(ctx context.Context, id string) ([]entities.Transfer, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*60)
 	defer cancel()
 
@@ -19,10 +19,10 @@ func (tUseCase transferUseCase) FetchTransfers(ctx context.Context, id string) (
 	}
 	accID := vos.UUID(id)
 
-	_, err = tUseCase.accountRepo.GetBalance(ctx, accID)
+	_, err = tUseCase.repo.GetBalance(ctx, accID)
 	if err != nil {
 		return nil, err
 	}
 
-	return tUseCase.transferRepo.FetchTransfers(ctx, accID)
+	return tUseCase.repo.FetchTransfers(ctx, accID)
 }

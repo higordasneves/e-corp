@@ -2,24 +2,17 @@ package postgres
 
 import (
 	"context"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/repository"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/higordasneves/e-corp/pkg/domain"
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
-type transferRepo struct {
-	dbPool *pgxpool.Pool
-}
-
-func NewTransferRepository(dbPool *pgxpool.Pool) repository.TransferRepo {
-	return &transferRepo{dbPool: dbPool}
-}
-
-func (tRepo transferRepo) CreateTransfer(ctx context.Context, transfer *entities.Transfer) error {
+func (r Repository) CreateTransfer(ctx context.Context, transfer *entities.Transfer) error {
 	var db Querier
-	db = tRepo.dbPool
+	db = r.dbPool
 
 	if tx := ctx.Value("dbConnection"); tx != nil {
 		db = tx.(*pgxpool.Tx)
@@ -30,18 +23,18 @@ func (tRepo transferRepo) CreateTransfer(ctx context.Context, transfer *entities
 		 VALUES ($1, $2, $3, $4, $5)`, transfer.ID.String(), transfer.AccountOriginID.String(), transfer.AccountDestinationID.String(), transfer.Amount, transfer.CreatedAt)
 
 	if err != nil {
-		return repository.NewDBError(repository.QueryRefCreateTransfer, err, repository.ErrUnexpected)
+		return domain.NewDBError(domain.QueryRefCreateTransfer, err, domain.ErrUnexpected)
 	}
 
 	return nil
 }
 
-func (tRepo transferRepo) PerformTransaction(ctx context.Context, ctxChan chan context.Context, errChan chan error) error {
-	return PerformTransaction(ctx, ctxChan, tRepo.dbPool, errChan)
+func (r Repository) PerformTransaction(ctx context.Context, ctxChan chan context.Context, errChan chan error) error {
+	return PerformTransaction(ctx, ctxChan, r.dbPool, errChan)
 }
 
-func (tRepo transferRepo) FetchTransfers(ctx context.Context, id vos.UUID) ([]entities.Transfer, error) {
-	transferCount := tRepo.dbPool.QueryRow(ctx,
+func (r Repository) FetchTransfers(ctx context.Context, id vos.UUID) ([]entities.Transfer, error) {
+	transferCount := r.dbPool.QueryRow(ctx,
 		`select count(*) as count
 			from transfers
 			where account_origin_id = $1`, id.String())
@@ -53,7 +46,7 @@ func (tRepo transferRepo) FetchTransfers(ctx context.Context, id vos.UUID) ([]en
 	}
 	transferList := make([]entities.Transfer, 0, count)
 
-	rows, err := tRepo.dbPool.Query(ctx,
+	rows, err := r.dbPool.Query(ctx,
 		`select id
 				, account_origin_id
 				, account_destination_id
@@ -64,14 +57,14 @@ func (tRepo transferRepo) FetchTransfers(ctx context.Context, id vos.UUID) ([]en
 
 	defer rows.Close()
 	if err != nil {
-		return nil, repository.NewDBError(repository.QueryRefGetTransfers, err, repository.ErrUnexpected)
+		return nil, domain.NewDBError(domain.QueryRefGetTransfers, err, domain.ErrUnexpected)
 	}
 
 	for rows.Next() {
 		var transfer entities.Transfer
 		err = rows.Scan(&transfer.ID, &transfer.AccountOriginID, &transfer.AccountDestinationID, &transfer.Amount, &transfer.CreatedAt)
 		if err != nil {
-			return nil, repository.NewDBError(repository.QueryRefGetTransfers, err, repository.ErrUnexpected)
+			return nil, domain.NewDBError(domain.QueryRefGetTransfers, err, domain.ErrUnexpected)
 		}
 		transferList = append(transferList, transfer)
 	}

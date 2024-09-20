@@ -1,25 +1,27 @@
-package controller
+package controller_test
 
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	ucmock "github.com/higordasneves/e-corp/pkg/domain/usecase/mock"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/kinbiko/jsonassert"
-	"github.com/stretchr/testify/assert"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/gorilla/mux"
+	"github.com/kinbiko/jsonassert"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 )
 
 func TestAccountController_GetBalance(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		accUseCase usecase.AccountUseCase
+		accUseCase controller.AccountUseCase
 	}
 
 	tests := []struct {
@@ -32,7 +34,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 		{
 			name: "with success, balance of 9700000 cents",
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
 						return 9700000, nil
 					},
@@ -47,7 +49,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 		{
 			name: "with success, balance of 5534513 cents",
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
 						return 5534513, nil
 					},
@@ -61,7 +63,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 			name:  "account not found",
 			accID: vos.NewUUID(),
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
 						return 0, entities.ErrAccNotFound
 					},
@@ -74,7 +76,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 			name:  "invalid id",
 			accID: "invalid",
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
 						return 0, vos.ErrInvalidID
 					},
@@ -91,7 +93,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 
 			//setup
 			accUseCase := tt.fields.accUseCase
-			accCtrl := NewAccountController(accUseCase, logTest)
+			accCtrl := controller.NewAccountController(accUseCase, logTest)
 			router := mux.NewRouter()
 			router.HandleFunc("/accounts/{account_id}/balance", accCtrl.GetBalance).Methods(http.MethodGet)
 			path := fmt.Sprintf("/accounts/%v/balance", tt.accID)

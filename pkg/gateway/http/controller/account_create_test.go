@@ -1,4 +1,4 @@
-package controller
+package controller_test
 
 import (
 	"bytes"
@@ -7,8 +7,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	ucmock "github.com/higordasneves/e-corp/pkg/domain/usecase/mock"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -23,7 +24,7 @@ const balanceInit = 1000000
 func TestAccountController_CreateAccount(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		accUseCase usecase.AccountUseCase
+		accUseCase controller.AccountUseCase
 	}
 
 	tests := []struct {
@@ -37,7 +38,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			name:        "with success",
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"44455566678", "secret":"12345678"}`)),
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return &entities.AccountOutput{
 							ID:        "uuid1",
@@ -56,7 +57,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			name:        "when account already exists should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"44455566678", "secret":"12345678"}`)),
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return nil, entities.ErrAccAlreadyExists
 					},
@@ -69,7 +70,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			name:        "invalid cpf length should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"111", "secret":"12345678"}`)),
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return nil, vos.ErrCPFLen
 					},
@@ -82,7 +83,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			name:        "invalid cpf format should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"111.233", "secret":"12345678"}`)),
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return nil, vos.ErrCPFFormat
 					},
@@ -95,7 +96,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			name:        "invalid secret length should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"44455566678", "secret":"123456"}`)),
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return nil, vos.ErrSmallSecret
 					},
@@ -108,7 +109,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			name:        "empty required fields should return error and status code 400",
 			requestBody: bytes.NewReader([]byte(`{"name":"", "cpf":"", "secret":""}`)),
 			fields: fields{
-				accUseCase: &ucmock.AccountUseCase{
+				accUseCase: &mocks.AccountUseCaseMock{
 					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return nil, entities.ErrEmptyInput
 					},
@@ -126,7 +127,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 
 			// setup
 			accUseCase := tt.fields.accUseCase
-			accController := NewAccountController(accUseCase, logTest)
+			accController := controller.NewAccountController(accUseCase, logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/accounts", accController.CreateAccount).Methods(http.MethodPost)

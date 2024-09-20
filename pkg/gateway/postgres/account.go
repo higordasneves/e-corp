@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"github.com/higordasneves/e-corp/pkg/domain"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgerrcode"
@@ -13,20 +14,19 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres/sqlc"
-	"github.com/higordasneves/e-corp/pkg/repository"
 )
 
-type account struct {
+type Repository struct {
 	dbPool *pgxpool.Pool
 }
 
-func NewAccountRepo(dbPool *pgxpool.Pool) repository.AccountRepo {
-	return &account{dbPool}
+func NewRepository(dbPool *pgxpool.Pool) Repository {
+	return Repository{dbPool}
 }
 
-// CreateAccount inserts account in database
-func (accRepo account) CreateAccount(ctx context.Context, acc *entities.Account) error {
-	err := sqlc.New(accRepo.dbPool).InsertAccount(ctx, sqlc.InsertAccountParams{
+// CreateAccount inserts Repository in database
+func (r Repository) CreateAccount(ctx context.Context, acc *entities.Account) error {
+	err := sqlc.New(r.dbPool).InsertAccount(ctx, sqlc.InsertAccountParams{
 		ID:             uuid.FromStringOrNil(acc.ID.String()),
 		DocumentNumber: acc.CPF.String(),
 		Name:           acc.Name,
@@ -42,16 +42,16 @@ func (accRepo account) CreateAccount(ctx context.Context, acc *entities.Account)
 				return entities.ErrAccAlreadyExists
 			}
 		}
-		return repository.NewDBError(repository.QueryRefCreateAcc, err, repository.ErrUnexpected)
+		return domain.NewDBError(domain.QueryRefCreateAcc, err, domain.ErrUnexpected)
 	}
 
 	return nil
 }
 
-func (accRepo account) FetchAccounts(ctx context.Context) ([]entities.Account, error) {
-	rows, err := sqlc.New(accRepo.dbPool).ListAccounts(ctx)
+func (r Repository) FetchAccounts(ctx context.Context) ([]entities.Account, error) {
+	rows, err := sqlc.New(r.dbPool).ListAccounts(ctx)
 	if err != nil {
-		return nil, repository.NewDBError(repository.QueryRefFetchAcc, err, repository.ErrUnexpected)
+		return nil, domain.NewDBError(domain.QueryRefFetchAcc, err, domain.ErrUnexpected)
 	}
 
 	accList := make([]entities.Account, 0, len(rows))
@@ -69,13 +69,13 @@ func (accRepo account) FetchAccounts(ctx context.Context) ([]entities.Account, e
 	return accList, nil
 }
 
-func (accRepo account) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
-	row, err := sqlc.New(accRepo.dbPool).GetAccount(ctx, uuid.FromStringOrNil(id.String()))
+func (r Repository) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
+	row, err := sqlc.New(r.dbPool).GetAccount(ctx, uuid.FromStringOrNil(id.String()))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return 0, entities.ErrAccNotFound
 		}
-		return 0, repository.NewDBError(repository.QueryRefGetAcc, err, repository.ErrUnexpected)
+		return 0, domain.NewDBError(domain.QueryRefGetAcc, err, domain.ErrUnexpected)
 	}
 
 	return int(row.Balance), nil
@@ -87,9 +87,9 @@ type Querier interface {
 	QueryRow(context.Context, string, ...interface{}) pgx.Row
 }
 
-func (accRepo account) UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error {
+func (r Repository) UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error {
 	var db Querier
-	db = accRepo.dbPool
+	db = r.dbPool
 
 	if tx := ctx.Value("dbConnection"); tx != nil {
 		db = tx.(*pgxpool.Tx)
@@ -100,19 +100,19 @@ func (accRepo account) UpdateBalance(ctx context.Context, id vos.UUID, transacti
 		ID:     uuid.FromStringOrNil(id.String()),
 	})
 	if err != nil {
-		return repository.NewDBError(repository.QueryRefUpdateBalance, err, repository.ErrUnexpected)
+		return domain.NewDBError(domain.QueryRefUpdateBalance, err, domain.ErrUnexpected)
 	}
 
 	return nil
 }
 
-func (accRepo account) GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error) {
-	row, err := sqlc.New(accRepo.dbPool).GetAccountByDocument(ctx, cpf.String())
+func (r Repository) GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error) {
+	row, err := sqlc.New(r.dbPool).GetAccountByDocument(ctx, cpf.String())
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, entities.ErrAccNotFound
 		}
-		return nil, repository.NewDBError(repository.QueryRefGetAcc, err, repository.ErrUnexpected)
+		return nil, domain.NewDBError(domain.QueryRefGetAcc, err, domain.ErrUnexpected)
 	}
 
 	return &entities.Account{

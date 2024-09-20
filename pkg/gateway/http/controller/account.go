@@ -1,22 +1,28 @@
 package controller
 
 import (
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"context"
+
 	"github.com/sirupsen/logrus"
-	"net/http"
+
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
-type AccountController interface {
-	CreateAccount(w http.ResponseWriter, r *http.Request)
-	FetchAccounts(w http.ResponseWriter, r *http.Request)
-	GetBalance(w http.ResponseWriter, r *http.Request)
-}
+//go:generate moq -stub -pkg mocks -out mocks/accounts_uc.go . AccountUseCase
 
-type accountController struct {
-	accUseCase usecase.AccountUseCase
+type AccountController struct {
+	accUseCase AccountUseCase
 	log        *logrus.Logger
 }
 
-func NewAccountController(accUseCase usecase.AccountUseCase, log *logrus.Logger) AccountController {
-	return &accountController{accUseCase: accUseCase, log: log}
+type AccountUseCase interface {
+	CreateAccount(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error)
+	GetBalance(ctx context.Context, id vos.UUID) (int, error)
+	FetchAccounts(ctx context.Context) ([]entities.AccountOutput, error)
+}
+
+func NewAccountController(accUseCase AccountUseCase, log *logrus.Logger) AccountController {
+	return AccountController{accUseCase: accUseCase, log: log}
 }

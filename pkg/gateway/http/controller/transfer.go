@@ -1,21 +1,26 @@
 package controller
 
 import (
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"context"
+
 	"github.com/sirupsen/logrus"
-	"net/http"
+
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 )
 
-type TransferController interface {
-	Transfer(w http.ResponseWriter, r *http.Request)
-	FetchTransfers(w http.ResponseWriter, r *http.Request)
+//go:generate moq -stub -pkg mocks -out mocks/transfers_uc.go . TransferUseCase
+
+type TransferUseCase interface {
+	Transfer(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error)
+	FetchTransfers(ctx context.Context, id string) ([]entities.Transfer, error)
 }
 
-type transferController struct {
-	tUseCase usecase.TransferUseCase
+type TransferController struct {
+	tUseCase TransferUseCase
 	log      *logrus.Logger
 }
 
-func NewTransferController(tUseCase usecase.TransferUseCase, log *logrus.Logger) TransferController {
-	return &transferController{tUseCase: tUseCase, log: log}
+func NewTransferController(tUseCase TransferUseCase, log *logrus.Logger) TransferController {
+	return TransferController{tUseCase: tUseCase, log: log}
 }
