@@ -42,38 +42,29 @@ func (tUseCase TransferUseCase) Transfer(ctx context.Context, transferInput *Tra
 		return nil, err
 	}
 
-	ctxChan := make(chan context.Context)
-	errChan := make(chan error)
-
-	go func() {
-		ctxWithValue, ok := <-ctxChan
-		if !ok {
-			return
-		}
-
-		err = tUseCase.repo.CreateTransfer(ctxWithValue, transfer)
-		if err != nil {
-			errChan <- err
-			return
-		}
-
-		err = tUseCase.repo.UpdateBalance(ctxWithValue, transfer.AccountOriginID, -transfer.Amount)
-		if err != nil {
-			errChan <- err
-			return
-		}
-
-		err = tUseCase.repo.UpdateBalance(ctxWithValue, transfer.AccountDestinationID, transfer.Amount)
-		if err != nil {
-			errChan <- err
-			return
-		}
-		errChan <- nil
-	}()
-
-	err = tUseCase.repo.PerformTransaction(ctx, ctxChan, errChan)
+	ctx, err = tUseCase.repo.BeginTX(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("starting transaction: %w", err)
+	}
+	defer tUseCase.repo.RollbackTX(ctx)
+
+	err = tUseCase.repo.CreateTransfer(ctx, transfer)
+	if err != nil {
+		return nil, fmt.Errorf("error creating transfer: %w", err)
+	}
+
+	err = tUseCase.repo.UpdateBalance(ctx, transfer.AccountOriginID, -transfer.Amount)
+	if err != nil {
+		return nil, fmt.Errorf("error updating origin account balance: %w", err)
+	}
+
+	err = tUseCase.repo.UpdateBalance(ctx, transfer.AccountDestinationID, transfer.Amount)
+	if err != nil {
+		return nil, fmt.Errorf("error updating destination account balance: %w", err)
+	}
+
+	if err = tUseCase.repo.CommitTX(ctx); err != nil {
+		return nil, fmt.Errorf("error committing transaction: %w", err)
 	}
 
 	return transfer, nil

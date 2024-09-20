@@ -10,6 +10,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 )
 
 func TestAccRepo_CreateAccount(t *testing.T) {
@@ -52,7 +53,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 			var GotDBError *domain.DBError
 			var WantDBError *domain.DBError
 
-			accRepo := NewRepository(dbTest)
+			accRepo := NewRepository(dbpool.NewConn(dbTest))
 			ctxDB := context.Background()
 			resultErr := accRepo.CreateAccount(ctxDB, tt.acc)
 
@@ -70,7 +71,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 
 func TestAccRepo_FetchAccounts(t *testing.T) {
 	// setup
-	accRepo := NewRepository(dbTest)
+	accRepo := NewRepository(dbpool.NewConn(dbTest))
 
 	accounts := []entities.Account{
 		{
@@ -167,7 +168,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			// setup
-			accRepo := NewRepository(dbTest)
+			accRepo := NewRepository(dbpool.NewConn(dbTest))
 			if tt.insert {
 				_ = accRepo.CreateAccount(context.Background(), tt.acc)
 			}
@@ -239,7 +240,7 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup
-			accRepo := NewRepository(dbTest)
+			accRepo := NewRepository(dbpool.NewConn(dbTest))
 			if tt.insert {
 				_ = accRepo.CreateAccount(context.Background(), tt.acc)
 			}
@@ -304,7 +305,7 @@ func TestAccRepo_GetAccount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup
-			accRepo := NewRepository(dbTest)
+			accRepo := NewRepository(dbpool.NewConn(dbTest))
 			if tt.insert {
 				_ = accRepo.CreateAccount(context.Background(), tt.acc)
 			}

@@ -2,10 +2,7 @@ package postgres
 
 import (
 	"context"
-
 	"github.com/gofrs/uuid/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
@@ -13,14 +10,7 @@ import (
 )
 
 func (r Repository) CreateTransfer(ctx context.Context, transfer *entities.Transfer) error {
-	var db Querier
-	db = r.dbPool
-
-	if tx := ctx.Value("dbConnection"); tx != nil {
-		db = tx.(*pgxpool.Tx)
-	}
-
-	err := sqlc.New(db).InsertTransfer(ctx, sqlc.InsertTransferParams{
+	err := sqlc.New(r.conn.GetTxOrPool(ctx)).InsertTransfer(ctx, sqlc.InsertTransferParams{
 		ID:                   uuid.FromStringOrNil(transfer.ID.String()),
 		AccountOriginID:      uuid.FromStringOrNil(transfer.AccountOriginID.String()),
 		AccountDestinationID: uuid.FromStringOrNil(transfer.AccountDestinationID.String()),
@@ -34,12 +24,8 @@ func (r Repository) CreateTransfer(ctx context.Context, transfer *entities.Trans
 	return nil
 }
 
-func (r Repository) PerformTransaction(ctx context.Context, ctxChan chan context.Context, errChan chan error) error {
-	return PerformTransaction(ctx, ctxChan, r.dbPool, errChan)
-}
-
 func (r Repository) FetchTransfers(ctx context.Context, id vos.UUID) ([]entities.Transfer, error) {
-	rows, err := sqlc.New(r.dbPool).ListAccountSentTransfers(ctx, uuid.FromStringOrNil(id.String()))
+	rows, err := sqlc.New(r.conn.GetTxOrPool(ctx)).ListAccountSentTransfers(ctx, uuid.FromStringOrNil(id.String()))
 	if err != nil {
 		return nil, domain.NewDBError(domain.QueryRefGetTransfers, err, domain.ErrUnexpected)
 	}

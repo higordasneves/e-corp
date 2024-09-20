@@ -3,30 +3,21 @@ package postgres
 import (
 	"context"
 	"errors"
-	"github.com/higordasneves/e-corp/pkg/domain"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres/sqlc"
 )
 
-type Repository struct {
-	dbPool *pgxpool.Pool
-}
-
-func NewRepository(dbPool *pgxpool.Pool) Repository {
-	return Repository{dbPool}
-}
-
 // CreateAccount inserts Repository in database
 func (r Repository) CreateAccount(ctx context.Context, acc *entities.Account) error {
-	err := sqlc.New(r.dbPool).InsertAccount(ctx, sqlc.InsertAccountParams{
+	err := sqlc.New(r.conn.GetTxOrPool(ctx)).InsertAccount(ctx, sqlc.InsertAccountParams{
 		ID:             uuid.FromStringOrNil(acc.ID.String()),
 		DocumentNumber: acc.CPF.String(),
 		Name:           acc.Name,
@@ -49,7 +40,7 @@ func (r Repository) CreateAccount(ctx context.Context, acc *entities.Account) er
 }
 
 func (r Repository) FetchAccounts(ctx context.Context) ([]entities.Account, error) {
-	rows, err := sqlc.New(r.dbPool).ListAccounts(ctx)
+	rows, err := sqlc.New(r.conn.GetTxOrPool(ctx)).ListAccounts(ctx)
 	if err != nil {
 		return nil, domain.NewDBError(domain.QueryRefFetchAcc, err, domain.ErrUnexpected)
 	}
@@ -70,7 +61,7 @@ func (r Repository) FetchAccounts(ctx context.Context) ([]entities.Account, erro
 }
 
 func (r Repository) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
-	row, err := sqlc.New(r.dbPool).GetAccount(ctx, uuid.FromStringOrNil(id.String()))
+	row, err := sqlc.New(r.conn.GetTxOrPool(ctx)).GetAccount(ctx, uuid.FromStringOrNil(id.String()))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return 0, entities.ErrAccNotFound
@@ -88,14 +79,7 @@ type Querier interface {
 }
 
 func (r Repository) UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error {
-	var db Querier
-	db = r.dbPool
-
-	if tx := ctx.Value("dbConnection"); tx != nil {
-		db = tx.(*pgxpool.Tx)
-	}
-
-	err := sqlc.New(db).UpdateAccountBalance(ctx, sqlc.UpdateAccountBalanceParams{
+	err := sqlc.New(r.conn.GetTxOrPool(ctx)).UpdateAccountBalance(ctx, sqlc.UpdateAccountBalanceParams{
 		Amount: int32(transactionAmount),
 		ID:     uuid.FromStringOrNil(id.String()),
 	})
@@ -107,7 +91,7 @@ func (r Repository) UpdateBalance(ctx context.Context, id vos.UUID, transactionA
 }
 
 func (r Repository) GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error) {
-	row, err := sqlc.New(r.dbPool).GetAccountByDocument(ctx, cpf.String())
+	row, err := sqlc.New(r.conn.GetTxOrPool(ctx)).GetAccountByDocument(ctx, cpf.String())
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, entities.ErrAccNotFound

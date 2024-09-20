@@ -13,8 +13,11 @@ type TransferUseCaseRepository interface {
 	UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error
 
 	CreateTransfer(ctx context.Context, transfer *entities.Transfer) error
-	PerformTransaction(ctx context.Context, ctxChan chan context.Context, errChan chan error) error
 	FetchTransfers(ctx context.Context, id vos.UUID) ([]entities.Transfer, error)
+
+	BeginTX(ctx context.Context) (context.Context, error)
+	CommitTX(ctx context.Context) error
+	RollbackTX(ctx context.Context) error
 }
 
 type TransferUseCase struct {

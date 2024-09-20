@@ -11,6 +11,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 )
 
 func TestTransferRepo_CreateTransfer(t *testing.T) {
@@ -37,7 +38,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 		},
 	}
 
-	accRepo := NewRepository(dbTest)
+	accRepo := NewRepository(dbpool.NewConn(dbTest))
 	ctxDB := context.Background()
 
 	for _, acc := range accounts {
@@ -79,7 +80,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup
-			r := NewRepository(dbTest)
+			r := NewRepository(dbpool.NewConn(dbTest))
 
 			// execute
 			resultErr := r.CreateTransfer(context.Background(), &tt.transfer)
@@ -124,7 +125,7 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 		},
 	}
 
-	accRepo := NewRepository(dbTest)
+	accRepo := NewRepository(dbpool.NewConn(dbTest))
 	ctxDB := context.Background()
 	for _, acc := range accounts {
 		err := accRepo.CreateAccount(ctxDB, &acc)
@@ -133,7 +134,7 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 		}
 	}
 
-	r := NewRepository(dbTest)
+	r := NewRepository(dbpool.NewConn(dbTest))
 
 	var want []entities.Transfer
 	for i := 0; i < 1000; i++ {
