@@ -3,11 +3,13 @@ package postgres
 import (
 	"context"
 
+	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres/sqlc"
 )
 
 func (r Repository) CreateTransfer(ctx context.Context, transfer *entities.Transfer) error {
@@ -18,10 +20,13 @@ func (r Repository) CreateTransfer(ctx context.Context, transfer *entities.Trans
 		db = tx.(*pgxpool.Tx)
 	}
 
-	_, err := db.Exec(ctx, `INSERT INTO transfers 
-		(id, account_origin_id, account_destination_id, amount, created_at)
-		 VALUES ($1, $2, $3, $4, $5)`, transfer.ID.String(), transfer.AccountOriginID.String(), transfer.AccountDestinationID.String(), transfer.Amount, transfer.CreatedAt)
-
+	err := sqlc.New(db).InsertTransfer(ctx, sqlc.InsertTransferParams{
+		ID:                   uuid.FromStringOrNil(transfer.ID.String()),
+		AccountOriginID:      uuid.FromStringOrNil(transfer.AccountOriginID.String()),
+		AccountDestinationID: uuid.FromStringOrNil(transfer.AccountDestinationID.String()),
+		Amount:               int64(transfer.Amount),
+		CreatedAt:            transfer.CreatedAt,
+	})
 	if err != nil {
 		return domain.NewDBError(domain.QueryRefCreateTransfer, err, domain.ErrUnexpected)
 	}
@@ -34,39 +39,25 @@ func (r Repository) PerformTransaction(ctx context.Context, ctxChan chan context
 }
 
 func (r Repository) FetchTransfers(ctx context.Context, id vos.UUID) ([]entities.Transfer, error) {
-	transferCount := r.dbPool.QueryRow(ctx,
-		`select count(*) as count
-			from transfers
-			where account_origin_id = $1`, id.String())
-
-	var count int
-	err := transferCount.Scan(&count)
-	if err != nil {
-		return nil, err
-	}
-	transferList := make([]entities.Transfer, 0, count)
-
-	rows, err := r.dbPool.Query(ctx,
-		`select id
-				, account_origin_id
-				, account_destination_id
-				, amount
-				, created_at
-			from transfers
-			where account_origin_id = $1`, id.String())
-
-	defer rows.Close()
+	rows, err := sqlc.New(r.dbPool).ListAccountSentTransfers(ctx, uuid.FromStringOrNil(id.String()))
 	if err != nil {
 		return nil, domain.NewDBError(domain.QueryRefGetTransfers, err, domain.ErrUnexpected)
 	}
 
-	for rows.Next() {
-		var transfer entities.Transfer
-		err = rows.Scan(&transfer.ID, &transfer.AccountOriginID, &transfer.AccountDestinationID, &transfer.Amount, &transfer.CreatedAt)
-		if err != nil {
-			return nil, domain.NewDBError(domain.QueryRefGetTransfers, err, domain.ErrUnexpected)
-		}
-		transferList = append(transferList, transfer)
+	transferList := make([]entities.Transfer, 0, len(rows))
+	for _, row := range rows {
+		transferList = append(transferList, parseSqlcTransfer(row))
 	}
+
 	return transferList, nil
+}
+
+func parseSqlcTransfer(t sqlc.Transfer) entities.Transfer {
+	return entities.Transfer{
+		ID:                   vos.UUID(t.ID.String()),
+		AccountOriginID:      vos.UUID(t.AccountOriginID.String()),
+		AccountDestinationID: vos.UUID(t.AccountDestinationID.String()),
+		Amount:               int(t.Amount),
+		CreatedAt:            t.CreatedAt,
+	}
 }
