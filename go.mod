@@ -4,8 +4,8 @@ go 1.23
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/gofrs/uuid/v5 v5.3.0
 	github.com/golang-migrate/migrate v3.5.4+incompatible
-	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/ilyakaznacheev/cleanenv v1.2.5
 	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451
@@ -33,7 +33,6 @@ require (
 	github.com/docker/docker v20.10.9+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
-	github.com/gofrs/uuid/v5 v5.3.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
