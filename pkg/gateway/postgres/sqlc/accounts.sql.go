@@ -81,11 +81,21 @@ func (q *Queries) InsertAccount(ctx context.Context, arg InsertAccountParams) er
 }
 
 const ListAccounts = `-- name: ListAccounts :many
-select id, document_number, name, secret, balance, created_at, updated_at from accounts
+select id, document_number, name, secret, balance, created_at, updated_at from accounts a
+where id = any($1::uuid[])
+    and ($2::uuid = '00000000-0000-0000-0000-000000000000'  or id < $2::uuid)
+order by a.id desc
+limit $3
 `
 
-func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
-	rows, err := q.db.Query(ctx, ListAccounts)
+type ListAccountsParams struct {
+	Ids           []uuid.UUID
+	LastFetchedID uuid.UUID
+	PageSize      int32
+}
+
+func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
+	rows, err := q.db.Query(ctx, ListAccounts, arg.Ids, arg.LastFetchedID, arg.PageSize)
 	if err != nil {
 		return nil, err
 	}

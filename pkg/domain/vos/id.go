@@ -2,7 +2,7 @@ package vos
 
 import (
 	"errors"
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid/v5"
 )
 
 type (
@@ -17,16 +17,17 @@ func (id UUID) String() string {
 	return string(id)
 }
 
-//NewUUID gets uuid using google lib
+// NewUUID gets uuid using google lib
 func NewUUID() UUID {
-	return UUID(uuid.NewString())
+	return UUID(uuid.Must(uuid.NewV7()).String())
 }
 
 // IsValidUUID validates uuid
 func IsValidUUID(id string) error {
-	_, err := uuid.Parse(id)
-	if err != nil {
+	u := uuid.FromStringOrNil(id)
+	if u.IsNil() {
 		return ErrInvalidID
 	}
+
 	return nil
 }

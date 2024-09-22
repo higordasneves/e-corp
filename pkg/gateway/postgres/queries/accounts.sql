@@ -13,7 +13,11 @@ from accounts
 where document_number = @document_number;
 
 -- name: ListAccounts :many
-select * from accounts;
+select * from accounts a
+where id = any(@ids::uuid[])
+    and (@last_fetched_id::uuid = '00000000-0000-0000-0000-000000000000'  or id < @last_fetched_id::uuid)
+order by a.id desc
+limit @page_size;
 
 -- name: UpdateAccountBalance :exec
 update accounts

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgerrcode"
@@ -42,10 +43,14 @@ func (r Repository) CreateAccount(ctx context.Context, acc entities.Account) err
 	return nil
 }
 
-func (r Repository) ListAccounts(ctx context.Context) ([]entities.Account, error) {
-	rows, err := sqlc.New(r.conn.GetTxOrPool(ctx)).ListAccounts(ctx)
+func (r Repository) ListAccounts(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error) {
+	rows, err := sqlc.New(r.conn.GetTxOrPool(ctx)).ListAccounts(ctx, sqlc.ListAccountsParams{
+		Ids:           input.IDs,
+		LastFetchedID: input.LastFetchedID,
+		PageSize:      int32(input.PageSize),
+	})
 	if err != nil {
-		return nil, domain.NewDBError(domain.QueryRefFetchAcc, err, domain.ErrUnexpected)
+		return usecase.ListAccountsOutput{}, fmt.Errorf("listing accounts: %w", err)
 	}
 
 	accList := make([]entities.Account, 0, len(rows))
@@ -53,7 +58,10 @@ func (r Repository) ListAccounts(ctx context.Context) ([]entities.Account, error
 		accList = append(accList, parseSqlcAccount(row))
 	}
 
-	return accList, nil
+	return usecase.ListAccountsOutput{
+		Accounts: accList,
+		NextPage: &usecase.ListAccountsInput{},
+	}, nil
 }
 
 func (r Repository) GetBalance(ctx context.Context, id vos.UUID) (int, error) {

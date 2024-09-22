@@ -11,7 +11,7 @@ type AccountUseCaseRepository interface {
 	CreateAccount(ctx context.Context, acc entities.Account) error
 	GetAccount(ctx context.Context, cpf vos.CPF) (entities.Account, error)
 	GetBalance(ctx context.Context, id vos.UUID) (int, error)
-	ListAccounts(ctx context.Context) ([]entities.Account, error)
+	ListAccounts(ctx context.Context, input ListAccountsInput) (ListAccountsOutput, error)
 }
 
 type AccountUseCase struct {

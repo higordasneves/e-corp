@@ -3,6 +3,9 @@ package postgres
 import (
 	"context"
 	"errors"
+	"github.com/gofrs/uuid/v5"
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 	"time"
@@ -90,15 +93,17 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 	}
 
 	// execute
-	result, err := repo.ListAccounts(context.Background())
+	result, err := repo.ListAccounts(context.Background(), usecase.ListAccountsInput{
+		IDs:           []uuid.UUID{uuid.FromStringOrNil(accounts[0].ID.String()), uuid.FromStringOrNil(accounts[1].ID.String())},
+		LastFetchedID: uuid.UUID{},
+		PageSize:      2,
+	})
 	if err != nil {
 		t.Errorf("didn't want sql error, but got the error: %v", err)
 	}
 
 	//assert
-	if !reflect.DeepEqual(accounts, result) {
-		t.Errorf("got: %v, want: %v", result, accounts)
-	}
+	assert.ElementsMatch(t, accounts, result.Accounts)
 }
 
 func TestAccRepo_GetBalance(t *testing.T) {
