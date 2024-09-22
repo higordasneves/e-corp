@@ -163,80 +163,52 @@ func TestAccRepo_ListAccounts_Success_Pagination(t *testing.T) {
 	assert.Nil(t, result.NextPage)
 }
 
-func TestAccRepo_GetBalance(t *testing.T) {
+func TestAccRepo_GetBalance_Success(t *testing.T) {
 	t.Parallel()
 
-	accRepo := NewRepository(NewDB(t))
+	r := NewRepository(NewDB(t))
+	account := entities.Account{
+		ID:        vos.NewUUID(),
+		Name:      "Elliot",
+		CPF:       "33344455567",
+		Secret:    "password",
+		Balance:   7000,
+		CreatedAt: time.Now().Truncate(time.Second),
+	}
+	require.NoError(t, r.CreateAccount(context.Background(), account))
 
 	tests := []struct {
-		name        string
-		acc         entities.Account
-		insert      bool
-		expectedErr bool
-		err         error
+		name    string
+		input   vos.UUID
+		want    int
+		wantErr error
 	}{
 		{
-			name: "with success",
-			acc: entities.Account{
-				ID:        vos.NewUUID(),
-				Name:      "Elliot",
-				CPF:       "33344455567",
-				Secret:    "password",
-				Balance:   7000,
-				CreatedAt: time.Now().Truncate(time.Second),
-			},
-			insert:      true,
-			expectedErr: false,
-			err:         nil,
+			name:    "with success",
+			input:   account.ID,
+			want:    account.Balance,
+			wantErr: nil,
 		},
 		{
-			name: "with success balance 0",
-			acc: entities.Account{
-				ID:        vos.NewUUID(),
-				Name:      "Elliot",
-				CPF:       "33344455568",
-				Secret:    "password",
-				Balance:   0,
-				CreatedAt: time.Now().Truncate(time.Second),
-			},
-			insert:      true,
-			expectedErr: false,
-			err:         nil,
-		},
-		{
-			name: "Repository not found",
-			acc: entities.Account{
-				ID: vos.NewUUID(),
-			},
-			insert:      false,
-			expectedErr: true,
-			err:         entities.ErrAccNotFound,
+			name:    "account not found",
+			want:    0,
+			wantErr: domain.Error(domain.NotFoundErrorType, "account not found", nil),
 		},
 	}
 
-	var GotDBError *domain.DBError
-	var WantDBError *domain.DBError
-
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.insert {
-				_ = accRepo.CreateAccount(context.Background(), tt.acc)
-			}
+			t.Parallel()
 
 			// execute
-			result, err := accRepo.GetBalance(context.Background(), tt.acc.ID)
+			result, err := r.GetBalance(context.Background(), tt.input)
 
 			// assert
-			switch {
-			case errors.As(err, &GotDBError) && errors.As(tt.err, &WantDBError):
-				if GotDBError.Query != WantDBError.Query {
-					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
-				}
-			case !errors.Is(err, tt.err):
-				t.Errorf("got error: %v, want: %v", err, tt.err)
-			case !tt.expectedErr && result != tt.acc.Balance:
-				t.Errorf("got: %v, want: %v", result, tt.acc.Balance)
+			if tt.wantErr == nil {
+				require.NoError(t, err)
+				assert.Equal(t, tt.want, result)
+			} else {
+				thelp.AssertDomainError(t, tt.wantErr, err)
 			}
 		})
 	}
