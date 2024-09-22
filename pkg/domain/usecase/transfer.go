@@ -9,7 +9,7 @@ import (
 
 type TransferUseCaseRepository interface {
 	GetBalance(ctx context.Context, id vos.UUID) (int, error)
-	GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error)
+	GetAccount(ctx context.Context, cpf vos.CPF) (entities.Account, error)
 	UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error
 
 	CreateTransfer(ctx context.Context, transfer *entities.Transfer) error

@@ -33,7 +33,7 @@ func (accUseCase AccountUseCase) CreateAccount(ctx context.Context, accInput *Ac
 		return nil, err
 	}
 
-	account := &entities.Account{
+	account := entities.Account{
 		ID:        vos.NewUUID(),
 		Name:      accInput.Name,
 		CPF:       accInput.CPF,

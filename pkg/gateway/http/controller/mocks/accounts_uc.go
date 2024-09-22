@@ -26,7 +26,7 @@ var _ controller.AccountUseCase = &AccountUseCaseMock{}
 //				panic("mock out the CreateAccount method")
 //			},
 //			FetchAccountsFunc: func(ctx context.Context) ([]entities.AccountOutput, error) {
-//				panic("mock out the FetchAccounts method")
+//				panic("mock out the ListAccounts method")
 //			},
 //			GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
 //				panic("mock out the GetBalance method")

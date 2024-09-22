@@ -51,7 +51,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			accRepo := NewRepository(db)
-			err := accRepo.CreateAccount(context.Background(), &tt.input)
+			err := accRepo.CreateAccount(context.Background(), tt.input)
 			if tt.wantErr != nil {
 				thelp.AssertDomainError(t, tt.wantErr, err)
 			}
@@ -83,14 +83,14 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 		},
 	}
 	for _, acc := range accounts {
-		err := repo.CreateAccount(context.Background(), &acc)
+		err := repo.CreateAccount(context.Background(), acc)
 		if err != nil {
 			t.Error("error inserting accounts")
 		}
 	}
 
 	// execute
-	result, err := repo.FetchAccounts(context.Background())
+	result, err := repo.ListAccounts(context.Background())
 	if err != nil {
 		t.Errorf("didn't want sql error, but got the error: %v", err)
 	}
@@ -108,14 +108,14 @@ func TestAccRepo_GetBalance(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		acc         *entities.Account
+		acc         entities.Account
 		insert      bool
 		expectedErr bool
 		err         error
 	}{
 		{
 			name: "with success",
-			acc: &entities.Account{
+			acc: entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455567",
@@ -129,7 +129,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 		},
 		{
 			name: "with success balance 0",
-			acc: &entities.Account{
+			acc: entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455568",
@@ -143,7 +143,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 		},
 		{
 			name: "Repository not found",
-			acc: &entities.Account{
+			acc: entities.Account{
 				ID: vos.NewUUID(),
 			},
 			insert:      false,
@@ -183,7 +183,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 func TestAccRepo_UpdateBalance(t *testing.T) {
 	tests := []struct {
 		name         string
-		acc          *entities.Account
+		acc          entities.Account
 		updateAmount int
 		insert       bool
 		expectedErr  bool
@@ -191,7 +191,7 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 	}{
 		{
 			name: "with success outbound",
-			acc: &entities.Account{
+			acc: entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455567",
@@ -206,7 +206,7 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 		},
 		{
 			name: "with success inbound",
-			acc: &entities.Account{
+			acc: entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455568",
@@ -258,14 +258,14 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 func TestAccRepo_GetAccount(t *testing.T) {
 	tests := []struct {
 		name        string
-		acc         *entities.Account
+		acc         entities.Account
 		insert      bool
 		expectedErr bool
 		err         error
 	}{
 		{
 			name: "with success",
-			acc: &entities.Account{
+			acc: entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455567",
@@ -279,7 +279,7 @@ func TestAccRepo_GetAccount(t *testing.T) {
 		},
 		{
 			name: "Repository not found",
-			acc: &entities.Account{
+			acc: entities.Account{
 				ID: vos.NewUUID(),
 			},
 			insert:      false,

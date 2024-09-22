@@ -11,7 +11,7 @@ func (accUseCase AccountUseCase) FetchAccounts(ctx context.Context) ([]entities.
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
-	accList, err := accUseCase.accountRepo.FetchAccounts(ctx)
+	accList, err := accUseCase.accountRepo.ListAccounts(ctx)
 	if err != nil {
 		return nil, err
 	}

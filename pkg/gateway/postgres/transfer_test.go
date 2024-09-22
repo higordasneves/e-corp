@@ -41,7 +41,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 	ctxDB := context.Background()
 
 	for _, acc := range accounts {
-		err := repo.CreateAccount(ctxDB, &acc)
+		err := repo.CreateAccount(ctxDB, acc)
 		if err != nil {
 			t.Error("error inserting accounts")
 		}
@@ -124,7 +124,7 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 	r := NewRepository(NewDB(t))
 	ctxDB := context.Background()
 	for _, acc := range accounts {
-		err := r.CreateAccount(ctxDB, &acc)
+		err := r.CreateAccount(ctxDB, acc)
 		if err != nil {
 			t.Fatal("error inserting accounts")
 		}

@@ -17,7 +17,7 @@ import (
 )
 
 // CreateAccount inserts an account in the database.
-func (r Repository) CreateAccount(ctx context.Context, acc *entities.Account) error {
+func (r Repository) CreateAccount(ctx context.Context, acc entities.Account) error {
 	err := sqlc.New(r.conn.GetTxOrPool(ctx)).InsertAccount(ctx, sqlc.InsertAccountParams{
 		ID:             uuid.FromStringOrNil(acc.ID.String()),
 		DocumentNumber: acc.CPF.String(),
@@ -42,7 +42,7 @@ func (r Repository) CreateAccount(ctx context.Context, acc *entities.Account) er
 	return nil
 }
 
-func (r Repository) FetchAccounts(ctx context.Context) ([]entities.Account, error) {
+func (r Repository) ListAccounts(ctx context.Context) ([]entities.Account, error) {
 	rows, err := sqlc.New(r.conn.GetTxOrPool(ctx)).ListAccounts(ctx)
 	if err != nil {
 		return nil, domain.NewDBError(domain.QueryRefFetchAcc, err, domain.ErrUnexpected)
@@ -50,14 +50,7 @@ func (r Repository) FetchAccounts(ctx context.Context) ([]entities.Account, erro
 
 	accList := make([]entities.Account, 0, len(rows))
 	for _, row := range rows {
-		accList = append(accList, entities.Account{
-			ID:        vos.UUID(row.ID.String()),
-			Name:      row.Name,
-			CPF:       vos.CPF(row.DocumentNumber),
-			Secret:    vos.Secret(row.Secret),
-			Balance:   int(row.Balance),
-			CreatedAt: row.CreatedAt,
-		})
+		accList = append(accList, parseSqlcAccount(row))
 	}
 
 	return accList, nil
@@ -93,21 +86,25 @@ func (r Repository) UpdateBalance(ctx context.Context, id vos.UUID, transactionA
 	return nil
 }
 
-func (r Repository) GetAccount(ctx context.Context, cpf vos.CPF) (*entities.Account, error) {
+func (r Repository) GetAccount(ctx context.Context, cpf vos.CPF) (entities.Account, error) {
 	row, err := sqlc.New(r.conn.GetTxOrPool(ctx)).GetAccountByDocument(ctx, cpf.String())
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, entities.ErrAccNotFound
+			return entities.Account{}, entities.ErrAccNotFound
 		}
-		return nil, domain.NewDBError(domain.QueryRefGetAcc, err, domain.ErrUnexpected)
+		return entities.Account{}, domain.NewDBError(domain.QueryRefGetAcc, err, domain.ErrUnexpected)
 	}
 
-	return &entities.Account{
-		ID:        vos.UUID(row.ID.String()),
-		Name:      row.Name,
-		CPF:       vos.CPF(row.DocumentNumber),
-		Secret:    vos.Secret(row.Secret),
-		Balance:   int(row.Balance),
-		CreatedAt: row.CreatedAt,
-	}, nil
+	return parseSqlcAccount(row), nil
+}
+
+func parseSqlcAccount(a sqlc.Account) entities.Account {
+	return entities.Account{
+		ID:        vos.UUID(a.ID.String()),
+		Name:      a.Name,
+		CPF:       vos.CPF(a.DocumentNumber),
+		Secret:    vos.Secret(a.Secret),
+		Balance:   int(a.Balance),
+		CreatedAt: a.CreatedAt,
+	}
 }
