@@ -7,8 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
+	thelp "github.com/higordasneves/e-corp/extensions/testhelpers"
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
@@ -19,9 +18,9 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 	db := NewDB(t)
 
 	tests := []struct {
-		name        string
-		input       entities.Account
-		wantErrType domain.ErrorType
+		name    string
+		input   entities.Account
+		wantErr error
 	}{
 		{
 			name: "success",
@@ -33,7 +32,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
 			},
-			wantErrType: 0,
+			wantErr: nil,
 		},
 		{
 			name: "fail - account already exists",
@@ -45,7 +44,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
 			},
-			wantErrType: domain.InvalidParamErrorType,
+			wantErr: domain.Error(domain.InvalidParamErrorType, "account already exists", nil),
 		},
 	}
 
@@ -53,7 +52,9 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			accRepo := NewRepository(db)
 			err := accRepo.CreateAccount(context.Background(), &tt.input)
-			assert.Equal(t, tt.wantErrType, domain.GetErrorType(err))
+			if tt.wantErr != nil {
+				thelp.AssertDomainError(t, tt.wantErr, err)
+			}
 		})
 	}
 }
