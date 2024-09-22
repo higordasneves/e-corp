@@ -91,6 +91,7 @@ func (r Repository) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
 	return int(row.Balance), nil
 }
 
+// UpdateBalance updates an account by adding transactionAmount to the balance.
 func (r Repository) UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error {
 	err := sqlc.New(r.conn.GetTxOrPool(ctx)).UpdateAccountBalance(ctx, sqlc.UpdateAccountBalanceParams{
 		Amount: int32(transactionAmount),
