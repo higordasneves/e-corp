@@ -9,12 +9,15 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
-	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 )
 
 func TestTransferRepo_CreateTransfer(t *testing.T) {
+	t.Parallel()
+
 	// setup
 	accOriginID := uuid.Must(uuid.NewV7())
 	accDestinationID := uuid.Must(uuid.NewV7())
@@ -43,9 +46,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 
 	for _, acc := range accounts {
 		err := repo.CreateAccount(ctxDB, acc)
-		if err != nil {
-			t.Error("error inserting accounts")
-		}
+		require.NoError(t, err)
 	}
 
 	tests := []struct {
@@ -54,7 +55,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			name: "with success",
+			name: "success",
 			transfer: entities.Transfer{
 				ID:                   uuid.Must(uuid.NewV7()),
 				AccountOriginID:      accOriginID,
@@ -67,32 +68,24 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 		{
 			name: "violates foreign key constraint",
 			transfer: entities.Transfer{
-				ID:                   uuid.Must(uuid.NewV7()),
+				ID:                   uuid.FromStringOrNil("5f2d4920-89c3-4ed5-af8e-1d411588746d"),
 				AccountOriginID:      uuid.Must(uuid.NewV7()),
 				AccountDestinationID: uuid.Must(uuid.NewV7()),
 				Amount:               rand.Int(),
 				CreatedAt:            time.Now().Truncate(time.Second),
 			},
-			expectedErr: domain.NewDBError(domain.QueryRefCreateTransfer, errors.New("any sql error"), errors.New("unexpected error")),
+			expectedErr: errors.New("inserting transfer with id 5f2d4920-89c3-4ed5-af8e-1d411588746d"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// execute
-			resultErr := repo.CreateTransfer(context.Background(), &tt.transfer)
-
-			// assert
-			var GotDBError *domain.DBError
-			var WantDBError *domain.DBError
-
-			switch {
-			case errors.As(resultErr, &GotDBError) && errors.As(tt.expectedErr, &WantDBError):
-				if GotDBError.Query != WantDBError.Query {
-					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
-				}
-			case !errors.Is(resultErr, tt.expectedErr):
-				t.Errorf("got error: %v want: %v", resultErr, tt.expectedErr)
+			err := repo.CreateTransfer(context.Background(), &tt.transfer)
+			if tt.expectedErr == nil {
+				assert.NoError(t, err)
+			} else {
+				assert.ErrorContains(t, err, tt.expectedErr.Error())
 			}
 		})
 	}

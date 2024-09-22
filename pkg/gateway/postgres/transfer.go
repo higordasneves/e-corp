@@ -2,12 +2,16 @@ package postgres
 
 import (
 	"context"
+	"fmt"
+
 	"github.com/gofrs/uuid/v5"
+
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres/sqlc"
 )
 
+// CreateTransfer inserts a transfer in the database.
 func (r Repository) CreateTransfer(ctx context.Context, transfer *entities.Transfer) error {
 	err := sqlc.New(r.conn.GetTxOrPool(ctx)).InsertTransfer(ctx, sqlc.InsertTransferParams{
 		ID:                   uuid.FromStringOrNil(transfer.ID.String()),
@@ -17,7 +21,7 @@ func (r Repository) CreateTransfer(ctx context.Context, transfer *entities.Trans
 		CreatedAt:            transfer.CreatedAt,
 	})
 	if err != nil {
-		return domain.NewDBError(domain.QueryRefCreateTransfer, err, domain.ErrUnexpected)
+		return fmt.Errorf("inserting transfer with id %s: %w", transfer.ID.String(), err)
 	}
 
 	return nil
