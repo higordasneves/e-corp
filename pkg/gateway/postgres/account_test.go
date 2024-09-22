@@ -2,17 +2,17 @@ package postgres
 
 import (
 	"context"
-	"errors"
-	"github.com/gofrs/uuid/v5"
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
@@ -160,7 +160,7 @@ func TestAccRepo_ListAccounts_Success_Pagination(t *testing.T) {
 	assert.Nil(t, result.NextPage)
 }
 
-func TestAccRepo_GetBalance_Success(t *testing.T) {
+func TestAccRepo_GetBalance(t *testing.T) {
 	t.Parallel()
 
 	r := NewRepository(NewDB(t))
@@ -209,76 +209,60 @@ func TestAccRepo_GetBalance_Success(t *testing.T) {
 }
 
 func TestAccRepo_UpdateBalance(t *testing.T) {
+	t.Parallel()
+
+	// setup
+	r := NewRepository(NewDB(t))
+	account1 := entities.Account{
+		ID:        vos.NewUUID(),
+		Name:      "Elliot",
+		CPF:       "33344455567",
+		Secret:    "password",
+		Balance:   7000,
+		CreatedAt: time.Now().Truncate(time.Second),
+	}
+	require.NoError(t, r.CreateAccount(context.Background(), account1))
+
+	account2 := entities.Account{
+		ID:        vos.NewUUID(),
+		Name:      "Elliot",
+		CPF:       "33344455568",
+		Secret:    "password",
+		Balance:   0,
+		CreatedAt: time.Now().Truncate(time.Second),
+	}
+	require.NoError(t, r.CreateAccount(context.Background(), account2))
+
 	tests := []struct {
-		name         string
-		acc          entities.Account
-		updateAmount int
-		insert       bool
-		expectedErr  bool
-		err          error
+		name               string
+		accountID          vos.UUID
+		amount             int
+		wantAccountBalance int
 	}{
 		{
-			name: "with success outbound",
-			acc: entities.Account{
-				ID:        vos.NewUUID(),
-				Name:      "Elliot",
-				CPF:       "33344455567",
-				Secret:    "password",
-				Balance:   7000,
-				CreatedAt: time.Now().Truncate(time.Second),
-			},
-			updateAmount: -5000,
-			insert:       true,
-			expectedErr:  false,
-			err:          nil,
+			name:               "success - positive amount",
+			accountID:          account1.ID,
+			amount:             -5000,
+			wantAccountBalance: 2000,
 		},
 		{
-			name: "with success inbound",
-			acc: entities.Account{
-				ID:        vos.NewUUID(),
-				Name:      "Elliot",
-				CPF:       "33344455568",
-				Secret:    "password",
-				Balance:   0,
-				CreatedAt: time.Now().Truncate(time.Second),
-			},
-			updateAmount: 5000,
-			insert:       true,
-			expectedErr:  false,
-			err:          nil,
+			name:               "success - negative amount",
+			accountID:          account2.ID,
+			amount:             5000,
+			wantAccountBalance: 5000,
 		},
 	}
 
-	var GotDBError *domain.DBError
-	var WantDBError *domain.DBError
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// setup
-			accRepo := NewRepository(NewDB(t))
-			if tt.insert {
-				_ = accRepo.CreateAccount(context.Background(), tt.acc)
-			}
-
 			// execute
-			err := accRepo.UpdateBalance(context.Background(), tt.acc.ID, tt.updateAmount)
+			err := r.UpdateBalance(context.Background(), tt.accountID, tt.amount)
 
 			// assert
-			switch {
-			case errors.As(err, &GotDBError) && errors.As(tt.err, &WantDBError):
-				if GotDBError.Query != WantDBError.Query {
-					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
-				}
-			case err != tt.err:
-				t.Errorf("got error: %v, want: %v", err, tt.err)
-			case !tt.expectedErr:
-				gotBalance, errGetBalance := accRepo.GetBalance(context.Background(), tt.acc.ID)
-				if errGetBalance != nil {
-					t.Error("unexpected error in get balance query")
-				} else if gotBalance != tt.acc.Balance+tt.updateAmount {
-					t.Errorf("got: %v, want: %v", gotBalance, tt.acc.Balance+tt.updateAmount)
-				}
-			}
+			require.NoError(t, err)
+			got, err := r.GetBalance(context.Background(), tt.accountID)
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantAccountBalance, got)
 		})
 	}
 }
