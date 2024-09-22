@@ -36,14 +36,15 @@ func (q *Queries) InsertTransfer(ctx context.Context, arg InsertTransferParams) 
 	return err
 }
 
-const ListAccountSentTransfers = `-- name: ListAccountSentTransfers :many
+const ListSentTransfersByAccountID = `-- name: ListSentTransfersByAccountID :many
 select id, account_origin_id, account_destination_id, amount, created_at, updated_at
 from transfers
 where account_origin_id = $1
+order by id desc
 `
 
-func (q *Queries) ListAccountSentTransfers(ctx context.Context, accountOriginID uuid.UUID) ([]Transfer, error) {
-	rows, err := q.db.Query(ctx, ListAccountSentTransfers, accountOriginID)
+func (q *Queries) ListSentTransfersByAccountID(ctx context.Context, accountOriginID uuid.UUID) ([]Transfer, error) {
+	rows, err := q.db.Query(ctx, ListSentTransfersByAccountID, accountOriginID)
 	if err != nil {
 		return nil, err
 	}

@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gofrs/uuid/v5"
 	"time"
+
+	"github.com/gofrs/uuid/v5"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 )
@@ -27,7 +28,7 @@ func (tUseCase TransferUseCase) Transfer(ctx context.Context, transferInput *Tra
 		return nil, err
 	}
 
-	transfer := &entities.Transfer{
+	transfer := entities.Transfer{
 		ID:                   uuid.Must(uuid.NewV7()),
 		AccountOriginID:      transferInput.AccountOriginID,
 		AccountDestinationID: transferInput.AccountDestinationID,
@@ -65,11 +66,11 @@ func (tUseCase TransferUseCase) Transfer(ctx context.Context, transferInput *Tra
 		return nil, fmt.Errorf("error committing transaction: %w", err)
 	}
 
-	return transfer, nil
+	return &transfer, nil
 }
 
 // validateAccounts validates existence of the accounts involved and balance sufficiency
-func (tUseCase TransferUseCase) validateAccounts(ctx context.Context, transfer *entities.Transfer) error {
+func (tUseCase TransferUseCase) validateAccounts(ctx context.Context, transfer entities.Transfer) error {
 	_, err := tUseCase.repo.GetBalance(ctx, transfer.AccountDestinationID)
 	if err != nil {
 		if errors.Is(err, entities.ErrAccNotFound) {

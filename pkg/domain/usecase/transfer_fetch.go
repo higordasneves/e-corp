@@ -18,5 +18,5 @@ func (tUseCase TransferUseCase) FetchTransfers(ctx context.Context, accID string
 		return nil, err
 	}
 
-	return tUseCase.repo.FetchTransfers(ctx, uuid.FromStringOrNil(accID))
+	return tUseCase.repo.ListSentTransfersByAccountID(ctx, uuid.FromStringOrNil(accID))
 }

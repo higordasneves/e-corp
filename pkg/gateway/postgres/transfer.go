@@ -6,13 +6,12 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres/sqlc"
 )
 
 // CreateTransfer inserts a transfer in the database.
-func (r Repository) CreateTransfer(ctx context.Context, transfer *entities.Transfer) error {
+func (r Repository) CreateTransfer(ctx context.Context, transfer entities.Transfer) error {
 	err := sqlc.New(r.conn.GetTxOrPool(ctx)).InsertTransfer(ctx, sqlc.InsertTransferParams{
 		ID:                   uuid.FromStringOrNil(transfer.ID.String()),
 		AccountOriginID:      uuid.FromStringOrNil(transfer.AccountOriginID.String()),
@@ -27,10 +26,11 @@ func (r Repository) CreateTransfer(ctx context.Context, transfer *entities.Trans
 	return nil
 }
 
-func (r Repository) FetchTransfers(ctx context.Context, id uuid.UUID) ([]entities.Transfer, error) {
-	rows, err := sqlc.New(r.conn.GetTxOrPool(ctx)).ListAccountSentTransfers(ctx, uuid.FromStringOrNil(id.String()))
+// ListSentTransfersByAccountID lists all transfers made by an account in descending order.
+func (r Repository) ListSentTransfersByAccountID(ctx context.Context, accountID uuid.UUID) ([]entities.Transfer, error) {
+	rows, err := sqlc.New(r.conn.GetTxOrPool(ctx)).ListSentTransfersByAccountID(ctx, uuid.FromStringOrNil(accountID.String()))
 	if err != nil {
-		return nil, domain.NewDBError(domain.QueryRefGetTransfers, err, domain.ErrUnexpected)
+		return nil, fmt.Errorf("listing transfer for account %s: %w", accountID.String(), err)
 	}
 
 	transferList := make([]entities.Transfer, 0, len(rows))

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"math/rand"
-	"reflect"
 	"testing"
 	"time"
 
@@ -81,7 +80,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// execute
-			err := repo.CreateTransfer(context.Background(), &tt.transfer)
+			err := repo.CreateTransfer(context.Background(), tt.transfer)
 			if tt.expectedErr == nil {
 				assert.NoError(t, err)
 			} else {
@@ -91,7 +90,9 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 	}
 }
 
-func TestTransferRepo_FetchTransfers(t *testing.T) {
+func TestTransferRepo_ListSentTransfersByAccountID(t *testing.T) {
+	t.Parallel()
+
 	// setup
 	accOriginID := uuid.Must(uuid.NewV7())
 	accDestinationID := uuid.Must(uuid.NewV7())
@@ -119,14 +120,12 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 	ctxDB := context.Background()
 	for _, acc := range accounts {
 		err := r.CreateAccount(ctxDB, acc)
-		if err != nil {
-			t.Fatal("error inserting accounts")
-		}
+		require.NoError(t, err)
 	}
 
 	var want []entities.Transfer
 	for i := 0; i < 1000; i++ {
-		transfer := &entities.Transfer{
+		transfer := entities.Transfer{
 			ID:                   uuid.Must(uuid.NewV7()),
 			AccountOriginID:      accOriginID,
 			AccountDestinationID: accDestinationID,
@@ -137,18 +136,12 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 		if err != nil {
 			t.Fatal("error inserting transfers")
 		}
-		want = append(want, *transfer)
+		want = append(want, transfer)
 	}
 
 	//execute
-	result, err := r.FetchTransfers(context.Background(), accOriginID)
-
+	result, err := r.ListSentTransfersByAccountID(context.Background(), accOriginID)
 	// assert
-	if err != nil {
-		t.Errorf("didn't want sql error, but got the error: %v", err)
-	}
-
-	if !reflect.DeepEqual(want, result) {
-		t.Errorf("got: %v, want: %v", result, want)
-	}
+	require.NoError(t, err)
+	assert.ElementsMatch(t, want, result)
 }
