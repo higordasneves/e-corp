@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgerrcode"
@@ -15,7 +16,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres/sqlc"
 )
 
-// CreateAccount inserts Repository in database
+// CreateAccount inserts an account in the database.
 func (r Repository) CreateAccount(ctx context.Context, acc *entities.Account) error {
 	err := sqlc.New(r.conn.GetTxOrPool(ctx)).InsertAccount(ctx, sqlc.InsertAccountParams{
 		ID:             uuid.FromStringOrNil(acc.ID.String()),
@@ -30,10 +31,12 @@ func (r Repository) CreateAccount(ctx context.Context, acc *entities.Account) er
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return entities.ErrAccAlreadyExists
+				return domain.Error(domain.InvalidParamErrorType, "account already exists", map[string]string{
+					"account_id": acc.ID.String(),
+				})
 			}
 		}
-		return domain.NewDBError(domain.QueryRefCreateAcc, err, domain.ErrUnexpected)
+		return fmt.Errorf("creating account: %w", err)
 	}
 
 	return nil

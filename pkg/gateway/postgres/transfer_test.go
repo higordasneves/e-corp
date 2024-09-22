@@ -11,7 +11,6 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 )
 
 func TestTransferRepo_CreateTransfer(t *testing.T) {
@@ -38,11 +37,11 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 		},
 	}
 
-	accRepo := NewRepository(dbpool.NewConn(dbTest))
+	repo := NewRepository(NewDB(t))
 	ctxDB := context.Background()
 
 	for _, acc := range accounts {
-		err := accRepo.CreateAccount(ctxDB, &acc)
+		err := repo.CreateAccount(ctxDB, &acc)
 		if err != nil {
 			t.Error("error inserting accounts")
 		}
@@ -76,14 +75,11 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 			expectedErr: domain.NewDBError(domain.QueryRefCreateTransfer, errors.New("any sql error"), errors.New("unexpected error")),
 		},
 	}
-	defer ClearDB()
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// setup
-			r := NewRepository(dbpool.NewConn(dbTest))
-
 			// execute
-			resultErr := r.CreateTransfer(context.Background(), &tt.transfer)
+			resultErr := repo.CreateTransfer(context.Background(), &tt.transfer)
 
 			// assert
 			var GotDBError *domain.DBError
@@ -94,7 +90,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 				if GotDBError.Query != WantDBError.Query {
 					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
 				}
-			case resultErr != tt.expectedErr:
+			case !errors.Is(resultErr, tt.expectedErr):
 				t.Errorf("got error: %v want: %v", resultErr, tt.expectedErr)
 			}
 		})
@@ -125,16 +121,14 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 		},
 	}
 
-	accRepo := NewRepository(dbpool.NewConn(dbTest))
+	r := NewRepository(NewDB(t))
 	ctxDB := context.Background()
 	for _, acc := range accounts {
-		err := accRepo.CreateAccount(ctxDB, &acc)
+		err := r.CreateAccount(ctxDB, &acc)
 		if err != nil {
 			t.Fatal("error inserting accounts")
 		}
 	}
-
-	r := NewRepository(dbpool.NewConn(dbTest))
 
 	var want []entities.Transfer
 	for i := 0; i < 1000; i++ {
@@ -151,8 +145,6 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 		}
 		want = append(want, *transfer)
 	}
-
-	defer ClearDB()
 
 	//execute
 	result, err := r.FetchTransfers(context.Background(), accOriginID)

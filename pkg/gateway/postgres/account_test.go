@@ -7,22 +7,25 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 )
 
 func TestAccRepo_CreateAccount(t *testing.T) {
+	t.Parallel()
+	db := NewDB(t)
 
 	tests := []struct {
-		name string
-		acc  *entities.Account
-		err  error
+		name        string
+		input       entities.Account
+		wantErrType domain.ErrorType
 	}{
 		{
-			name: "with success",
-			acc: &entities.Account{
+			name: "success",
+			input: entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455566",
@@ -30,11 +33,11 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
 			},
-			err: nil,
+			wantErrType: 0,
 		},
 		{
-			name: "check error Repository already exists",
-			acc: &entities.Account{
+			name: "fail - account already exists",
+			input: entities.Account{
 				ID:        vos.NewUUID(),
 				Name:      "Elliot",
 				CPF:       "33344455566",
@@ -42,36 +45,23 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
 			},
-			err: entities.ErrAccAlreadyExists,
+			wantErrType: domain.InvalidParamErrorType,
 		},
 	}
 
-	defer ClearDB()
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var GotDBError *domain.DBError
-			var WantDBError *domain.DBError
-
-			accRepo := NewRepository(dbpool.NewConn(dbTest))
-			ctxDB := context.Background()
-			resultErr := accRepo.CreateAccount(ctxDB, tt.acc)
-
-			switch {
-			case errors.As(resultErr, &GotDBError) && errors.As(tt.err, &WantDBError):
-				if GotDBError.Query != WantDBError.Query {
-					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
-				}
-			case resultErr != tt.err:
-				t.Errorf("got error: %v, want error: %v", resultErr, tt.err)
-			}
+			accRepo := NewRepository(db)
+			err := accRepo.CreateAccount(context.Background(), &tt.input)
+			assert.Equal(t, tt.wantErrType, domain.GetErrorType(err))
 		})
 	}
 }
 
 func TestAccRepo_FetchAccounts(t *testing.T) {
-	// setup
-	accRepo := NewRepository(dbpool.NewConn(dbTest))
+	t.Parallel()
+
+	repo := NewRepository(NewDB(t))
 
 	accounts := []entities.Account{
 		{
@@ -92,16 +82,14 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 		},
 	}
 	for _, acc := range accounts {
-		err := accRepo.CreateAccount(context.Background(), &acc)
+		err := repo.CreateAccount(context.Background(), &acc)
 		if err != nil {
 			t.Error("error inserting accounts")
 		}
 	}
 
-	defer ClearDB()
-
 	// execute
-	result, err := accRepo.FetchAccounts(context.Background())
+	result, err := repo.FetchAccounts(context.Background())
 	if err != nil {
 		t.Errorf("didn't want sql error, but got the error: %v", err)
 	}
@@ -113,6 +101,10 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 }
 
 func TestAccRepo_GetBalance(t *testing.T) {
+	t.Parallel()
+
+	accRepo := NewRepository(NewDB(t))
+
 	tests := []struct {
 		name        string
 		acc         *entities.Account
@@ -159,16 +151,12 @@ func TestAccRepo_GetBalance(t *testing.T) {
 		},
 	}
 
-	defer ClearDB()
-
 	var GotDBError *domain.DBError
 	var WantDBError *domain.DBError
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			// setup
-			accRepo := NewRepository(dbpool.NewConn(dbTest))
 			if tt.insert {
 				_ = accRepo.CreateAccount(context.Background(), tt.acc)
 			}
@@ -182,7 +170,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 				if GotDBError.Query != WantDBError.Query {
 					t.Errorf("got sql error in query: %v, want: %v", GotDBError.Query, WantDBError.Query)
 				}
-			case err != tt.err:
+			case !errors.Is(err, tt.err):
 				t.Errorf("got error: %v, want: %v", err, tt.err)
 			case !tt.expectedErr && result != tt.acc.Balance:
 				t.Errorf("got: %v, want: %v", result, tt.acc.Balance)
@@ -232,15 +220,13 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 		},
 	}
 
-	defer ClearDB()
-
 	var GotDBError *domain.DBError
 	var WantDBError *domain.DBError
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup
-			accRepo := NewRepository(dbpool.NewConn(dbTest))
+			accRepo := NewRepository(NewDB(t))
 			if tt.insert {
 				_ = accRepo.CreateAccount(context.Background(), tt.acc)
 			}
@@ -301,11 +287,10 @@ func TestAccRepo_GetAccount(t *testing.T) {
 		},
 	}
 
-	defer ClearDB()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup
-			accRepo := NewRepository(dbpool.NewConn(dbTest))
+			accRepo := NewRepository(NewDB(t))
 			if tt.insert {
 				_ = accRepo.CreateAccount(context.Background(), tt.acc)
 			}
