@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
 
@@ -268,56 +267,46 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 }
 
 func TestAccRepo_GetAccountByDocument(t *testing.T) {
+	t.Parallel()
+
+	// setup
+	r := NewRepository(NewDB(t))
+	account1 := entities.Account{
+		ID:        vos.NewUUID(),
+		Name:      "Elliot",
+		CPF:       "33344455567",
+		Secret:    "password",
+		Balance:   7000,
+		CreatedAt: time.Now().Truncate(time.Second),
+	}
+	require.NoError(t, r.CreateAccount(context.Background(), account1))
+
 	tests := []struct {
-		name        string
-		acc         entities.Account
-		insert      bool
-		expectedErr bool
-		err         error
+		name     string
+		document vos.CPF
+		want     entities.Account
+		wantErr  error
 	}{
 		{
-			name: "with success",
-			acc: entities.Account{
-				ID:        vos.NewUUID(),
-				Name:      "Elliot",
-				CPF:       "33344455567",
-				Secret:    "password",
-				Balance:   7000,
-				CreatedAt: time.Now().Truncate(time.Second),
-			},
-			insert:      true,
-			expectedErr: false,
-			err:         nil,
+			name:     "with success",
+			document: vos.CPF("33344455567"),
+			want:     account1,
+			wantErr:  nil,
 		},
 		{
-			name: "Repository not found",
-			acc: entities.Account{
-				ID: vos.NewUUID(),
-			},
-			insert:      false,
-			expectedErr: true,
-			err:         domain.ErrNotFound,
+			name:     "Repository not found",
+			document: vos.CPF("1"),
+			wantErr:  domain.ErrNotFound,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// setup
-			accRepo := NewRepository(NewDB(t))
-			if tt.insert {
-				_ = accRepo.CreateAccount(context.Background(), tt.acc)
-			}
-
 			// execute
-			result, err := accRepo.GetAccountByDocument(context.Background(), tt.acc.CPF)
-			if tt.expectedErr && err != tt.err {
-				t.Errorf("got: %v, want: %v", err, tt.err)
-			}
-
+			result, err := r.GetAccountByDocument(context.Background(), tt.document)
 			// assert
-			if !tt.expectedErr && reflect.DeepEqual(&result, tt.acc) {
-				t.Errorf("got: %v, want: %v", &result, tt.acc)
-			}
+			assert.ErrorIs(t, err, tt.wantErr)
+			assert.Equal(t, tt.want, result)
 		})
 	}
 }
