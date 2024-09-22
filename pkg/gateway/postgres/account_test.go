@@ -91,7 +91,7 @@ func TestAccRepo_ListAccounts_Success(t *testing.T) {
 
 	// execute
 	result, err := repo.ListAccounts(context.Background(), usecase.ListAccountsInput{
-		IDs:           []uuid.UUID{uuid.FromStringOrNil(accounts[0].ID.String()), uuid.FromStringOrNil(accounts[1].ID.String())},
+		IDs:           []uuid.UUID{accounts[0].ID, accounts[1].ID},
 		LastFetchedID: uuid.UUID{},
 		PageSize:      2,
 	})
@@ -134,7 +134,7 @@ func TestAccRepo_ListAccounts_Success_Pagination(t *testing.T) {
 
 	// execute: listing page 1
 	result, err := repo.ListAccounts(context.Background(), usecase.ListAccountsInput{
-		IDs:           []uuid.UUID{uuid.FromStringOrNil(accounts[0].ID.String()), uuid.FromStringOrNil(accounts[1].ID.String())},
+		IDs:           []uuid.UUID{accounts[0].ID, accounts[1].ID},
 		LastFetchedID: uuid.UUID{},
 		PageSize:      1,
 	})
@@ -144,7 +144,7 @@ func TestAccRepo_ListAccounts_Success_Pagination(t *testing.T) {
 	assert.Len(t, result.Accounts, 1)
 	assert.Equal(t, accounts[1], result.Accounts[0])
 	assert.Equal(t, usecase.ListAccountsInput{
-		IDs:           []uuid.UUID{uuid.FromStringOrNil(accounts[0].ID.String()), uuid.FromStringOrNil(accounts[1].ID.String())},
+		IDs:           []uuid.UUID{accounts[0].ID, accounts[1].ID},
 		LastFetchedID: uuid.FromStringOrNil(accounts[1].ID.String()),
 		PageSize:      1,
 	}, *result.NextPage)
