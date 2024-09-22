@@ -91,12 +91,6 @@ func (r Repository) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
 	return int(row.Balance), nil
 }
 
-type Querier interface {
-	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
-	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
-	QueryRow(context.Context, string, ...interface{}) pgx.Row
-}
-
 func (r Repository) UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error {
 	err := sqlc.New(r.conn.GetTxOrPool(ctx)).UpdateAccountBalance(ctx, sqlc.UpdateAccountBalanceParams{
 		Amount: int32(transactionAmount),
