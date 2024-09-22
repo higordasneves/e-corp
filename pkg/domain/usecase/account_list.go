@@ -10,13 +10,17 @@ import (
 )
 
 type ListAccountsInput struct {
-	IDs           []uuid.UUID
+	// IDs of the accounts.
+	IDs []uuid.UUID
+	// LastFetchedID represents the id of the last account listed in the previous page (cursor).
 	LastFetchedID uuid.UUID
-	PageSize      int
+	// PageSize is the limit (quantity) of items that can be listed.
+	PageSize int
 }
 
 type ListAccountsOutput struct {
 	Accounts []entities.Account
+	// NextPage is the cursor for filter the next page of accounts ad is used to create a pagination token.
 	NextPage *ListAccountsInput
 }
 

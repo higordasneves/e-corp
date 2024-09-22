@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
 	"time"
@@ -62,7 +63,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 	}
 }
 
-func TestAccRepo_FetchAccounts(t *testing.T) {
+func TestAccRepo_ListAccounts_Success(t *testing.T) {
 	t.Parallel()
 
 	repo := NewRepository(NewDB(t))
@@ -98,12 +99,68 @@ func TestAccRepo_FetchAccounts(t *testing.T) {
 		LastFetchedID: uuid.UUID{},
 		PageSize:      2,
 	})
-	if err != nil {
-		t.Errorf("didn't want sql error, but got the error: %v", err)
-	}
+	require.NoError(t, err)
 
 	//assert
 	assert.ElementsMatch(t, accounts, result.Accounts)
+}
+
+// The purpose of this test is to verify the pagination functionality.
+func TestAccRepo_ListAccounts_Success_Pagination(t *testing.T) {
+	t.Parallel()
+
+	repo := NewRepository(NewDB(t))
+
+	accounts := []entities.Account{
+		{
+			ID:        vos.NewUUID(),
+			Name:      "Elliot",
+			CPF:       "33344455567",
+			Secret:    "password",
+			Balance:   7000,
+			CreatedAt: time.Now().Truncate(time.Second),
+		},
+		{
+			ID:        vos.NewUUID(),
+			Name:      "Mr.Robot",
+			CPF:       "33344455568",
+			Secret:    "password",
+			Balance:   3000,
+			CreatedAt: time.Now().Truncate(time.Second),
+		},
+	}
+	for _, acc := range accounts {
+		err := repo.CreateAccount(context.Background(), acc)
+		if err != nil {
+			t.Error("error inserting accounts")
+		}
+	}
+
+	// execute: listing page 1
+	result, err := repo.ListAccounts(context.Background(), usecase.ListAccountsInput{
+		IDs:           []uuid.UUID{uuid.FromStringOrNil(accounts[0].ID.String()), uuid.FromStringOrNil(accounts[1].ID.String())},
+		LastFetchedID: uuid.UUID{},
+		PageSize:      1,
+	})
+	require.NoError(t, err)
+
+	// asserting page 1
+	assert.Len(t, result.Accounts, 1)
+	assert.Equal(t, accounts[1], result.Accounts[0])
+	assert.Equal(t, usecase.ListAccountsInput{
+		IDs:           []uuid.UUID{uuid.FromStringOrNil(accounts[0].ID.String()), uuid.FromStringOrNil(accounts[1].ID.String())},
+		LastFetchedID: uuid.FromStringOrNil(accounts[1].ID.String()),
+		PageSize:      1,
+	}, *result.NextPage)
+
+	// execute: listing page 2
+	result, err = repo.ListAccounts(context.Background(), *result.NextPage)
+	require.NoError(t, err)
+
+	// asserting page 2
+	assert.Len(t, result.Accounts, 1)
+	assert.Equal(t, accounts[0], result.Accounts[0])
+	assert.Nil(t, result.NextPage)
 }
 
 func TestAccRepo_GetBalance(t *testing.T) {

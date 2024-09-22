@@ -2,8 +2,9 @@ package entities
 
 import (
 	"errors"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"time"
+
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 	ErrZeroRowsAffectedUpdateBalance = errors.New("zero rows affected in update balance query")
 )
 
-//Account represents a banking account
+// Account represents a banking account
 type Account struct {
 	ID        vos.UUID
 	Name      string
@@ -27,7 +28,7 @@ type Account struct {
 	CreatedAt time.Time
 }
 
-//AccountOutput represents information from a bank account that should be returned
+// AccountOutput represents information from a bank account that should be returned
 type AccountOutput struct {
 	ID        vos.UUID  `json:"id"`
 	Name      string    `json:"name"`
@@ -36,7 +37,7 @@ type AccountOutput struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-//GetAccOutput formats and return only pertinent information from account
+// GetAccOutput formats and return only pertinent information from account
 func (acc *Account) GetAccOutput() *AccountOutput {
 	cpf := acc.CPF.FormatOutput()
 	accOutput := &AccountOutput{

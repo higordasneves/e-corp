@@ -43,14 +43,28 @@ func (r Repository) CreateAccount(ctx context.Context, acc entities.Account) err
 	return nil
 }
 
+// ListAccounts Lists accounts by filtering the IDs provided in the input.
+// The field LastFetchedID is a cursor and represents the ID of
+// the last account listed (on the previous page).
+// The query is sorted in descending order.
 func (r Repository) ListAccounts(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error) {
 	rows, err := sqlc.New(r.conn.GetTxOrPool(ctx)).ListAccounts(ctx, sqlc.ListAccountsParams{
 		Ids:           input.IDs,
 		LastFetchedID: input.LastFetchedID,
-		PageSize:      int32(input.PageSize),
+		// We list page size + 1 to check if there will be more items to list on the next page.
+		PageSize: int32(input.PageSize) + 1,
 	})
 	if err != nil {
 		return usecase.ListAccountsOutput{}, fmt.Errorf("listing accounts: %w", err)
+	}
+
+	var nextPage *usecase.ListAccountsInput
+	// If the number of returned items is equal to page size + 1, there will be a next page.
+	// We need to construct the cursor.
+	if len(rows) >= input.PageSize+1 {
+		nextPage = &input
+		rows = rows[:len(rows)-1]
+		nextPage.LastFetchedID = rows[len(rows)-1].ID
 	}
 
 	accList := make([]entities.Account, 0, len(rows))
@@ -60,7 +74,7 @@ func (r Repository) ListAccounts(ctx context.Context, input usecase.ListAccounts
 
 	return usecase.ListAccountsOutput{
 		Accounts: accList,
-		NextPage: &usecase.ListAccountsInput{},
+		NextPage: nextPage,
 	}, nil
 }
 
