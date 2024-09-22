@@ -2,91 +2,73 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
 
+	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
-const balanceInit = 1000000
-
-// AccountInput represents information necessary to create a bank account
-type AccountInput struct {
-	Name   string  `json:"name"`
-	CPF    vos.CPF `json:"cpf"`
-	Secret string  `json:"secret"`
+// CreateAccountInput represents information necessary to create a bank account.
+type CreateAccountInput struct {
+	Name     string
+	Document string
+	Secret   string
 }
 
-// CreateAccount validates and handles user input and creates a formatted account,
-// then calls the function to insert the account into the database
-func (accUseCase AccountUseCase) CreateAccount(ctx context.Context, accInput *AccountInput) (*entities.AccountOutput, error) {
-	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
-	defer cancel()
+type CreateAccountOutput struct {
+	Account entities.Account
+}
 
-	err := accInput.ValidateAccountInput()
-	if err != nil {
-		return nil, err
+// CreateAccount validates the input and creates an account.
+// Returns domain.ErrInvalidParameter if:
+// - the account name is not filled;
+// - the number of characters of the document is not valid;
+// - the format of the document is not valid;
+// - the number of the characters of the secret is less than the minimum;
+// - the account already exists.
+func (accUseCase AccountUseCase) CreateAccount(ctx context.Context, input CreateAccountInput) (CreateAccountOutput, error) {
+	input = input.removeBlankSpaces()
+	if input.Name == "" {
+		return CreateAccountOutput{}, fmt.Errorf("%w (name): required field", domain.ErrInvalidParameter)
 	}
 
-	hashSecret, err := vos.GetHashSecret(accInput.Secret)
+	document, err := vos.NewDocument(input.Document)
 	if err != nil {
-		return nil, err
+		return CreateAccountOutput{}, fmt.Errorf("%w (document): %w", domain.ErrInvalidParameter, err)
+	}
+
+	secret, err := vos.NewSecret(input.Secret)
+	if err != nil {
+		return CreateAccountOutput{}, fmt.Errorf("%w (secret): %w", domain.ErrInvalidParameter, err)
 	}
 
 	account := entities.Account{
 		ID:        uuid.Must(uuid.NewV7()),
-		Name:      accInput.Name,
-		CPF:       accInput.CPF,
-		Secret:    hashSecret,
-		Balance:   balanceInit,
+		Name:      input.Name,
+		Document:  document,
+		Secret:    secret,
+		Balance:   0,
 		CreatedAt: time.Now().Truncate(time.Second),
 	}
 
 	err = accUseCase.R.CreateAccount(ctx, account)
-
 	if err != nil {
-		return nil, err
+		return CreateAccountOutput{}, fmt.Errorf("creating account in the database: %w", err)
 	}
 
-	return account.GetAccOutput(), nil
-}
-
-// ValidateAccountInput validates account input and returns if occurred an error
-func (accInput *AccountInput) ValidateAccountInput() error {
-	accInput.removeBlankSpaces()
-
-	err := accInput.validateInputEmpty()
-	if err != nil {
-		return err
-	}
-
-	err = vos.ValidateSecretLen(accInput.Secret)
-	if err != nil {
-		return err
-	}
-
-	err = accInput.CPF.ValidateInput()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// validateInputEmpty validates if the user has filled the required fields
-func (accInput *AccountInput) validateInputEmpty() error {
-	if accInput.Name == "" || accInput.CPF == "" || accInput.Secret == "" {
-		return entities.ErrEmptyInput
-	}
-	return nil
+	return CreateAccountOutput{account}, nil
 }
 
 // removeBlankSpaces removes blank spaces of account fields
-func (accInput *AccountInput) removeBlankSpaces() {
+func (accInput CreateAccountInput) removeBlankSpaces() CreateAccountInput {
 	accInput.Name = strings.TrimSpace(accInput.Name)
-	accInput.CPF = vos.CPF(strings.TrimSpace(accInput.CPF.String()))
+	accInput.Document = strings.TrimSpace(accInput.Document)
 	accInput.Secret = strings.TrimSpace(accInput.Secret)
+
+	return accInput
 }

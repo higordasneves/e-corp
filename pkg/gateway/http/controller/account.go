@@ -18,7 +18,7 @@ type AccountController struct {
 }
 
 type AccountUseCase interface {
-	CreateAccount(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error)
+	CreateAccount(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error)
 	GetBalance(ctx context.Context, id uuid.UUID) (int, error)
 	FetchAccounts(ctx context.Context) ([]entities.AccountOutput, error)
 }

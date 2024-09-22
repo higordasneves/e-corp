@@ -25,7 +25,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 		{
 			ID:        accOriginID,
 			Name:      "Elliot",
-			CPF:       "33344455567",
+			Document:  "33344455567",
 			Secret:    "password",
 			Balance:   7000,
 			CreatedAt: time.Now().Truncate(time.Second),
@@ -33,7 +33,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 		{
 			ID:        accDestinationID,
 			Name:      "Mr.Robot",
-			CPF:       "33344455568",
+			Document:  "33344455568",
 			Secret:    "password",
 			Balance:   3000,
 			CreatedAt: time.Now().Truncate(time.Second),
@@ -101,7 +101,7 @@ func TestTransferRepo_ListSentTransfersByAccountID(t *testing.T) {
 		{
 			ID:        accOriginID,
 			Name:      "Elliot",
-			CPF:       "33344455567",
+			Document:  "33344455567",
 			Secret:    "password",
 			Balance:   999999999999,
 			CreatedAt: time.Now().Truncate(time.Second),
@@ -109,7 +109,7 @@ func TestTransferRepo_ListSentTransfersByAccountID(t *testing.T) {
 		{
 			ID:        accDestinationID,
 			Name:      "Mr.Robot",
-			CPF:       "33344455568",
+			Document:  "33344455568",
 			Secret:    "password",
 			Balance:   999999999999,
 			CreatedAt: time.Now().Truncate(time.Second),

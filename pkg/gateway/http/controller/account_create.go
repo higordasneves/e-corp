@@ -8,7 +8,7 @@ import (
 
 // CreateAccount reads HTTP POST request to create an account and returns a response
 func (accController AccountController) CreateAccount(w http.ResponseWriter, r *http.Request) {
-	var accountInput usecase.AccountInput
+	var accountInput usecase.CreateAccountInput
 	if err := interpreter.ReadRequestBody(r, &accountInput); err != nil {
 		interpreter.HandleError(w, err, accController.log)
 		return

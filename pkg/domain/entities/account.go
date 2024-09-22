@@ -24,7 +24,7 @@ var (
 type Account struct {
 	ID        uuid.UUID
 	Name      string
-	CPF       vos.CPF
+	Document  vos.Document
 	Secret    vos.Secret
 	Balance   int
 	CreatedAt time.Time
@@ -37,17 +37,4 @@ type AccountOutput struct {
 	CPF       string    `json:"cpf"`
 	Balance   int       `json:"balance"`
 	CreatedAt time.Time `json:"created_at"`
-}
-
-// GetAccOutput formats and return only pertinent information from account
-func (acc *Account) GetAccOutput() *AccountOutput {
-	cpf := acc.CPF.FormatOutput()
-	accOutput := &AccountOutput{
-		ID:        acc.ID,
-		Name:      acc.Name,
-		CPF:       cpf,
-		Balance:   acc.Balance,
-		CreatedAt: acc.CreatedAt,
-	}
-	return accOutput
 }

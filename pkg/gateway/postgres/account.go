@@ -21,7 +21,7 @@ import (
 func (r Repository) CreateAccount(ctx context.Context, acc entities.Account) error {
 	err := sqlc.New(r.conn.GetTxOrPool(ctx)).InsertAccount(ctx, sqlc.InsertAccountParams{
 		ID:             uuid.FromStringOrNil(acc.ID.String()),
-		DocumentNumber: acc.CPF.String(),
+		DocumentNumber: acc.Document.String(),
 		Name:           acc.Name,
 		Secret:         acc.Secret.String(),
 		Balance:        int64(acc.Balance),
@@ -103,7 +103,7 @@ func (r Repository) UpdateBalance(ctx context.Context, id uuid.UUID, transaction
 }
 
 // GetAccountByDocument fetches an account the by document number.
-func (r Repository) GetAccountByDocument(ctx context.Context, cpf vos.CPF) (entities.Account, error) {
+func (r Repository) GetAccountByDocument(ctx context.Context, cpf vos.Document) (entities.Account, error) {
 	row, err := sqlc.New(r.conn.GetTxOrPool(ctx)).GetAccountByDocument(ctx, cpf.String())
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -119,7 +119,7 @@ func parseSqlcAccount(a sqlc.Account) entities.Account {
 	return entities.Account{
 		ID:        a.ID,
 		Name:      a.Name,
-		CPF:       vos.CPF(a.DocumentNumber),
+		Document:  vos.Document(a.DocumentNumber),
 		Secret:    vos.Secret(a.Secret),
 		Balance:   int(a.Balance),
 		CreatedAt: a.CreatedAt,

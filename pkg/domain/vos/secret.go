@@ -2,14 +2,18 @@ package vos
 
 import (
 	"errors"
+	"fmt"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Secret string
 
+const minSecretLength = 8
+
 var (
 	//ErrSmallSecret occurs when the secret have invalid length
-	ErrSmallSecret = errors.New("the password must be at least 8 characters long")
+	ErrSmallSecret = fmt.Errorf("the password must be at least %v characters long", minSecretLength)
 	//ErrInvalidPass occurs when secret is invalid
 	ErrInvalidPass = errors.New("invalid password")
 )
@@ -18,28 +22,24 @@ func (hashSecret Secret) String() string {
 	return string(hashSecret)
 }
 
-//GetHashSecret returns hash of password
-func GetHashSecret(secret string) (Secret, error) {
-	hashSecret, err := bcrypt.GenerateFromPassword([]byte(secret), 10)
+// NewSecret returns hash of password
+func NewSecret(s string) (Secret, error) {
+	if len(s) < minSecretLength {
+		return "", ErrSmallSecret
+	}
+
+	hashSecret, err := bcrypt.GenerateFromPassword([]byte(s), 10)
 	if err != nil {
 		return "", err
 	}
 	return Secret(hashSecret), nil
 }
 
-//CompareHashSecret compares password sent by user and stored password hash
+// CompareHashSecret compares password sent by user and stored password hash
 func (hashSecret Secret) CompareHashSecret(secret string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hashSecret), []byte(secret))
 	if err != nil {
 		return err
-	}
-	return nil
-}
-
-//ValidateSecretLen validates the secret length
-func ValidateSecretLen(secret string) error {
-	if len(secret) < 8 {
-		return ErrSmallSecret
 	}
 	return nil
 }

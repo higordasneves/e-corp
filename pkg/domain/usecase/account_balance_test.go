@@ -22,7 +22,7 @@ func TestAccountUseCase_GetBalance(t *testing.T) {
 	err := r.CreateAccount(context.Background(), entities.Account{
 		ID:        uuid.FromStringOrNil("5f2d4920-89c3-4ed5-af8e-1d411588746d"),
 		Name:      "Elliot",
-		CPF:       "12345678900",
+		Document:  "12345678900",
 		Secret:    "secret",
 		Balance:   10,
 		CreatedAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.Local),

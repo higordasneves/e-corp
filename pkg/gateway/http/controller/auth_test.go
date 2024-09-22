@@ -81,11 +81,11 @@ func TestAuthController_Login(t *testing.T) {
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
-						return nil, vos.ErrCPFFormat
+						return nil, vos.ErrDocumentFormat
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrCPFFormat),
+			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrDocumentFormat),
 			expectedCode: http.StatusBadRequest,
 		},
 		{

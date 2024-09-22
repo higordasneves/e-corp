@@ -12,23 +12,15 @@ import (
 
 // LoginInput represents information necessary to access a bank account
 type LoginInput struct {
-	CPF    vos.CPF `json:"cpf"`
-	Secret string  `json:"secret"`
+	CPF    vos.Document `json:"cpf"`
+	Secret string       `json:"secret"`
 }
 
 type Token string
 
 // Login validates credentials then call the func to create a token
 func (authUC AuthUseCase) Login(ctx context.Context, input *LoginInput) (*Token, error) {
-	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
-	defer cancel()
-
 	acc, err := authUC.accountRepo.GetAccountByDocument(ctx, input.CPF)
-	if err != nil {
-		return nil, err
-	}
-
-	err = input.CPF.ValidateInput()
 	if err != nil {
 		return nil, err
 	}

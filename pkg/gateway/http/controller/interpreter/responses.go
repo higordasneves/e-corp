@@ -58,9 +58,9 @@ func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 		statusCode = http.StatusBadRequest
 	case errors.Is(err, entities.ErrTransferInsufficientFunds):
 		statusCode = http.StatusBadRequest
-	case errors.Is(err, vos.ErrCPFFormat):
+	case errors.Is(err, vos.ErrDocumentFormat):
 		statusCode = http.StatusBadRequest
-	case errors.Is(err, vos.ErrCPFLen):
+	case errors.Is(err, vos.ErrDocumentLen):
 		statusCode = http.StatusBadRequest
 	case errors.Is(err, vos.ErrInvalidPass):
 		statusCode = http.StatusBadRequest

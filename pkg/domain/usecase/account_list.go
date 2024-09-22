@@ -25,7 +25,7 @@ type ListAccountsOutput struct {
 }
 
 // FetchAccounts calls the func to select all accounts
-func (accUseCase AccountUseCase) FetchAccounts(ctx context.Context) ([]entities.AccountOutput, error) {
+func (accUseCase AccountUseCase) FetchAccounts(ctx context.Context) ([]entities.Account, error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
@@ -33,10 +33,6 @@ func (accUseCase AccountUseCase) FetchAccounts(ctx context.Context) ([]entities.
 	if err != nil {
 		return nil, err
 	}
-	accListOutput := make([]entities.AccountOutput, 0, len(output.Accounts))
-	for _, acc := range output.Accounts {
-		out := acc.GetAccOutput()
-		accListOutput = append(accListOutput, *out)
-	}
-	return accListOutput, nil
+
+	return output.Accounts, nil
 }

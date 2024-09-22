@@ -39,21 +39,21 @@ func TestAccountController_CreateAccount(t *testing.T) {
 	}{
 		{
 			name:        "with success",
-			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"44455566678", "secret":"12345678"}`)),
+			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "document":"44455566678", "secret":"12345678"}`)),
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
-					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
+					CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
 						return &entities.AccountOutput{
 							ID:        uuid.FromStringOrNil("5f2d4920-89c3-4ed5-af8e-1d411588746d"),
 							Name:      input.Name,
-							CPF:       input.CPF.FormatOutput(),
+							CPF:       input.Document,
 							Balance:   balanceInit,
 							CreatedAt: time.Now().Truncate(time.Minute),
 						}, nil
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"id": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "name": "Elliot", "cpf": "444.555.666-78", "balance": %v, "created_at": "<<PRESENCE>>"}`, balanceInit),
+			want:         fmt.Sprintf(`{"id": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "name": "Elliot", "cpf": "44455566678", "balance": %v, "created_at": "<<PRESENCE>>"}`, balanceInit),
 			expectedCode: http.StatusCreated,
 		},
 		{
@@ -61,7 +61,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"44455566678", "secret":"12345678"}`)),
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
-					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
+					CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
 						return nil, entities.ErrAccAlreadyExists
 					},
 				},
@@ -74,12 +74,12 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"111", "secret":"12345678"}`)),
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
-					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
-						return nil, vos.ErrCPFLen
+					CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
+						return nil, vos.ErrDocumentLen
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrCPFLen),
+			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrDocumentLen),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -87,12 +87,12 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"111.233", "secret":"12345678"}`)),
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
-					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
-						return nil, vos.ErrCPFFormat
+					CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
+						return nil, vos.ErrDocumentFormat
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrCPFFormat),
+			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrDocumentFormat),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -100,7 +100,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"name":"Elliot", "cpf":"44455566678", "secret":"123456"}`)),
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
-					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
+					CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
 						return nil, vos.ErrSmallSecret
 					},
 				},
@@ -113,7 +113,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"name":"", "cpf":"", "secret":""}`)),
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
-					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
+					CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
 						return nil, entities.ErrEmptyInput
 					},
 				},

@@ -2,55 +2,55 @@ package vos
 
 import (
 	"errors"
-	"regexp"
 	"unicode"
 )
 
 type (
-	CPF string
+	Document string
 )
 
 var (
-	//ErrCPFLen occurs when the cpf received have invalid length
-	ErrCPFLen = errors.New("the CPF must be 11 characters long")
-	//ErrCPFFormat occurs when the cpf contains invalid characters
-	ErrCPFFormat = errors.New("the CPF must contain only numbers")
+	//ErrDocumentLen occurs when the cpf received have invalid length
+	ErrDocumentLen = errors.New("the document must have 11 or 14 characters")
+	//ErrDocumentFormat occurs when the cpf contains invalid characters
+	ErrDocumentFormat = errors.New("the document must contain only numbers")
 )
 
-var cpfModel = regexp.MustCompile(`^([\d]{3})([\d]{3})([\d]{3})([\d]{2})$`)
-
-func (cpf CPF) String() string {
+func (cpf Document) String() string {
 	return string(cpf)
 }
 
-//ValidateInput validates a CPF
-func (cpf CPF) ValidateInput() error {
-	if err := cpf.validateInputFormat(); err != nil {
-		return err
+// NewDocument creates a new document from a string.
+// returns ErrDocumentLen if the number of the digits is invalid.
+// returns ErrDocumentFormat id the format of the document is invalid.
+func NewDocument(s string) (Document, error) {
+	if err := validateDocumentLen(s); err != nil {
+		return "", err
 	}
-	return cpf.validateInputLen()
+
+	if err := validateDocumentFormat(s); err != nil {
+		return "", err
+	}
+
+	return Document(s), nil
 }
 
-//validateInputLen validates the CPF length
-func (cpf CPF) validateInputLen() error {
-	if len(cpf) != 11 {
-		return ErrCPFLen
+// validateDocumentLen validates the Document length
+func validateDocumentLen(s string) error {
+	if n := len(s); n != 11 && n != 14 {
+		return ErrDocumentLen
 	}
+
 	return nil
-
 }
 
-//validateInputFormat validates if the CPF has only numbers
-func (cpf CPF) validateInputFormat() error {
-	for _, v := range cpf {
+// validateInputFormat validates if the Document has only numbers
+func validateDocumentFormat(s string) error {
+	for _, v := range s {
 		if !unicode.IsDigit(v) {
-			return ErrCPFFormat
+			return ErrDocumentFormat
 		}
 	}
-	return nil
-}
 
-//FormatOutput formats CPF of account owner to pattern "xxx-xxx-xxx-xx"
-func (cpf *CPF) FormatOutput() string {
-	return cpfModel.ReplaceAllString(cpf.String(), "$1.$2.$3-$4")
+	return nil
 }

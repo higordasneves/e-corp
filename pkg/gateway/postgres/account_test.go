@@ -29,7 +29,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 			input: entities.Account{
 				ID:        uuid.Must(uuid.NewV7()),
 				Name:      "Elliot",
-				CPF:       "33344455566",
+				Document:  "33344455566",
 				Secret:    "password",
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
@@ -41,7 +41,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 			input: entities.Account{
 				ID:        uuid.Must(uuid.NewV7()),
 				Name:      "Elliot",
-				CPF:       "33344455566",
+				Document:  "33344455566",
 				Secret:    "password",
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
@@ -68,7 +68,7 @@ func TestAccRepo_ListAccounts_Success(t *testing.T) {
 		{
 			ID:        uuid.Must(uuid.NewV7()),
 			Name:      "Elliot",
-			CPF:       "33344455567",
+			Document:  "33344455567",
 			Secret:    "password",
 			Balance:   7000,
 			CreatedAt: time.Now().Truncate(time.Second),
@@ -76,7 +76,7 @@ func TestAccRepo_ListAccounts_Success(t *testing.T) {
 		{
 			ID:        uuid.Must(uuid.NewV7()),
 			Name:      "Mr.Robot",
-			CPF:       "33344455568",
+			Document:  "33344455568",
 			Secret:    "password",
 			Balance:   3000,
 			CreatedAt: time.Now().Truncate(time.Second),
@@ -111,7 +111,7 @@ func TestAccRepo_ListAccounts_Success_Pagination(t *testing.T) {
 		{
 			ID:        uuid.Must(uuid.NewV7()),
 			Name:      "Elliot",
-			CPF:       "33344455567",
+			Document:  "33344455567",
 			Secret:    "password",
 			Balance:   7000,
 			CreatedAt: time.Now().Truncate(time.Second),
@@ -119,7 +119,7 @@ func TestAccRepo_ListAccounts_Success_Pagination(t *testing.T) {
 		{
 			ID:        uuid.Must(uuid.NewV7()),
 			Name:      "Mr.Robot",
-			CPF:       "33344455568",
+			Document:  "33344455568",
 			Secret:    "password",
 			Balance:   3000,
 			CreatedAt: time.Now().Truncate(time.Second),
@@ -166,7 +166,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 	account := entities.Account{
 		ID:        uuid.Must(uuid.NewV7()),
 		Name:      "Elliot",
-		CPF:       "33344455567",
+		Document:  "33344455567",
 		Secret:    "password",
 		Balance:   7000,
 		CreatedAt: time.Now().Truncate(time.Second),
@@ -215,7 +215,7 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 	account1 := entities.Account{
 		ID:        uuid.Must(uuid.NewV7()),
 		Name:      "Elliot",
-		CPF:       "33344455567",
+		Document:  "33344455567",
 		Secret:    "password",
 		Balance:   7000,
 		CreatedAt: time.Now().Truncate(time.Second),
@@ -225,7 +225,7 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 	account2 := entities.Account{
 		ID:        uuid.Must(uuid.NewV7()),
 		Name:      "Elliot",
-		CPF:       "33344455568",
+		Document:  "33344455568",
 		Secret:    "password",
 		Balance:   0,
 		CreatedAt: time.Now().Truncate(time.Second),
@@ -274,7 +274,7 @@ func TestAccRepo_GetAccountByDocument(t *testing.T) {
 	account1 := entities.Account{
 		ID:        uuid.Must(uuid.NewV7()),
 		Name:      "Elliot",
-		CPF:       "33344455567",
+		Document:  "33344455567",
 		Secret:    "password",
 		Balance:   7000,
 		CreatedAt: time.Now().Truncate(time.Second),
@@ -283,19 +283,19 @@ func TestAccRepo_GetAccountByDocument(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		document vos.CPF
+		document vos.Document
 		want     entities.Account
 		wantErr  error
 	}{
 		{
 			name:     "with success",
-			document: vos.CPF("33344455567"),
+			document: vos.Document("33344455567"),
 			want:     account1,
 			wantErr:  nil,
 		},
 		{
 			name:     "Repository not found",
-			document: vos.CPF("1"),
+			document: vos.Document("1"),
 			wantErr:  domain.ErrNotFound,
 		},
 	}

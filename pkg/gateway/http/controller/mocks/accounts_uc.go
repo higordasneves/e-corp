@@ -22,7 +22,7 @@ var _ controller.AccountUseCase = &AccountUseCaseMock{}
 //
 //		// make and configure a mocked controller.AccountUseCase
 //		mockedAccountUseCase := &AccountUseCaseMock{
-//			CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
+//			CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
 //				panic("mock out the CreateAccount method")
 //			},
 //			FetchAccountsFunc: func(ctx context.Context) ([]entities.AccountOutput, error) {
@@ -39,7 +39,7 @@ var _ controller.AccountUseCase = &AccountUseCaseMock{}
 //	}
 type AccountUseCaseMock struct {
 	// CreateAccountFunc mocks the CreateAccount method.
-	CreateAccountFunc func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error)
+	CreateAccountFunc func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error)
 
 	// FetchAccountsFunc mocks the FetchAccounts method.
 	FetchAccountsFunc func(ctx context.Context) ([]entities.AccountOutput, error)
@@ -54,7 +54,7 @@ type AccountUseCaseMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Input is the input argument value.
-			Input *usecase.AccountInput
+			Input *usecase.CreateAccountInput
 		}
 		// FetchAccounts holds details about calls to the FetchAccounts method.
 		FetchAccounts []struct {
@@ -75,10 +75,10 @@ type AccountUseCaseMock struct {
 }
 
 // CreateAccount calls CreateAccountFunc.
-func (mock *AccountUseCaseMock) CreateAccount(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
+func (mock *AccountUseCaseMock) CreateAccount(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
 	callInfo := struct {
 		Ctx   context.Context
-		Input *usecase.AccountInput
+		Input *usecase.CreateAccountInput
 	}{
 		Ctx:   ctx,
 		Input: input,
@@ -102,11 +102,11 @@ func (mock *AccountUseCaseMock) CreateAccount(ctx context.Context, input *usecas
 //	len(mockedAccountUseCase.CreateAccountCalls())
 func (mock *AccountUseCaseMock) CreateAccountCalls() []struct {
 	Ctx   context.Context
-	Input *usecase.AccountInput
+	Input *usecase.CreateAccountInput
 } {
 	var calls []struct {
 		Ctx   context.Context
-		Input *usecase.AccountInput
+		Input *usecase.CreateAccountInput
 	}
 	mock.lockCreateAccount.RLock()
 	calls = mock.calls.CreateAccount
