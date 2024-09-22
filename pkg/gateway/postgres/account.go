@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgerrcode"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres/sqlc"
 )
