@@ -29,7 +29,7 @@ func (accUseCase AccountUseCase) FetchAccounts(ctx context.Context) ([]entities.
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
-	output, err := accUseCase.accountRepo.ListAccounts(ctx, ListAccountsInput{})
+	output, err := accUseCase.R.ListAccounts(ctx, ListAccountsInput{})
 	if err != nil {
 		return nil, err
 	}

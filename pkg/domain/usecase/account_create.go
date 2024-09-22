@@ -45,7 +45,7 @@ func (accUseCase AccountUseCase) CreateAccount(ctx context.Context, accInput *Ac
 		CreatedAt: time.Now().Truncate(time.Second),
 	}
 
-	err = accUseCase.accountRepo.CreateAccount(ctx, account)
+	err = accUseCase.R.CreateAccount(ctx, account)
 
 	if err != nil {
 		return nil, err

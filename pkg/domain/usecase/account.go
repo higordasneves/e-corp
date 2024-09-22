@@ -17,9 +17,9 @@ type AccountUseCaseRepository interface {
 }
 
 type AccountUseCase struct {
-	accountRepo AccountUseCaseRepository
+	R AccountUseCaseRepository
 }
 
 func NewAccountUseCase(accountRepo AccountUseCaseRepository) AccountUseCase {
-	return AccountUseCase{accountRepo: accountRepo}
+	return AccountUseCase{R: accountRepo}
 }
