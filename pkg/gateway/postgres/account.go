@@ -32,9 +32,7 @@ func (r Repository) CreateAccount(ctx context.Context, acc entities.Account) err
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return domain.Error(domain.InvalidParamErrorType, "account already exists", map[string]string{
-					"account_id": acc.ID.String(),
-				})
+				return fmt.Errorf("%w: account %s already exists", domain.ErrInvalidParameter, acc.ID)
 			}
 		}
 		return fmt.Errorf("creating account: %w", err)
@@ -83,7 +81,7 @@ func (r Repository) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
 	row, err := sqlc.New(r.conn.GetTxOrPool(ctx)).GetAccount(ctx, uuid.FromStringOrNil(id.String()))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return 0, domain.Error(domain.NotFoundErrorType, "account not found", nil)
+			return 0, fmt.Errorf("%w: account %s not exists", domain.ErrNotFound, id)
 		}
 		return 0, fmt.Errorf("getting balance: %w", err)
 	}
@@ -109,7 +107,7 @@ func (r Repository) GetAccountByDocument(ctx context.Context, cpf vos.CPF) (enti
 	row, err := sqlc.New(r.conn.GetTxOrPool(ctx)).GetAccountByDocument(ctx, cpf.String())
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return entities.Account{}, domain.Error(domain.NotFoundErrorType, "account not found", nil)
+			return entities.Account{}, fmt.Errorf("%w: account %s not exists", domain.ErrNotFound, cpf)
 		}
 		return entities.Account{}, fmt.Errorf("getting account: %w", err)
 	}

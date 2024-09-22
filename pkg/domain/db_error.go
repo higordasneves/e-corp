@@ -8,7 +8,7 @@ import (
 const (
 	QueryRefCreateAcc          = "CreateAccount"
 	QueryRefFetchAcc           = "ListAccounts"
-	QueryRefGetAcc             = "GetAccount"
+	QueryRefGetAcc             = "GetAccountByDocument"
 	QueryRefUpdateBalance      = "UpdateBalance"
 	QueryRefPerformTransaction = "PerformTransaction"
 	QueryRefCreateTransfer     = "CreateTransfer"

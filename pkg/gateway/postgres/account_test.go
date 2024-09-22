@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	thelp "github.com/higordasneves/e-corp/extensions/testhelpers"
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
@@ -48,7 +47,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 				Balance:   0,
 				CreatedAt: time.Now().Truncate(time.Second),
 			},
-			wantErr: domain.Error(domain.InvalidParamErrorType, "account already exists", nil),
+			wantErr: domain.ErrInvalidParameter,
 		},
 	}
 
@@ -56,9 +55,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			accRepo := NewRepository(db)
 			err := accRepo.CreateAccount(context.Background(), tt.input)
-			if tt.wantErr != nil {
-				thelp.AssertDomainError(t, tt.wantErr, err)
-			}
+			assert.ErrorIs(t, err, tt.wantErr)
 		})
 	}
 }
@@ -192,7 +189,7 @@ func TestAccRepo_GetBalance_Success(t *testing.T) {
 		{
 			name:    "account not found",
 			want:    0,
-			wantErr: domain.Error(domain.NotFoundErrorType, "account not found", nil),
+			wantErr: domain.ErrNotFound,
 		},
 	}
 
@@ -204,12 +201,9 @@ func TestAccRepo_GetBalance_Success(t *testing.T) {
 			result, err := r.GetBalance(context.Background(), tt.input)
 
 			// assert
-			if tt.wantErr == nil {
-				require.NoError(t, err)
-				assert.Equal(t, tt.want, result)
-			} else {
-				thelp.AssertDomainError(t, tt.wantErr, err)
-			}
+			assert.ErrorIs(t, err, tt.wantErr)
+			assert.Equal(t, tt.want, result)
+
 		})
 	}
 }
@@ -318,7 +312,7 @@ func TestAccRepo_GetAccountByDocument(t *testing.T) {
 			},
 			insert:      false,
 			expectedErr: true,
-			err:         entities.ErrAccNotFound,
+			err:         domain.ErrNotFound,
 		},
 	}
 
