@@ -98,7 +98,7 @@ func (r Repository) UpdateBalance(ctx context.Context, id vos.UUID, transactionA
 		ID:     uuid.FromStringOrNil(id.String()),
 	})
 	if err != nil {
-		return domain.NewDBError(domain.QueryRefUpdateBalance, err, domain.ErrUnexpected)
+		return fmt.Errorf("updating account balance: %w", err)
 	}
 
 	return nil
