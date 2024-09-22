@@ -32,7 +32,7 @@ func (r Repository) CreateAccount(ctx context.Context, acc entities.Account) err
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return fmt.Errorf("%w: account %s already exists", domain.ErrInvalidParameter, acc.ID)
+				return fmt.Errorf("%w: account with document %s already exists", domain.ErrInvalidParameter, acc.Document)
 			}
 		}
 		return fmt.Errorf("creating account: %w", err)
