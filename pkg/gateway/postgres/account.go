@@ -78,13 +78,14 @@ func (r Repository) ListAccounts(ctx context.Context, input usecase.ListAccounts
 	}, nil
 }
 
+// GetBalance returns the balance of the account for the provided ID.
 func (r Repository) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
 	row, err := sqlc.New(r.conn.GetTxOrPool(ctx)).GetAccount(ctx, uuid.FromStringOrNil(id.String()))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return 0, entities.ErrAccNotFound
+			return 0, domain.Error(domain.NotFoundErrorType, "account not found", nil)
 		}
-		return 0, domain.NewDBError(domain.QueryRefGetAcc, err, domain.ErrUnexpected)
+		return 0, fmt.Errorf("getting balance: %w", err)
 	}
 
 	return int(row.Balance), nil
