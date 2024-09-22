@@ -104,13 +104,14 @@ func (r Repository) UpdateBalance(ctx context.Context, id vos.UUID, transactionA
 	return nil
 }
 
-func (r Repository) GetAccount(ctx context.Context, cpf vos.CPF) (entities.Account, error) {
+// GetAccountByDocument fetches an account the by document number.
+func (r Repository) GetAccountByDocument(ctx context.Context, cpf vos.CPF) (entities.Account, error) {
 	row, err := sqlc.New(r.conn.GetTxOrPool(ctx)).GetAccountByDocument(ctx, cpf.String())
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return entities.Account{}, entities.ErrAccNotFound
+			return entities.Account{}, domain.Error(domain.NotFoundErrorType, "account not found", nil)
 		}
-		return entities.Account{}, domain.NewDBError(domain.QueryRefGetAcc, err, domain.ErrUnexpected)
+		return entities.Account{}, fmt.Errorf("getting account: %w", err)
 	}
 
 	return parseSqlcAccount(row), nil

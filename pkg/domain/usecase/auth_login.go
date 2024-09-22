@@ -20,7 +20,7 @@ func (authUC AuthUseCase) Login(ctx context.Context, input *LoginInput) (*Token,
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
-	acc, err := authUC.accountRepo.GetAccount(ctx, input.CPF)
+	acc, err := authUC.accountRepo.GetAccountByDocument(ctx, input.CPF)
 	if err != nil {
 		return nil, err
 	}

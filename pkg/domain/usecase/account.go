@@ -9,7 +9,7 @@ import (
 
 type AccountUseCaseRepository interface {
 	CreateAccount(ctx context.Context, acc entities.Account) error
-	GetAccount(ctx context.Context, cpf vos.CPF) (entities.Account, error)
+	GetAccountByDocument(ctx context.Context, cpf vos.CPF) (entities.Account, error)
 	GetBalance(ctx context.Context, id vos.UUID) (int, error)
 	ListAccounts(ctx context.Context, input ListAccountsInput) (ListAccountsOutput, error)
 }

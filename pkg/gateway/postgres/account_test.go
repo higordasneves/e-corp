@@ -317,7 +317,7 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 	}
 }
 
-func TestAccRepo_GetAccount(t *testing.T) {
+func TestAccRepo_GetAccountByDocument(t *testing.T) {
 	tests := []struct {
 		name        string
 		acc         entities.Account
@@ -359,7 +359,7 @@ func TestAccRepo_GetAccount(t *testing.T) {
 			}
 
 			// execute
-			result, err := accRepo.GetAccount(context.Background(), tt.acc.CPF)
+			result, err := accRepo.GetAccountByDocument(context.Background(), tt.acc.CPF)
 			if tt.expectedErr && err != tt.err {
 				t.Errorf("got: %v, want: %v", err, tt.err)
 			}
