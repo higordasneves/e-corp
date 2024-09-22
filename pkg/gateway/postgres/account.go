@@ -77,7 +77,7 @@ func (r Repository) ListAccounts(ctx context.Context, input usecase.ListAccounts
 }
 
 // GetBalance returns the balance of the account for the provided ID.
-func (r Repository) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
+func (r Repository) GetBalance(ctx context.Context, id uuid.UUID) (int, error) {
 	row, err := sqlc.New(r.conn.GetTxOrPool(ctx)).GetAccount(ctx, uuid.FromStringOrNil(id.String()))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -90,7 +90,7 @@ func (r Repository) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
 }
 
 // UpdateBalance updates an account by adding transactionAmount to the balance.
-func (r Repository) UpdateBalance(ctx context.Context, id vos.UUID, transactionAmount int) error {
+func (r Repository) UpdateBalance(ctx context.Context, id uuid.UUID, transactionAmount int) error {
 	err := sqlc.New(r.conn.GetTxOrPool(ctx)).UpdateAccountBalance(ctx, sqlc.UpdateAccountBalanceParams{
 		Amount: int32(transactionAmount),
 		ID:     uuid.FromStringOrNil(id.String()),
@@ -117,7 +117,7 @@ func (r Repository) GetAccountByDocument(ctx context.Context, cpf vos.CPF) (enti
 
 func parseSqlcAccount(a sqlc.Account) entities.Account {
 	return entities.Account{
-		ID:        vos.UUID(a.ID.String()),
+		ID:        a.ID,
 		Name:      a.Name,
 		CPF:       vos.CPF(a.DocumentNumber),
 		Secret:    vos.Secret(a.Secret),

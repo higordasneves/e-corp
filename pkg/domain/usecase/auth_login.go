@@ -2,9 +2,12 @@ package usecase
 
 import (
 	"context"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gofrs/uuid/v5"
+
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
 // LoginInput represents information necessary to access a bank account
@@ -39,11 +42,11 @@ func (authUC AuthUseCase) Login(ctx context.Context, input *LoginInput) (*Token,
 }
 
 // createAccToken generates token for account authorization
-func (authUC AuthUseCase) createAccToken(accID vos.UUID) (*Token, error) {
+func (authUC AuthUseCase) createAccToken(accID uuid.UUID) (*Token, error) {
 	// Create the Claims
 	claims := &jwt.StandardClaims{
 		Issuer:    "login",
-		Subject:   string(accID),
+		Subject:   accID.String(),
 		IssuedAt:  time.Now().Unix(),
 		ExpiresAt: time.Now().Add(authUC.duration).Unix(),
 	}

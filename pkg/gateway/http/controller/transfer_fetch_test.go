@@ -4,21 +4,21 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 )
 
 func TestTransferController_FetchTransfers(t *testing.T) {
@@ -45,16 +45,16 @@ func TestTransferController_FetchTransfers(t *testing.T) {
 					FetchTransfersFunc: func(ctx context.Context, id string) ([]entities.Transfer, error) {
 						return []entities.Transfer{
 							{
-								ID:                   "transfer_id1",
-								AccountOriginID:      vos.UUID(id),
-								AccountDestinationID: vos.UUID("uuid_destination_acc"),
+								ID:                   uuid.FromStringOrNil("8b07e65f-7fed-4387-ba84-d2213527c6f1"),
+								AccountOriginID:      uuid.FromStringOrNil(id),
+								AccountDestinationID: uuid.FromStringOrNil("9751fe39-976f-4b3d-9611-d6c8c6370b0f"),
 								Amount:               2000,
 								CreatedAt:            time.Now().Truncate(time.Minute),
 							},
 							{
-								ID:                   "transfer_id2",
-								AccountOriginID:      vos.UUID(id),
-								AccountDestinationID: vos.UUID("uuid_destination_acc2"),
+								ID:                   uuid.FromStringOrNil("6ca1469e-1def-445c-b6ad-1028689d72f2"),
+								AccountOriginID:      uuid.FromStringOrNil(id),
+								AccountDestinationID: uuid.FromStringOrNil("9ee14852-1011-422e-b9f3-abd905d5103c"),
 								Amount:               4598,
 								CreatedAt:            time.Now().Truncate(time.Minute),
 							},
@@ -62,17 +62,18 @@ func TestTransferController_FetchTransfers(t *testing.T) {
 					},
 				},
 			},
-			args: args{ctxWithValue: context.WithValue(context.Background(), "subject", "uuid_acc1")},
+			args: args{ctxWithValue: context.WithValue(context.Background(), "subject", "0457c690-f884-4d57-810c-85cf09a50d8b")},
 			want: `[{
-						"id": "transfer_id1", "account_origin_id": "uuid_acc1",
-						"account_destination_id": "uuid_destination_acc",
+						"id": "8b07e65f-7fed-4387-ba84-d2213527c6f1", 
+						"account_origin_id": "0457c690-f884-4d57-810c-85cf09a50d8b",
+						"account_destination_id": "9751fe39-976f-4b3d-9611-d6c8c6370b0f",
 						"amount": 2000,
 						"created_at": "<<PRESENCE>>"
 					},
 					{
-						"id": "transfer_id2",
-						"account_origin_id": "uuid_acc1",
-						"account_destination_id": "uuid_destination_acc2",
+						"id": "6ca1469e-1def-445c-b6ad-1028689d72f2",
+						"account_origin_id": "0457c690-f884-4d57-810c-85cf09a50d8b",
+						"account_destination_id": "9ee14852-1011-422e-b9f3-abd905d5103c",
 						"amount": 4598,
 						"created_at": "<<PRESENCE>>"
 					}]`,

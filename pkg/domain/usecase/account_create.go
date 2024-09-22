@@ -2,10 +2,13 @@ package usecase
 
 import (
 	"context"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"strings"
 	"time"
+
+	"github.com/gofrs/uuid/v5"
+
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
 const balanceInit = 1000000
@@ -34,7 +37,7 @@ func (accUseCase AccountUseCase) CreateAccount(ctx context.Context, accInput *Ac
 	}
 
 	account := entities.Account{
-		ID:        vos.NewUUID(),
+		ID:        uuid.Must(uuid.NewV7()),
 		Name:      accInput.Name,
 		CPF:       accInput.CPF,
 		Secret:    hashSecret,

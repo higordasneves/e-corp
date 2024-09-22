@@ -27,7 +27,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 		{
 			name: "success",
 			input: entities.Account{
-				ID:        vos.NewUUID(),
+				ID:        uuid.Must(uuid.NewV7()),
 				Name:      "Elliot",
 				CPF:       "33344455566",
 				Secret:    "password",
@@ -39,7 +39,7 @@ func TestAccRepo_CreateAccount(t *testing.T) {
 		{
 			name: "fail - account already exists",
 			input: entities.Account{
-				ID:        vos.NewUUID(),
+				ID:        uuid.Must(uuid.NewV7()),
 				Name:      "Elliot",
 				CPF:       "33344455566",
 				Secret:    "password",
@@ -66,7 +66,7 @@ func TestAccRepo_ListAccounts_Success(t *testing.T) {
 
 	accounts := []entities.Account{
 		{
-			ID:        vos.NewUUID(),
+			ID:        uuid.Must(uuid.NewV7()),
 			Name:      "Elliot",
 			CPF:       "33344455567",
 			Secret:    "password",
@@ -74,7 +74,7 @@ func TestAccRepo_ListAccounts_Success(t *testing.T) {
 			CreatedAt: time.Now().Truncate(time.Second),
 		},
 		{
-			ID:        vos.NewUUID(),
+			ID:        uuid.Must(uuid.NewV7()),
 			Name:      "Mr.Robot",
 			CPF:       "33344455568",
 			Secret:    "password",
@@ -109,7 +109,7 @@ func TestAccRepo_ListAccounts_Success_Pagination(t *testing.T) {
 
 	accounts := []entities.Account{
 		{
-			ID:        vos.NewUUID(),
+			ID:        uuid.Must(uuid.NewV7()),
 			Name:      "Elliot",
 			CPF:       "33344455567",
 			Secret:    "password",
@@ -117,7 +117,7 @@ func TestAccRepo_ListAccounts_Success_Pagination(t *testing.T) {
 			CreatedAt: time.Now().Truncate(time.Second),
 		},
 		{
-			ID:        vos.NewUUID(),
+			ID:        uuid.Must(uuid.NewV7()),
 			Name:      "Mr.Robot",
 			CPF:       "33344455568",
 			Secret:    "password",
@@ -164,7 +164,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 
 	r := NewRepository(NewDB(t))
 	account := entities.Account{
-		ID:        vos.NewUUID(),
+		ID:        uuid.Must(uuid.NewV7()),
 		Name:      "Elliot",
 		CPF:       "33344455567",
 		Secret:    "password",
@@ -175,7 +175,7 @@ func TestAccRepo_GetBalance(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		input   vos.UUID
+		input   uuid.UUID
 		want    int
 		wantErr error
 	}{
@@ -213,7 +213,7 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 	// setup
 	r := NewRepository(NewDB(t))
 	account1 := entities.Account{
-		ID:        vos.NewUUID(),
+		ID:        uuid.Must(uuid.NewV7()),
 		Name:      "Elliot",
 		CPF:       "33344455567",
 		Secret:    "password",
@@ -223,7 +223,7 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 	require.NoError(t, r.CreateAccount(context.Background(), account1))
 
 	account2 := entities.Account{
-		ID:        vos.NewUUID(),
+		ID:        uuid.Must(uuid.NewV7()),
 		Name:      "Elliot",
 		CPF:       "33344455568",
 		Secret:    "password",
@@ -234,7 +234,7 @@ func TestAccRepo_UpdateBalance(t *testing.T) {
 
 	tests := []struct {
 		name               string
-		accountID          vos.UUID
+		accountID          uuid.UUID
 		amount             int
 		wantAccountBalance int
 	}{
@@ -272,7 +272,7 @@ func TestAccRepo_GetAccountByDocument(t *testing.T) {
 	// setup
 	r := NewRepository(NewDB(t))
 	account1 := entities.Account{
-		ID:        vos.NewUUID(),
+		ID:        uuid.Must(uuid.NewV7()),
 		Name:      "Elliot",
 		CPF:       "33344455567",
 		Secret:    "password",

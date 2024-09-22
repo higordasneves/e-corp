@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 )
@@ -46,9 +46,9 @@ func TestTransferController_Transfer(t *testing.T) {
 				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 						return &entities.Transfer{
-							ID:                   "transfer_id",
-							AccountOriginID:      vos.UUID(transferInput.AccountOriginID),
-							AccountDestinationID: vos.UUID(transferInput.AccountDestinationID),
+							ID:                   uuid.FromStringOrNil("9ee14852-1011-422e-b9f3-abd905d5103c"),
+							AccountOriginID:      transferInput.AccountOriginID,
+							AccountDestinationID: transferInput.AccountDestinationID,
 							Amount:               transferInput.Amount,
 							CreatedAt:            time.Now().Truncate(time.Minute),
 						}, nil
@@ -56,12 +56,12 @@ func TestTransferController_Transfer(t *testing.T) {
 				},
 			},
 			args: args{
-				ctxWithValue: context.WithValue(context.Background(), "subject", "uuid_acc1"),
-				requestBody:  bytes.NewReader([]byte(`{"destinationID": "uuid_acc2", "amount": 10827}`)),
+				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
+				requestBody:  bytes.NewReader([]byte(`{"destinationID": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "amount": 10827}`)),
 			},
-			want: `{"id": "transfer_id",
-				"account_origin_id": "uuid_acc1",
-				"account_destination_id": "uuid_acc2",
+			want: `{"id": "9ee14852-1011-422e-b9f3-abd905d5103c",
+				"account_origin_id": "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d",
+				"account_destination_id": "5f2d4920-89c3-4ed5-af8e-1d411588746d",
 				"amount": 10827,
 				"created_at": "<<PRESENCE>>"}`,
 			expectedCode: http.StatusCreated,
@@ -76,26 +76,10 @@ func TestTransferController_Transfer(t *testing.T) {
 				},
 			},
 			args: args{
-				ctxWithValue: context.WithValue(context.Background(), "subject", "uuid_acc1"),
-				requestBody:  bytes.NewReader([]byte(`{"destinationID": "uuid_acc1", "amount": 10}`)),
+				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
+				requestBody:  bytes.NewReader([]byte(`{"destinationID": "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d", "amount": 10}`)),
 			},
 			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrSelfTransfer),
-			expectedCode: http.StatusBadRequest,
-		},
-		{
-			name: "invalid destination id should return an error and status code 400",
-			fields: fields{
-				tUseCase: &mocks.TransferUseCaseMock{
-					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
-						return nil, entities.ErrDestAccID
-					},
-				},
-			},
-			args: args{
-				ctxWithValue: context.WithValue(context.Background(), "subject", "uuid_acc1"),
-				requestBody:  bytes.NewReader([]byte(`{"destinationID": "invalid", "amount": 10}`)),
-			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrDestAccID),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -109,7 +93,7 @@ func TestTransferController_Transfer(t *testing.T) {
 			},
 			args: args{
 				ctxWithValue: context.WithValue(context.Background(), "subject", "invalid"),
-				requestBody:  bytes.NewReader([]byte(`{"destinationID": "uuid_acc1", "amount": 10}`)),
+				requestBody:  bytes.NewReader([]byte(`{"destinationID": "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d", "amount": 10}`)),
 			},
 			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrOriginAccID),
 			expectedCode: http.StatusBadRequest,
@@ -124,8 +108,8 @@ func TestTransferController_Transfer(t *testing.T) {
 				},
 			},
 			args: args{
-				ctxWithValue: context.WithValue(context.Background(), "subject", "uuid_acc1"),
-				requestBody:  bytes.NewReader([]byte(`{"destinationID": "uuid_acc2", "amount": -10}`)),
+				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
+				requestBody:  bytes.NewReader([]byte(`{"destinationID": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "amount": -10}`)),
 			},
 			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrTransferAmount),
 			expectedCode: http.StatusBadRequest,
@@ -140,8 +124,8 @@ func TestTransferController_Transfer(t *testing.T) {
 				},
 			},
 			args: args{
-				ctxWithValue: context.WithValue(context.Background(), "subject", "uuid_acc1"),
-				requestBody:  bytes.NewReader([]byte(`{"destinationID": "uuid_acc2", "amount": 1000000000000000000}`)),
+				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
+				requestBody:  bytes.NewReader([]byte(`{"destinationID": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "amount": 1000000000000000000}`)),
 			},
 			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrTransferInsufficientFunds),
 			expectedCode: http.StatusBadRequest,
@@ -156,8 +140,8 @@ func TestTransferController_Transfer(t *testing.T) {
 				},
 			},
 			args: args{
-				ctxWithValue: context.WithValue(context.Background(), "subject", "uuid_acc1"),
-				requestBody:  bytes.NewReader([]byte(`{"destinationID": "uuid_acc2", "amount": 1000000000000000000}`)),
+				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
+				requestBody:  bytes.NewReader([]byte(`{"destinationID": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "amount": 1000000000000000000}`)),
 			},
 			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrAccNotFound),
 			expectedCode: http.StatusNotFound,

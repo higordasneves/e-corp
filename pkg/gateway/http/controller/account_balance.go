@@ -1,8 +1,8 @@
 package controller
 
 import (
+	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 	"net/http"
 )
@@ -10,7 +10,7 @@ import (
 func (accController AccountController) GetBalance(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
-	id := vos.UUID(params["account_id"])
+	id := uuid.FromStringOrNil(params["account_id"])
 
 	balance, err := accController.accUseCase.GetBalance(r.Context(), id)
 	if err != nil {

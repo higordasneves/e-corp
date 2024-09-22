@@ -4,19 +4,22 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
-	"github.com/kinbiko/jsonassert"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gofrs/uuid/v5"
+	"github.com/gorilla/mux"
+	"github.com/kinbiko/jsonassert"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 )
 
 const balanceInit = 1000000
@@ -41,7 +44,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 				accUseCase: &mocks.AccountUseCaseMock{
 					CreateAccountFunc: func(ctx context.Context, input *usecase.AccountInput) (*entities.AccountOutput, error) {
 						return &entities.AccountOutput{
-							ID:        "uuid1",
+							ID:        uuid.FromStringOrNil("5f2d4920-89c3-4ed5-af8e-1d411588746d"),
 							Name:      input.Name,
 							CPF:       input.CPF.FormatOutput(),
 							Balance:   balanceInit,
@@ -50,7 +53,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"id": "uuid1", "name": "Elliot", "cpf": "444.555.666-78", "balance": %v, "created_at": "<<PRESENCE>>"}`, balanceInit),
+			want:         fmt.Sprintf(`{"id": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "name": "Elliot", "cpf": "444.555.666-78", "balance": %v, "created_at": "<<PRESENCE>>"}`, balanceInit),
 			expectedCode: http.StatusCreated,
 		},
 		{

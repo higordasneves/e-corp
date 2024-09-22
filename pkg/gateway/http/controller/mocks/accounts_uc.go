@@ -5,9 +5,9 @@ package mocks
 
 import (
 	"context"
+	"github.com/gofrs/uuid/v5"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"sync"
 )
@@ -26,9 +26,9 @@ var _ controller.AccountUseCase = &AccountUseCaseMock{}
 //				panic("mock out the CreateAccount method")
 //			},
 //			FetchAccountsFunc: func(ctx context.Context) ([]entities.AccountOutput, error) {
-//				panic("mock out the ListAccounts method")
+//				panic("mock out the FetchAccounts method")
 //			},
-//			GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
+//			GetBalanceFunc: func(ctx context.Context, id uuid.UUID) (int, error) {
 //				panic("mock out the GetBalance method")
 //			},
 //		}
@@ -45,7 +45,7 @@ type AccountUseCaseMock struct {
 	FetchAccountsFunc func(ctx context.Context) ([]entities.AccountOutput, error)
 
 	// GetBalanceFunc mocks the GetBalance method.
-	GetBalanceFunc func(ctx context.Context, id vos.UUID) (int, error)
+	GetBalanceFunc func(ctx context.Context, id uuid.UUID) (int, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -66,7 +66,7 @@ type AccountUseCaseMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// ID is the id argument value.
-			ID vos.UUID
+			ID uuid.UUID
 		}
 	}
 	lockCreateAccount sync.RWMutex
@@ -151,10 +151,10 @@ func (mock *AccountUseCaseMock) FetchAccountsCalls() []struct {
 }
 
 // GetBalance calls GetBalanceFunc.
-func (mock *AccountUseCaseMock) GetBalance(ctx context.Context, id vos.UUID) (int, error) {
+func (mock *AccountUseCaseMock) GetBalance(ctx context.Context, id uuid.UUID) (int, error) {
 	callInfo := struct {
 		Ctx context.Context
-		ID  vos.UUID
+		ID  uuid.UUID
 	}{
 		Ctx: ctx,
 		ID:  id,
@@ -178,11 +178,11 @@ func (mock *AccountUseCaseMock) GetBalance(ctx context.Context, id vos.UUID) (in
 //	len(mockedAccountUseCase.GetBalanceCalls())
 func (mock *AccountUseCaseMock) GetBalanceCalls() []struct {
 	Ctx context.Context
-	ID  vos.UUID
+	ID  uuid.UUID
 } {
 	var calls []struct {
 		Ctx context.Context
-		ID  vos.UUID
+		ID  uuid.UUID
 	}
 	mock.lockGetBalance.RLock()
 	calls = mock.calls.GetBalance

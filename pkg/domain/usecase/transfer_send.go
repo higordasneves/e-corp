@@ -4,18 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
+	"github.com/gofrs/uuid/v5"
 	"time"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
 // TransferInput represents information necessary to transfer money between bank accounts
 type TransferInput struct {
-	AccountOriginID      string
-	AccountDestinationID string `json:"destinationID"`
-	Amount               int    `json:"amount"`
+	AccountOriginID      uuid.UUID
+	AccountDestinationID uuid.UUID `json:"destinationID"`
+	Amount               int       `json:"amount"`
 }
 
 // Transfer creates a transfer and updates account balances of the clients
@@ -23,16 +22,15 @@ func (tUseCase TransferUseCase) Transfer(ctx context.Context, transferInput *Tra
 	ctx, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 
-	transferInput.removeBlankSpaces()
 	err := transferInput.ValidateInput()
 	if err != nil {
 		return nil, err
 	}
 
 	transfer := &entities.Transfer{
-		ID:                   vos.NewUUID(),
-		AccountOriginID:      vos.UUID(transferInput.AccountOriginID),
-		AccountDestinationID: vos.UUID(transferInput.AccountDestinationID),
+		ID:                   uuid.Must(uuid.NewV7()),
+		AccountOriginID:      transferInput.AccountOriginID,
+		AccountDestinationID: transferInput.AccountDestinationID,
 		Amount:               transferInput.Amount,
 		CreatedAt:            time.Now().Truncate(time.Second),
 	}
@@ -96,21 +94,11 @@ func (tUseCase TransferUseCase) validateAccounts(ctx context.Context, transfer *
 
 // ValidateInput validates transfer input
 func (transferInput *TransferInput) ValidateInput() error {
-	err := vos.IsValidUUID(transferInput.AccountOriginID)
-	if err != nil {
-		return entities.ErrOriginAccID
-	}
-
-	err = vos.IsValidUUID(transferInput.AccountDestinationID)
-	if err != nil {
-		return entities.ErrDestAccID
-	}
-
 	if transferInput.AccountOriginID == transferInput.AccountDestinationID {
 		return entities.ErrSelfTransfer
 	}
 
-	err = transferInput.validateBalance()
+	err := transferInput.validateBalance()
 	if err != nil {
 		return err
 	}
@@ -124,10 +112,4 @@ func (transferInput *TransferInput) validateBalance() error {
 		return entities.ErrTransferAmount
 	}
 	return nil
-}
-
-// removesBlankSpaces removes blank spaces of transfer fields
-func (transferInput *TransferInput) removeBlankSpaces() {
-	transferInput.AccountOriginID = strings.TrimSpace(transferInput.AccountOriginID)
-	transferInput.AccountDestinationID = strings.TrimSpace(transferInput.AccountDestinationID)
 }

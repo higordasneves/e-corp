@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"github.com/gofrs/uuid/v5"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 	"net/http"
@@ -14,7 +15,7 @@ func (tController TransferController) Transfer(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	accountOriginID := fmt.Sprint(r.Context().Value("subject"))
+	accountOriginID := uuid.FromStringOrNil(fmt.Sprint(r.Context().Value("subject")))
 	transferInput.AccountOriginID = accountOriginID
 
 	transfer, err := tController.tUseCase.Transfer(r.Context(), &transferInput)

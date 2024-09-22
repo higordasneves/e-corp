@@ -4,6 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/gofrs/uuid/v5"
+
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
@@ -20,7 +22,7 @@ var (
 
 // Account represents a banking account
 type Account struct {
-	ID        vos.UUID
+	ID        uuid.UUID
 	Name      string
 	CPF       vos.CPF
 	Secret    vos.Secret
@@ -30,7 +32,7 @@ type Account struct {
 
 // AccountOutput represents information from a bank account that should be returned
 type AccountOutput struct {
-	ID        vos.UUID  `json:"id"`
+	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	CPF       string    `json:"cpf"`
 	Balance   int       `json:"balance"`

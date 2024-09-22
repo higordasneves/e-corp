@@ -3,18 +3,18 @@ package controller_test
 import (
 	"context"
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 )
 
@@ -27,7 +27,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 	tests := []struct {
 		name         string
 		fields       fields
-		accID        vos.UUID
+		accID        uuid.UUID
 		want         string
 		expectedCode int
 	}{
@@ -35,12 +35,12 @@ func TestAccountController_GetBalance(t *testing.T) {
 			name: "with success, balance of 9700000 cents",
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
-					GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
+					GetBalanceFunc: func(ctx context.Context, id uuid.UUID) (int, error) {
 						return 9700000, nil
 					},
 				},
 			},
-			accID: "uuid1",
+			accID: uuid.Must(uuid.NewV7()),
 			want: `{"balance": 9700000}
 
 `,
@@ -50,40 +50,27 @@ func TestAccountController_GetBalance(t *testing.T) {
 			name: "with success, balance of 5534513 cents",
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
-					GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
+					GetBalanceFunc: func(ctx context.Context, id uuid.UUID) (int, error) {
 						return 5534513, nil
 					},
 				},
 			},
-			accID:        "uuid3",
+			accID:        uuid.Must(uuid.NewV7()),
 			want:         `{"balance": 5534513}`,
 			expectedCode: 200,
 		},
 		{
 			name:  "account not found",
-			accID: vos.NewUUID(),
+			accID: uuid.Must(uuid.NewV7()),
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
-					GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
+					GetBalanceFunc: func(ctx context.Context, id uuid.UUID) (int, error) {
 						return 0, entities.ErrAccNotFound
 					},
 				},
 			},
 			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrAccNotFound),
 			expectedCode: 404,
-		},
-		{
-			name:  "invalid id",
-			accID: "invalid",
-			fields: fields{
-				accUseCase: &mocks.AccountUseCaseMock{
-					GetBalanceFunc: func(ctx context.Context, id vos.UUID) (int, error) {
-						return 0, vos.ErrInvalidID
-					},
-				},
-			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrInvalidID),
-			expectedCode: 400,
 		},
 	}
 	for _, tt := range tests {

@@ -8,15 +8,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid/v5"
+
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
 func TestTransferRepo_CreateTransfer(t *testing.T) {
 	// setup
-	accOriginID := vos.NewUUID()
-	accDestinationID := vos.NewUUID()
+	accOriginID := uuid.Must(uuid.NewV7())
+	accDestinationID := uuid.Must(uuid.NewV7())
 
 	accounts := []entities.Account{
 		{
@@ -55,7 +56,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 		{
 			name: "with success",
 			transfer: entities.Transfer{
-				ID:                   vos.NewUUID(),
+				ID:                   uuid.Must(uuid.NewV7()),
 				AccountOriginID:      accOriginID,
 				AccountDestinationID: accDestinationID,
 				Amount:               rand.Int(),
@@ -66,9 +67,9 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 		{
 			name: "violates foreign key constraint",
 			transfer: entities.Transfer{
-				ID:                   vos.NewUUID(),
-				AccountOriginID:      vos.NewUUID(),
-				AccountDestinationID: vos.NewUUID(),
+				ID:                   uuid.Must(uuid.NewV7()),
+				AccountOriginID:      uuid.Must(uuid.NewV7()),
+				AccountDestinationID: uuid.Must(uuid.NewV7()),
 				Amount:               rand.Int(),
 				CreatedAt:            time.Now().Truncate(time.Second),
 			},
@@ -99,8 +100,8 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 
 func TestTransferRepo_FetchTransfers(t *testing.T) {
 	// setup
-	accOriginID := vos.NewUUID()
-	accDestinationID := vos.NewUUID()
+	accOriginID := uuid.Must(uuid.NewV7())
+	accDestinationID := uuid.Must(uuid.NewV7())
 
 	accounts := []entities.Account{
 		{
@@ -133,7 +134,7 @@ func TestTransferRepo_FetchTransfers(t *testing.T) {
 	var want []entities.Transfer
 	for i := 0; i < 1000; i++ {
 		transfer := &entities.Transfer{
-			ID:                   vos.NewUUID(),
+			ID:                   uuid.Must(uuid.NewV7()),
 			AccountOriginID:      accOriginID,
 			AccountDestinationID: accDestinationID,
 			Amount:               rand.Intn(100),

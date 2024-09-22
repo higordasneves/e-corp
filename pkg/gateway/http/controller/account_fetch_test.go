@@ -4,8 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
+	"github.com/gofrs/uuid/v5"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -17,7 +16,9 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 )
 
 func TestAccountController_FetchAccounts(t *testing.T) {
@@ -39,28 +40,28 @@ func TestAccountController_FetchAccounts(t *testing.T) {
 					FetchAccountsFunc: func(ctx context.Context) ([]entities.AccountOutput, error) {
 						return []entities.AccountOutput{
 							{
-								ID:        "uuid1",
+								ID:        uuid.Must(uuid.NewV7()),
 								Name:      "Elliot",
 								CPF:       "555.666.777-80",
 								Balance:   9700000,
 								CreatedAt: time.Now().Truncate(time.Second),
 							},
 							{
-								ID:        "uuid2",
+								ID:        uuid.Must(uuid.NewV7()),
 								Name:      "Mr. Robot",
 								CPF:       "555.666.777-81",
 								Balance:   5596400,
 								CreatedAt: time.Now().Truncate(time.Second),
 							},
 							{
-								ID:        "uuid3",
+								ID:        uuid.Must(uuid.NewV7()),
 								Name:      "WhiteRose",
 								CPF:       "555.666.777-82",
 								Balance:   5534513,
 								CreatedAt: time.Now().Truncate(time.Second),
 							},
 							{
-								ID:        "uuid4",
+								ID:        uuid.Must(uuid.NewV7()),
 								Name:      "Darlene",
 								CPF:       "555.666.777-83",
 								Balance:   12350,
@@ -70,10 +71,10 @@ func TestAccountController_FetchAccounts(t *testing.T) {
 					},
 				},
 			},
-			want: `[{"id":"uuid1","name":"Elliot","cpf":"555.666.777-80","balance":9700000,"created_at":"<<PRESENCE>>"},
-					{"id":"uuid2","name":"Mr. Robot","cpf":"555.666.777-81","balance":5596400,"created_at":"<<PRESENCE>>"},
-					{"id":"uuid3","name":"WhiteRose","cpf":"555.666.777-82","balance":5534513,"created_at":"<<PRESENCE>>"},
-					{"id":"uuid4","name":"Darlene","cpf":"555.666.777-83","balance":12350,"created_at":"<<PRESENCE>>"}]`,
+			want: `[{"id":"<<PRESENCE>>","name":"Elliot","cpf":"555.666.777-80","balance":9700000,"created_at":"<<PRESENCE>>"},
+					{"id":"<<PRESENCE>>","name":"Mr. Robot","cpf":"555.666.777-81","balance":5596400,"created_at":"<<PRESENCE>>"},
+					{"id":"<<PRESENCE>>","name":"WhiteRose","cpf":"555.666.777-82","balance":5534513,"created_at":"<<PRESENCE>>"},
+					{"id":"<<PRESENCE>>","name":"Darlene","cpf":"555.666.777-83","balance":12350,"created_at":"<<PRESENCE>>"}]`,
 			expectedCode: 200,
 		},
 		{
