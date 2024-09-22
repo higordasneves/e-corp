@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"time"
+	"fmt"
 
 	"github.com/gofrs/uuid/v5"
 
@@ -24,15 +24,12 @@ type ListAccountsOutput struct {
 	NextPage *ListAccountsInput
 }
 
-// FetchAccounts calls the func to select all accounts
-func (accUseCase AccountUseCase) FetchAccounts(ctx context.Context) ([]entities.Account, error) {
-	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
-	defer cancel()
-
-	output, err := accUseCase.R.ListAccounts(ctx, ListAccountsInput{})
+// ListAccounts Lists accounts by filtering the IDs provided in the input.
+func (accUseCase AccountUseCase) ListAccounts(ctx context.Context, input ListAccountsInput) (ListAccountsOutput, error) {
+	output, err := accUseCase.R.ListAccounts(ctx, input)
 	if err != nil {
-		return nil, err
+		return ListAccountsOutput{}, fmt.Errorf("listing accounts from db: %w", err)
 	}
 
-	return output.Accounts, nil
+	return output, nil
 }
