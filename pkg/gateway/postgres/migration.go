@@ -12,7 +12,6 @@ import (
 )
 
 func Migration(migrationPath string, dbPool *pgxpool.Pool, log *logrus.Logger) error {
-
 	cfg := dbPool.Config().ConnConfig
 
 	db := stdlib.OpenDB(*cfg)
@@ -39,5 +38,6 @@ func Migration(migrationPath string, dbPool *pgxpool.Pool, log *logrus.Logger) e
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
