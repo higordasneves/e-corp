@@ -5,7 +5,6 @@ package mocks
 
 import (
 	"context"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"sync"
@@ -21,11 +20,8 @@ var _ controller.AuthUseCase = &AuthUseCaseMock{}
 //
 //		// make and configure a mocked controller.AuthUseCase
 //		mockedAuthUseCase := &AuthUseCaseMock{
-//			LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
+//			LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
 //				panic("mock out the Login method")
-//			},
-//			ValidateTokenFunc: func(tokenString string) (*jwt.StandardClaims, error) {
-//				panic("mock out the ValidateToken method")
 //			},
 //		}
 //
@@ -35,10 +31,7 @@ var _ controller.AuthUseCase = &AuthUseCaseMock{}
 //	}
 type AuthUseCaseMock struct {
 	// LoginFunc mocks the Login method.
-	LoginFunc func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error)
-
-	// ValidateTokenFunc mocks the ValidateToken method.
-	ValidateTokenFunc func(tokenString string) (*jwt.StandardClaims, error)
+	LoginFunc func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -47,23 +40,17 @@ type AuthUseCaseMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Input is the input argument value.
-			Input *usecase.LoginInput
-		}
-		// ValidateToken holds details about calls to the ValidateToken method.
-		ValidateToken []struct {
-			// TokenString is the tokenString argument value.
-			TokenString string
+			Input usecase.LoginInput
 		}
 	}
-	lockLogin         sync.RWMutex
-	lockValidateToken sync.RWMutex
+	lockLogin sync.RWMutex
 }
 
 // Login calls LoginFunc.
-func (mock *AuthUseCaseMock) Login(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
+func (mock *AuthUseCaseMock) Login(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
 	callInfo := struct {
 		Ctx   context.Context
-		Input *usecase.LoginInput
+		Input usecase.LoginInput
 	}{
 		Ctx:   ctx,
 		Input: input,
@@ -73,10 +60,10 @@ func (mock *AuthUseCaseMock) Login(ctx context.Context, input *usecase.LoginInpu
 	mock.lockLogin.Unlock()
 	if mock.LoginFunc == nil {
 		var (
-			tokenOut *usecase.LoginToken
-			errOut   error
+			loginOutputOut usecase.LoginOutput
+			errOut         error
 		)
-		return tokenOut, errOut
+		return loginOutputOut, errOut
 	}
 	return mock.LoginFunc(ctx, input)
 }
@@ -87,50 +74,14 @@ func (mock *AuthUseCaseMock) Login(ctx context.Context, input *usecase.LoginInpu
 //	len(mockedAuthUseCase.LoginCalls())
 func (mock *AuthUseCaseMock) LoginCalls() []struct {
 	Ctx   context.Context
-	Input *usecase.LoginInput
+	Input usecase.LoginInput
 } {
 	var calls []struct {
 		Ctx   context.Context
-		Input *usecase.LoginInput
+		Input usecase.LoginInput
 	}
 	mock.lockLogin.RLock()
 	calls = mock.calls.Login
 	mock.lockLogin.RUnlock()
-	return calls
-}
-
-// ValidateToken calls ValidateTokenFunc.
-func (mock *AuthUseCaseMock) ValidateToken(tokenString string) (*jwt.StandardClaims, error) {
-	callInfo := struct {
-		TokenString string
-	}{
-		TokenString: tokenString,
-	}
-	mock.lockValidateToken.Lock()
-	mock.calls.ValidateToken = append(mock.calls.ValidateToken, callInfo)
-	mock.lockValidateToken.Unlock()
-	if mock.ValidateTokenFunc == nil {
-		var (
-			standardClaimsOut *jwt.StandardClaims
-			errOut            error
-		)
-		return standardClaimsOut, errOut
-	}
-	return mock.ValidateTokenFunc(tokenString)
-}
-
-// ValidateTokenCalls gets all the calls that were made to ValidateToken.
-// Check the length with:
-//
-//	len(mockedAuthUseCase.ValidateTokenCalls())
-func (mock *AuthUseCaseMock) ValidateTokenCalls() []struct {
-	TokenString string
-} {
-	var calls []struct {
-		TokenString string
-	}
-	mock.lockValidateToken.RLock()
-	calls = mock.calls.ValidateToken
-	mock.lockValidateToken.RUnlock()
 	return calls
 }

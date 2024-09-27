@@ -40,12 +40,13 @@ func TestAuthUseCase_Login_Success(t *testing.T) {
 		SecretKey: "secret_key_test",
 	})
 
-	err = uc.Login(thelp.NewCtx(t), usecase.LoginInput{
+	output, err := uc.Login(thelp.NewCtx(t), usecase.LoginInput{
 		CPF:    "43663412309",
 		Secret: "password123",
 	})
 	require.NoError(t, err)
-
+	assert.WithinDuration(t, output.IssuedAt, time.Now(), time.Minute)
+	assert.Equal(t, output.ExpiresAt, output.IssuedAt.Add(time.Minute))
 }
 
 func TestAuthUseCase_Login_Failure_InvalidPass(t *testing.T) {
@@ -71,7 +72,7 @@ func TestAuthUseCase_Login_Failure_InvalidPass(t *testing.T) {
 		SecretKey: "secret_key_test",
 	})
 
-	err = uc.Login(thelp.NewCtx(t), usecase.LoginInput{
+	_, err = uc.Login(thelp.NewCtx(t), usecase.LoginInput{
 		CPF:    "43663412309",
 		Secret: "password124",
 	})

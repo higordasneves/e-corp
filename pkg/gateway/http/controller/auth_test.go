@@ -5,13 +5,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/gofrs/uuid/v5"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
@@ -24,6 +25,7 @@ import (
 
 func TestAuthController_Login(t *testing.T) {
 	t.Parallel()
+
 	type fields struct {
 		authUC controller.AuthUseCase
 	}
@@ -40,13 +42,16 @@ func TestAuthController_Login(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566678", "secret": "12345678"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
-					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
-						var token usecase.LoginToken = "fake_token"
-						return &token, nil
+					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
+						return usecase.LoginOutput{
+							AccountID: uuid.Must(uuid.NewV7()),
+							IssuedAt:  time.Date(2024, 1, 1, 0, 0, 0, 0, time.Local),
+							ExpiresAt: time.Date(2024, 1, 1, 0, 1, 0, 0, time.Local),
+						}, nil
 					},
 				},
 			},
-			want:         `"fake_token"`,
+			want:         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
 			expectedCode: http.StatusOK,
 		},
 		{
@@ -54,12 +59,12 @@ func TestAuthController_Login(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566690", "secret": "12345678"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
-					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
-						return nil, entities.ErrAccNotFound
+					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
+						return usecase.LoginOutput{}, entities.ErrAccNotFound
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrAccNotFound),
+			want:         fmt.Sprintf(`{"error":"%s"}`, entities.ErrAccNotFound),
 			expectedCode: http.StatusNotFound,
 		},
 		{
@@ -67,12 +72,12 @@ func TestAuthController_Login(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566690", "secret": "123456"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
-					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
-						return nil, vos.ErrInvalidPass
+					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
+						return usecase.LoginOutput{}, vos.ErrInvalidPass
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrInvalidPass),
+			want:         fmt.Sprintf(`{"error":"%s"}`, vos.ErrInvalidPass),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -80,12 +85,12 @@ func TestAuthController_Login(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"cpf": "444.555.666-90", "secret": "12345678"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
-					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
-						return nil, vos.ErrDocumentFormat
+					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
+						return usecase.LoginOutput{}, vos.ErrDocumentFormat
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrDocumentFormat),
+			want:         fmt.Sprintf(`{"error":"%s"}`, vos.ErrDocumentFormat),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -93,13 +98,13 @@ func TestAuthController_Login(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"cpf": "444.555.666-90", "secret": "12345678"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
-					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
-						return nil, errors.New("something")
+					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
+						return usecase.LoginOutput{}, errors.New("something")
 					},
 				},
 			},
 
-			want:         fmt.Sprintf(`{"error": "%s"}`, interpreter.ErrUnexpected),
+			want:         fmt.Sprintf(`{"error":"%s"}`, interpreter.ErrUnexpected),
 			expectedCode: http.StatusInternalServerError,
 		},
 	}
@@ -111,7 +116,7 @@ func TestAuthController_Login(t *testing.T) {
 
 			// setup
 			authUC := tt.fields.authUC
-			authCtrl := controller.NewAuthController(authUC, logTest)
+			authCtrl := controller.NewAuthController(authUC, "test_secret_key", logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/login", authCtrl.Login).Methods(http.MethodPost)
@@ -122,8 +127,7 @@ func TestAuthController_Login(t *testing.T) {
 			router.ServeHTTP(response, req)
 
 			// assert
-			ja := jsonassert.New(t)
-			ja.Assertf(strings.TrimSpace(response.Body.String()), tt.want)
+			assert.Contains(t, strings.TrimSpace(response.Body.String()), tt.want)
 			assert.Equal(t, tt.expectedCode, response.Code)
 		})
 	}
