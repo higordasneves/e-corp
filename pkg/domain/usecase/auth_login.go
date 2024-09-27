@@ -21,6 +21,7 @@ type LoginInput struct {
 type LoginToken string
 
 // Login validates credentials then call the func to generate a login session token with expiration.
+// It returns domain.ErrInvalidParameter if the password doesn't match.
 func (authUC AuthUseCase) Login(ctx context.Context, input LoginInput) (LoginToken, error) {
 	acc, err := authUC.accountRepo.GetAccountByDocument(ctx, input.CPF)
 	if err != nil {
