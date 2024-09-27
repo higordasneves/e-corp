@@ -9,7 +9,6 @@ import (
 
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
@@ -38,7 +37,7 @@ func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 	switch {
 	case errors.Is(err, ErrReadRequest):
 		statusCode = http.StatusBadRequest
-	case errors.Is(err, ErrTokenFormat) || errors.Is(err, usecase.ErrTokenInvalid):
+	case errors.Is(err, ErrTokenFormat):
 		statusCode = http.StatusUnauthorized
 	case errors.Is(err, ErrReadRequest):
 		statusCode = http.StatusBadRequest

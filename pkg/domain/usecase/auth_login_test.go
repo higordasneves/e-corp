@@ -40,7 +40,7 @@ func TestAuthUseCase_Login_Success(t *testing.T) {
 		SecretKey: "secret_key_test",
 	})
 
-	_, err = uc.Login(thelp.NewCtx(t), usecase.LoginInput{
+	err = uc.Login(thelp.NewCtx(t), usecase.LoginInput{
 		CPF:    "43663412309",
 		Secret: "password123",
 	})
@@ -71,7 +71,7 @@ func TestAuthUseCase_Login_Failure_InvalidPass(t *testing.T) {
 		SecretKey: "secret_key_test",
 	})
 
-	_, err = uc.Login(thelp.NewCtx(t), usecase.LoginInput{
+	err = uc.Login(thelp.NewCtx(t), usecase.LoginInput{
 		CPF:    "43663412309",
 		Secret: "password124",
 	})

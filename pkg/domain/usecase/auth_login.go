@@ -22,23 +22,18 @@ type LoginToken string
 
 // Login validates credentials then call the func to generate a login session token with expiration.
 // It returns domain.ErrInvalidParameter if the password doesn't match.
-func (authUC AuthUseCase) Login(ctx context.Context, input LoginInput) (LoginToken, error) {
+func (authUC AuthUseCase) Login(ctx context.Context, input LoginInput) error {
 	acc, err := authUC.accountRepo.GetAccountByDocument(ctx, input.CPF)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	err = acc.Secret.CompareHashSecret(input.Secret)
 	if err != nil {
-		return "", fmt.Errorf("%w: %w", domain.ErrInvalidParameter, err)
+		return fmt.Errorf("%w: %w", domain.ErrInvalidParameter, err)
 	}
 
-	token, err := authUC.generateToken(acc.ID)
-	if err != nil {
-		return "", fmt.Errorf("failed to create token: %w", err)
-	}
-
-	return token, nil
+	return nil
 }
 
 // generateToken generates token for account authorization.

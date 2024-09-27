@@ -7,7 +7,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/middleware"
@@ -35,8 +34,8 @@ func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.Au
 	router.HandleFunc(apiVersion+"/accounts/{account_id}/balance", accController.GetBalance).Methods(http.MethodGet)
 
 	//transfer
-	router.HandleFunc(apiVersion+"/transfers", middleware.Authenticate(usecase.AuthUseCase{}, tController.Transfer, log)).Methods(http.MethodPost)
-	router.HandleFunc(apiVersion+"/transfers", middleware.Authenticate(usecase.AuthUseCase{}, tController.FetchTransfers, log)).Methods(http.MethodGet)
+	router.HandleFunc(apiVersion+"/transfers", middleware.Authenticate(cfgAuth.SecretKey, tController.Transfer, log)).Methods(http.MethodPost)
+	router.HandleFunc(apiVersion+"/transfers", middleware.Authenticate(cfgAuth.SecretKey, tController.FetchTransfers, log)).Methods(http.MethodGet)
 
 	//login
 	router.HandleFunc(apiVersion+"/login", authController.Login).Methods(http.MethodPost)
