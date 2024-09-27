@@ -26,9 +26,9 @@ func (r Repository) CreateTransfer(ctx context.Context, transfer entities.Transf
 	return nil
 }
 
-// ListSentTransfersByAccountID lists all transfers made by an account in descending order.
-func (r Repository) ListSentTransfersByAccountID(ctx context.Context, accountID uuid.UUID) ([]entities.Transfer, error) {
-	rows, err := sqlc.New(r.conn.GetTxOrPool(ctx)).ListSentTransfersByAccountID(ctx, uuid.FromStringOrNil(accountID.String()))
+// ListAccountTransfers lists all transfers made or received by an account in descending order.
+func (r Repository) ListAccountTransfers(ctx context.Context, accountID uuid.UUID) ([]entities.Transfer, error) {
+	rows, err := sqlc.New(r.conn.GetTxOrPool(ctx)).ListAccountTransfers(ctx, uuid.FromStringOrNil(accountID.String()))
 	if err != nil {
 		return nil, fmt.Errorf("listing transfer for account %s: %w", accountID.String(), err)
 	}

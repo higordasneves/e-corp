@@ -40,11 +40,11 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 		},
 	}
 
-	repo := NewRepository(NewDB(t))
+	r := NewRepository(NewDB(t))
 	ctxDB := context.Background()
 
 	for _, acc := range accounts {
-		err := repo.CreateAccount(ctxDB, acc)
+		err := r.CreateAccount(ctxDB, acc)
 		require.NoError(t, err)
 	}
 
@@ -80,7 +80,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// execute
-			err := repo.CreateTransfer(context.Background(), tt.transfer)
+			err := r.CreateTransfer(context.Background(), tt.transfer)
 			if tt.expectedErr == nil {
 				assert.NoError(t, err)
 			} else {
@@ -90,7 +90,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 	}
 }
 
-func TestTransferRepo_ListSentTransfersByAccountID(t *testing.T) {
+func TestTransferRepo_ListAccountTransfers(t *testing.T) {
 	t.Parallel()
 
 	// setup
@@ -139,9 +139,19 @@ func TestTransferRepo_ListSentTransfersByAccountID(t *testing.T) {
 		want = append(want, transfer)
 	}
 
-	//execute
-	result, err := r.ListSentTransfersByAccountID(context.Background(), accOriginID)
-	// assert
-	require.NoError(t, err)
-	assert.ElementsMatch(t, want, result)
+	t.Run("listing the transfers sent by an account", func(t *testing.T) {
+		// execute
+		result, err := r.ListAccountTransfers(context.Background(), accOriginID)
+		// assert
+		require.NoError(t, err)
+		assert.ElementsMatch(t, want, result)
+	})
+
+	t.Run("listing the transfers received by an account", func(t *testing.T) {
+		// execute
+		result, err := r.ListAccountTransfers(context.Background(), accDestinationID)
+		// assert
+		require.NoError(t, err)
+		assert.ElementsMatch(t, want, result)
+	})
 }

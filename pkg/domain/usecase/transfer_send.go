@@ -41,28 +41,28 @@ func (tUseCase TransferUseCase) Transfer(ctx context.Context, transferInput *Tra
 		return nil, err
 	}
 
-	ctx, err = tUseCase.repo.BeginTX(ctx)
+	ctx, err = tUseCase.R.BeginTX(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("starting transaction: %w", err)
 	}
-	defer tUseCase.repo.RollbackTX(ctx)
+	defer tUseCase.R.RollbackTX(ctx)
 
-	err = tUseCase.repo.CreateTransfer(ctx, transfer)
+	err = tUseCase.R.CreateTransfer(ctx, transfer)
 	if err != nil {
 		return nil, fmt.Errorf("error creating transfer: %w", err)
 	}
 
-	err = tUseCase.repo.UpdateBalance(ctx, transfer.AccountOriginID, -transfer.Amount)
+	err = tUseCase.R.UpdateBalance(ctx, transfer.AccountOriginID, -transfer.Amount)
 	if err != nil {
 		return nil, fmt.Errorf("error updating origin account balance: %w", err)
 	}
 
-	err = tUseCase.repo.UpdateBalance(ctx, transfer.AccountDestinationID, transfer.Amount)
+	err = tUseCase.R.UpdateBalance(ctx, transfer.AccountDestinationID, transfer.Amount)
 	if err != nil {
 		return nil, fmt.Errorf("error updating destination account balance: %w", err)
 	}
 
-	if err = tUseCase.repo.CommitTX(ctx); err != nil {
+	if err = tUseCase.R.CommitTX(ctx); err != nil {
 		return nil, fmt.Errorf("error committing transaction: %w", err)
 	}
 
@@ -71,7 +71,7 @@ func (tUseCase TransferUseCase) Transfer(ctx context.Context, transferInput *Tra
 
 // validateAccounts validates existence of the accounts involved and balance sufficiency
 func (tUseCase TransferUseCase) validateAccounts(ctx context.Context, transfer entities.Transfer) error {
-	_, err := tUseCase.repo.GetBalance(ctx, transfer.AccountDestinationID)
+	_, err := tUseCase.R.GetBalance(ctx, transfer.AccountDestinationID)
 	if err != nil {
 		if errors.Is(err, entities.ErrAccNotFound) {
 			return fmt.Errorf("destination %w", err)
@@ -79,7 +79,7 @@ func (tUseCase TransferUseCase) validateAccounts(ctx context.Context, transfer e
 		return err
 	}
 
-	originBalance, err := tUseCase.repo.GetBalance(ctx, transfer.AccountOriginID)
+	originBalance, err := tUseCase.R.GetBalance(ctx, transfer.AccountOriginID)
 	if err != nil {
 		if errors.Is(err, entities.ErrAccNotFound) {
 			return fmt.Errorf("origin %w", err)

@@ -15,7 +15,7 @@ type TransferUseCaseRepository interface {
 	UpdateBalance(ctx context.Context, id uuid.UUID, transactionAmount int) error
 
 	CreateTransfer(ctx context.Context, transfer entities.Transfer) error
-	ListSentTransfersByAccountID(ctx context.Context, id uuid.UUID) ([]entities.Transfer, error)
+	ListAccountTransfers(ctx context.Context, accountID uuid.UUID) ([]entities.Transfer, error)
 
 	BeginTX(ctx context.Context) (context.Context, error)
 	CommitTX(ctx context.Context) error
@@ -23,9 +23,9 @@ type TransferUseCaseRepository interface {
 }
 
 type TransferUseCase struct {
-	repo TransferUseCaseRepository
+	R TransferUseCaseRepository
 }
 
 func NewTransferUseCase(r TransferUseCaseRepository) TransferUseCase {
-	return TransferUseCase{repo: r}
+	return TransferUseCase{R: r}
 }
