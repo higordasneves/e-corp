@@ -2,12 +2,12 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
 
+	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 )
 
@@ -18,99 +18,99 @@ type TransferInput struct {
 	Amount               int       `json:"amount"`
 }
 
-// Transfer creates a transfer and updates account balances of the clients
-func (tUseCase TransferUseCase) Transfer(ctx context.Context, transferInput *TransferInput) (*entities.Transfer, error) {
+type TransferOutput struct {
+	Transfer entities.Transfer
+}
+
+// Transfer creates a transfer and updates the balance of the destination and origin accounts.
+// Returns domain.ErrInvalidParameter if:
+// - The AccountOriginID is equal to AccountDestinationID.
+// - The amount is less than or equal to zero.
+// - The origin accounts doesn't have enough funds to complete the transfer.
+// Returns domain.ErrNotFound if the origin or destination account not exists.
+func (tUseCase TransferUseCase) Transfer(ctx context.Context, input TransferInput) (TransferOutput, error) {
 	ctx, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 
-	err := transferInput.ValidateInput()
+	err := ValidateTransferInput(input)
 	if err != nil {
-		return nil, err
+		return TransferOutput{}, fmt.Errorf("%w: %w", domain.ErrInvalidParameter, err)
 	}
 
 	transfer := entities.Transfer{
 		ID:                   uuid.Must(uuid.NewV7()),
-		AccountOriginID:      transferInput.AccountOriginID,
-		AccountDestinationID: transferInput.AccountDestinationID,
-		Amount:               transferInput.Amount,
+		AccountOriginID:      input.AccountOriginID,
+		AccountDestinationID: input.AccountDestinationID,
+		Amount:               input.Amount,
 		CreatedAt:            time.Now().Truncate(time.Second),
 	}
 
-	err = tUseCase.validateAccounts(ctx, transfer)
+	err = tUseCase.validate(ctx, transfer)
 	if err != nil {
-		return nil, err
+		return TransferOutput{}, fmt.Errorf("%w: %w", domain.ErrInvalidParameter, err)
 	}
 
 	ctx, err = tUseCase.R.BeginTX(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("starting transaction: %w", err)
+		return TransferOutput{}, fmt.Errorf("starting transaction: %w", err)
 	}
 	defer tUseCase.R.RollbackTX(ctx)
 
 	err = tUseCase.R.CreateTransfer(ctx, transfer)
 	if err != nil {
-		return nil, fmt.Errorf("error creating transfer: %w", err)
+		return TransferOutput{}, fmt.Errorf("error creating transfer: %w", err)
 	}
 
 	err = tUseCase.R.UpdateBalance(ctx, transfer.AccountOriginID, -transfer.Amount)
 	if err != nil {
-		return nil, fmt.Errorf("error updating origin account balance: %w", err)
+		return TransferOutput{}, fmt.Errorf("error updating origin account balance: %w", err)
 	}
 
 	err = tUseCase.R.UpdateBalance(ctx, transfer.AccountDestinationID, transfer.Amount)
 	if err != nil {
-		return nil, fmt.Errorf("error updating destination account balance: %w", err)
+		return TransferOutput{}, fmt.Errorf("error updating destination account balance: %w", err)
 	}
 
 	if err = tUseCase.R.CommitTX(ctx); err != nil {
-		return nil, fmt.Errorf("error committing transaction: %w", err)
+		return TransferOutput{}, fmt.Errorf("error committing transaction: %w", err)
 	}
 
-	return &transfer, nil
+	return TransferOutput{transfer}, nil
 }
 
-// validateAccounts validates existence of the accounts involved and balance sufficiency
-func (tUseCase TransferUseCase) validateAccounts(ctx context.Context, transfer entities.Transfer) error {
-	_, err := tUseCase.R.GetBalance(ctx, transfer.AccountDestinationID)
-	if err != nil {
-		if errors.Is(err, entities.ErrAccNotFound) {
-			return fmt.Errorf("destination %w", err)
-		}
-		return err
+// ValidateTransferInput validates transfer input.
+// Returns domain.ErrInvalidParameter if the AccountOriginID is equal to AccountDestinationID.
+// Returns domain.ErrInvalidParameter if the amount is less than or equal to zero.
+func ValidateTransferInput(i TransferInput) error {
+	if i.AccountOriginID == i.AccountDestinationID {
+		return fmt.Errorf("%w: the destination account must be different from the origin account", domain.ErrInvalidParameter)
 	}
 
+	if i.Amount <= 0 {
+		return fmt.Errorf("%w: invalid transfer amount, the amount must be greater than 0", domain.ErrInvalidParameter)
+	}
+
+	return nil
+}
+
+// validate validates existence of the accounts involved and balance sufficiency.
+// Returns domain.ErrNotFound if the origin or destination account not exists.
+// Returns domain.ErrInvalidParameter if the origin accounts doesn't have enough funds to complete the transfer.
+func (tUseCase TransferUseCase) validate(ctx context.Context, transfer entities.Transfer) error {
 	originBalance, err := tUseCase.R.GetBalance(ctx, transfer.AccountOriginID)
 	if err != nil {
-		if errors.Is(err, entities.ErrAccNotFound) {
-			return fmt.Errorf("origin %w", err)
-		}
-		return err
+		return fmt.Errorf("getting origin account balance: %w", err)
+	}
+
+	// just checking if the destination account exists.
+	_, err = tUseCase.R.GetBalance(ctx, transfer.AccountDestinationID)
+	if err != nil {
+		return fmt.Errorf("getting destination account balance: %w", err)
 	}
 
 	if transfer.Amount > originBalance {
-		return entities.ErrTransferInsufficientFunds
-	}
-	return nil
-}
-
-// ValidateInput validates transfer input
-func (transferInput *TransferInput) ValidateInput() error {
-	if transferInput.AccountOriginID == transferInput.AccountDestinationID {
-		return entities.ErrSelfTransfer
+		return fmt.Errorf("%w: insufficient funds", domain.ErrInvalidParameter)
 	}
 
-	err := transferInput.validateBalance()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// validateBalance validates if transfer balance is greater than zero
-func (transferInput *TransferInput) validateBalance() error {
-	if transferInput.Amount <= 0 {
-		return entities.ErrTransferAmount
-	}
 	return nil
 }

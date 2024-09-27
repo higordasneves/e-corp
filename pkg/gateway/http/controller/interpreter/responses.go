@@ -41,21 +41,14 @@ func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 		statusCode = http.StatusUnauthorized
 	case errors.Is(err, ErrReadRequest):
 		statusCode = http.StatusBadRequest
-	case errors.Is(err, entities.ErrAccNotFound):
+	case errors.Is(err, entities.ErrAccNotFound) || errors.Is(err, domain.ErrNotFound):
 		statusCode = http.StatusNotFound
+	case errors.Is(err, domain.ErrInvalidParameter):
+		statusCode = http.StatusBadRequest
 	case errors.Is(err, entities.ErrEmptyInput):
 		statusCode = http.StatusBadRequest
 	case errors.Is(err, entities.ErrAccAlreadyExists):
 		statusCode = http.StatusBadRequest
-	case errors.Is(err, entities.ErrOriginAccID):
-		statusCode = http.StatusBadRequest
-	case errors.Is(err, entities.ErrDestAccID):
-		statusCode = http.StatusBadRequest
-	case errors.Is(err, entities.ErrTransferAmount):
-		statusCode = http.StatusBadRequest
-	case errors.Is(err, entities.ErrSelfTransfer):
-		statusCode = http.StatusBadRequest
-	case errors.Is(err, entities.ErrTransferInsufficientFunds):
 		statusCode = http.StatusBadRequest
 	case errors.Is(err, vos.ErrDocumentFormat):
 		statusCode = http.StatusBadRequest

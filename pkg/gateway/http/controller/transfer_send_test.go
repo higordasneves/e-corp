@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/higordasneves/e-corp/pkg/domain"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -71,7 +72,7 @@ func TestTransferController_Transfer(t *testing.T) {
 			fields: fields{
 				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
-						return nil, entities.ErrSelfTransfer
+						return nil, domain.ErrInvalidParameter
 					},
 				},
 			},
@@ -79,7 +80,7 @@ func TestTransferController_Transfer(t *testing.T) {
 				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
 				requestBody:  bytes.NewReader([]byte(`{"destinationID": "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d", "amount": 10}`)),
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrSelfTransfer),
+			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -87,7 +88,7 @@ func TestTransferController_Transfer(t *testing.T) {
 			fields: fields{
 				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
-						return nil, entities.ErrOriginAccID
+						return nil, domain.ErrInvalidParameter
 					},
 				},
 			},
@@ -95,7 +96,7 @@ func TestTransferController_Transfer(t *testing.T) {
 				ctxWithValue: context.WithValue(context.Background(), "subject", "invalid"),
 				requestBody:  bytes.NewReader([]byte(`{"destinationID": "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d", "amount": 10}`)),
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrOriginAccID),
+			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -103,7 +104,7 @@ func TestTransferController_Transfer(t *testing.T) {
 			fields: fields{
 				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
-						return nil, entities.ErrTransferAmount
+						return nil, domain.ErrInvalidParameter
 					},
 				},
 			},
@@ -111,7 +112,7 @@ func TestTransferController_Transfer(t *testing.T) {
 				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
 				requestBody:  bytes.NewReader([]byte(`{"destinationID": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "amount": -10}`)),
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrTransferAmount),
+			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -119,7 +120,7 @@ func TestTransferController_Transfer(t *testing.T) {
 			fields: fields{
 				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
-						return nil, entities.ErrTransferInsufficientFunds
+						return nil, domain.ErrInvalidParameter
 					},
 				},
 			},
@@ -127,7 +128,7 @@ func TestTransferController_Transfer(t *testing.T) {
 				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
 				requestBody:  bytes.NewReader([]byte(`{"destinationID": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "amount": 1000000000000000000}`)),
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrTransferInsufficientFunds),
+			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -135,7 +136,7 @@ func TestTransferController_Transfer(t *testing.T) {
 			fields: fields{
 				tUseCase: &mocks.TransferUseCaseMock{
 					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
-						return nil, entities.ErrAccNotFound
+						return nil, domain.ErrNotFound
 					},
 				},
 			},
@@ -143,7 +144,7 @@ func TestTransferController_Transfer(t *testing.T) {
 				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
 				requestBody:  bytes.NewReader([]byte(`{"destinationID": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "amount": 1000000000000000000}`)),
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrAccNotFound),
+			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrNotFound),
 			expectedCode: http.StatusNotFound,
 		},
 	}
