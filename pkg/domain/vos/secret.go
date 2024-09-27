@@ -12,9 +12,9 @@ type Secret string
 const minSecretLength = 8
 
 var (
-	//ErrSmallSecret occurs when the secret have invalid length
+	// ErrSmallSecret occurs when the secret have invalid length.
 	ErrSmallSecret = fmt.Errorf("the password must be at least %v characters long", minSecretLength)
-	//ErrInvalidPass occurs when secret is invalid
+	// ErrInvalidPass occurs when secret is invalid.
 	ErrInvalidPass = errors.New("invalid password")
 )
 
@@ -35,11 +35,15 @@ func NewSecret(s string) (Secret, error) {
 	return Secret(hashSecret), nil
 }
 
-// CompareHashSecret compares password sent by user and stored password hash
+// CompareHashSecret compares password sent by user and stored password hash.
 func (hashSecret Secret) CompareHashSecret(secret string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hashSecret), []byte(secret))
 	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return ErrInvalidPass
+		}
 		return err
 	}
+
 	return nil
 }

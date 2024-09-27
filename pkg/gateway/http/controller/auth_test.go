@@ -40,8 +40,8 @@ func TestAuthController_Login(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566678", "secret": "12345678"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
-					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
-						var token usecase.Token = "fake_token"
+					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
+						var token usecase.LoginToken = "fake_token"
 						return &token, nil
 					},
 				},
@@ -54,7 +54,7 @@ func TestAuthController_Login(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566690", "secret": "12345678"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
-					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
+					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
 						return nil, entities.ErrAccNotFound
 					},
 				},
@@ -67,7 +67,7 @@ func TestAuthController_Login(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566690", "secret": "123456"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
-					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
+					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
 						return nil, vos.ErrInvalidPass
 					},
 				},
@@ -80,7 +80,7 @@ func TestAuthController_Login(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"cpf": "444.555.666-90", "secret": "12345678"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
-					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
+					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
 						return nil, vos.ErrDocumentFormat
 					},
 				},
@@ -93,7 +93,7 @@ func TestAuthController_Login(t *testing.T) {
 			requestBody: bytes.NewReader([]byte(`{"cpf": "444.555.666-90", "secret": "12345678"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
-					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
+					LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
 						return nil, errors.New("something")
 					},
 				},

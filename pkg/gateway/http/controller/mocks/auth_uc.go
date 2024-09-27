@@ -21,7 +21,7 @@ var _ controller.AuthUseCase = &AuthUseCaseMock{}
 //
 //		// make and configure a mocked controller.AuthUseCase
 //		mockedAuthUseCase := &AuthUseCaseMock{
-//			LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
+//			LoginFunc: func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
 //				panic("mock out the Login method")
 //			},
 //			ValidateTokenFunc: func(tokenString string) (*jwt.StandardClaims, error) {
@@ -35,7 +35,7 @@ var _ controller.AuthUseCase = &AuthUseCaseMock{}
 //	}
 type AuthUseCaseMock struct {
 	// LoginFunc mocks the Login method.
-	LoginFunc func(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error)
+	LoginFunc func(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error)
 
 	// ValidateTokenFunc mocks the ValidateToken method.
 	ValidateTokenFunc func(tokenString string) (*jwt.StandardClaims, error)
@@ -60,7 +60,7 @@ type AuthUseCaseMock struct {
 }
 
 // Login calls LoginFunc.
-func (mock *AuthUseCaseMock) Login(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error) {
+func (mock *AuthUseCaseMock) Login(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error) {
 	callInfo := struct {
 		Ctx   context.Context
 		Input *usecase.LoginInput
@@ -73,7 +73,7 @@ func (mock *AuthUseCaseMock) Login(ctx context.Context, input *usecase.LoginInpu
 	mock.lockLogin.Unlock()
 	if mock.LoginFunc == nil {
 		var (
-			tokenOut *usecase.Token
+			tokenOut *usecase.LoginToken
 			errOut   error
 		)
 		return tokenOut, errOut

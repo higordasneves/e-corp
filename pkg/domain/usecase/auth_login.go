@@ -2,11 +2,13 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid/v5"
 
+	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
@@ -16,25 +18,30 @@ type LoginInput struct {
 	Secret string       `json:"secret"`
 }
 
-type Token string
+type LoginToken string
 
-// Login validates credentials then call the func to create a token
-func (authUC AuthUseCase) Login(ctx context.Context, input *LoginInput) (*Token, error) {
+// Login validates credentials then call the func to generate a login session token with expiration.
+func (authUC AuthUseCase) Login(ctx context.Context, input LoginInput) (LoginToken, error) {
 	acc, err := authUC.accountRepo.GetAccountByDocument(ctx, input.CPF)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	err = acc.Secret.CompareHashSecret(input.Secret)
 	if err != nil {
-		return nil, vos.ErrInvalidPass
+		return "", fmt.Errorf("%w: %w", domain.ErrInvalidParameter, err)
 	}
 
-	return authUC.createAccToken(acc.ID)
+	token, err := authUC.generateToken(acc.ID)
+	if err != nil {
+		return "", fmt.Errorf("failed to create token: %w", err)
+	}
+
+	return token, nil
 }
 
-// createAccToken generates token for account authorization
-func (authUC AuthUseCase) createAccToken(accID uuid.UUID) (*Token, error) {
+// generateToken generates token for account authorization.
+func (authUC AuthUseCase) generateToken(accID uuid.UUID) (LoginToken, error) {
 	// Create the Claims
 	claims := &jwt.StandardClaims{
 		Issuer:    "login",
@@ -46,8 +53,8 @@ func (authUC AuthUseCase) createAccToken(accID uuid.UUID) (*Token, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	ss, err := token.SignedString([]byte(authUC.secretKey))
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	accToken := Token(ss)
-	return &accToken, nil
+
+	return LoginToken(ss), nil
 }

@@ -14,7 +14,7 @@ import (
 //go:generate moq -stub -pkg mocks -out mocks/auth_uc.go . AuthUseCase
 
 type AuthUseCase interface {
-	Login(ctx context.Context, input *usecase.LoginInput) (*usecase.Token, error)
+	Login(ctx context.Context, input *usecase.LoginInput) (*usecase.LoginToken, error)
 	ValidateToken(tokenString string) (*jwt.StandardClaims, error)
 }
 
