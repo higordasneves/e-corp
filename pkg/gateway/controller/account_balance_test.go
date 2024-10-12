@@ -3,9 +3,6 @@ package controller_test
 import (
 	"context"
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/domain"
-	http2 "github.com/higordasneves/e-corp/pkg/gateway/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,14 +10,18 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
-	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/higordasneves/e-corp/pkg/domain"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 )
 
 func TestAccountController_GetBalance(t *testing.T) {
 	t.Parallel()
+
 	type fields struct {
-		accUseCase http2.AccountUseCase
+		accUseCase controller.AccountUseCase
 	}
 
 	tests := []struct {
@@ -40,7 +41,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 				},
 			},
 			accID: uuid.Must(uuid.NewV7()),
-			want: `{"balance": 9700000}
+			want: `{"balance":9700000}
 
 `,
 			expectedCode: 200,
@@ -55,7 +56,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 				},
 			},
 			accID:        uuid.Must(uuid.NewV7()),
-			want:         `{"balance": 5534513}`,
+			want:         `{"balance":5534513}`,
 			expectedCode: 200,
 		},
 		{
@@ -68,18 +69,17 @@ func TestAccountController_GetBalance(t *testing.T) {
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrNotFound),
+			want:         fmt.Sprintf(`{"error":"%s"}`, domain.ErrNotFound),
 			expectedCode: 404,
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			//setup
 			accUseCase := tt.fields.accUseCase
-			accCtrl := http2.NewAccountController(accUseCase, logTest)
+			accCtrl := controller.NewAccountController(accUseCase, logTest)
 			router := mux.NewRouter()
 			router.HandleFunc("/accounts/{account_id}/balance", accCtrl.GetBalance).Methods(http.MethodGet)
 			path := fmt.Sprintf("/accounts/%v/balance", tt.accID)
@@ -90,9 +90,8 @@ func TestAccountController_GetBalance(t *testing.T) {
 			router.ServeHTTP(response, req)
 
 			//assert
-			ja := jsonassert.New(t)
 			assert.Equal(t, tt.expectedCode, response.Code)
-			ja.Assertf(strings.TrimSpace(response.Body.String()), tt.want)
+			assert.Equal(t, strings.TrimSpace(tt.want), strings.TrimSpace(response.Body.String()))
 		})
 	}
 }

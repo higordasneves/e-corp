@@ -30,7 +30,7 @@ func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.Au
 
 	//account
 	router.HandleFunc(apiVersion+"/accounts", accController.CreateAccount).Methods(http.MethodPost)
-	router.HandleFunc(apiVersion+"/accounts", accController.FetchAccounts).Methods(http.MethodGet)
+	router.HandleFunc(apiVersion+"/accounts", accController.ListAccounts).Methods(http.MethodGet)
 	router.HandleFunc(apiVersion+"/accounts/{account_id}/balance", accController.GetBalance).Methods(http.MethodGet)
 
 	//transfer

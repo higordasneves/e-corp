@@ -1,14 +1,17 @@
 package controller
 
 import (
+	"net/http"
+
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
+
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
-	"net/http"
 )
 
+// GetBalance returns the current balance of the account.
+// It returns NotFound error if the account not exists.
 func (accController AccountController) GetBalance(w http.ResponseWriter, r *http.Request) {
-
 	params := mux.Vars(r)
 	id := uuid.FromStringOrNil(params["account_id"])
 

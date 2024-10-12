@@ -6,7 +6,6 @@ package mocks
 import (
 	"context"
 	"github.com/gofrs/uuid/v5"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"sync"
@@ -22,14 +21,14 @@ var _ controller.AccountUseCase = &AccountUseCaseMock{}
 //
 //		// make and configure a mocked controller.AccountUseCase
 //		mockedAccountUseCase := &AccountUseCaseMock{
-//			CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
+//			CreateAccountFunc: func(ctx context.Context, input usecase.CreateAccountInput) (usecase.CreateAccountOutput, error) {
 //				panic("mock out the CreateAccount method")
-//			},
-//			FetchAccountsFunc: func(ctx context.Context) ([]entities.AccountOutput, error) {
-//				panic("mock out the FetchAccounts method")
 //			},
 //			GetBalanceFunc: func(ctx context.Context, id uuid.UUID) (int, error) {
 //				panic("mock out the GetBalance method")
+//			},
+//			ListAccountsFunc: func(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error) {
+//				panic("mock out the ListAccounts method")
 //			},
 //		}
 //
@@ -39,13 +38,13 @@ var _ controller.AccountUseCase = &AccountUseCaseMock{}
 //	}
 type AccountUseCaseMock struct {
 	// CreateAccountFunc mocks the CreateAccount method.
-	CreateAccountFunc func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error)
-
-	// FetchAccountsFunc mocks the FetchAccounts method.
-	FetchAccountsFunc func(ctx context.Context) ([]entities.AccountOutput, error)
+	CreateAccountFunc func(ctx context.Context, input usecase.CreateAccountInput) (usecase.CreateAccountOutput, error)
 
 	// GetBalanceFunc mocks the GetBalance method.
 	GetBalanceFunc func(ctx context.Context, id uuid.UUID) (int, error)
+
+	// ListAccountsFunc mocks the ListAccounts method.
+	ListAccountsFunc func(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -54,12 +53,7 @@ type AccountUseCaseMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Input is the input argument value.
-			Input *usecase.CreateAccountInput
-		}
-		// FetchAccounts holds details about calls to the FetchAccounts method.
-		FetchAccounts []struct {
-			// Ctx is the ctx argument value.
-			Ctx context.Context
+			Input usecase.CreateAccountInput
 		}
 		// GetBalance holds details about calls to the GetBalance method.
 		GetBalance []struct {
@@ -68,17 +62,24 @@ type AccountUseCaseMock struct {
 			// ID is the id argument value.
 			ID uuid.UUID
 		}
+		// ListAccounts holds details about calls to the ListAccounts method.
+		ListAccounts []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Input is the input argument value.
+			Input usecase.ListAccountsInput
+		}
 	}
 	lockCreateAccount sync.RWMutex
-	lockFetchAccounts sync.RWMutex
 	lockGetBalance    sync.RWMutex
+	lockListAccounts  sync.RWMutex
 }
 
 // CreateAccount calls CreateAccountFunc.
-func (mock *AccountUseCaseMock) CreateAccount(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
+func (mock *AccountUseCaseMock) CreateAccount(ctx context.Context, input usecase.CreateAccountInput) (usecase.CreateAccountOutput, error) {
 	callInfo := struct {
 		Ctx   context.Context
-		Input *usecase.CreateAccountInput
+		Input usecase.CreateAccountInput
 	}{
 		Ctx:   ctx,
 		Input: input,
@@ -88,10 +89,10 @@ func (mock *AccountUseCaseMock) CreateAccount(ctx context.Context, input *usecas
 	mock.lockCreateAccount.Unlock()
 	if mock.CreateAccountFunc == nil {
 		var (
-			accountOutputOut *entities.AccountOutput
-			errOut           error
+			createAccountOutputOut usecase.CreateAccountOutput
+			errOut                 error
 		)
-		return accountOutputOut, errOut
+		return createAccountOutputOut, errOut
 	}
 	return mock.CreateAccountFunc(ctx, input)
 }
@@ -102,51 +103,15 @@ func (mock *AccountUseCaseMock) CreateAccount(ctx context.Context, input *usecas
 //	len(mockedAccountUseCase.CreateAccountCalls())
 func (mock *AccountUseCaseMock) CreateAccountCalls() []struct {
 	Ctx   context.Context
-	Input *usecase.CreateAccountInput
+	Input usecase.CreateAccountInput
 } {
 	var calls []struct {
 		Ctx   context.Context
-		Input *usecase.CreateAccountInput
+		Input usecase.CreateAccountInput
 	}
 	mock.lockCreateAccount.RLock()
 	calls = mock.calls.CreateAccount
 	mock.lockCreateAccount.RUnlock()
-	return calls
-}
-
-// FetchAccounts calls FetchAccountsFunc.
-func (mock *AccountUseCaseMock) FetchAccounts(ctx context.Context) ([]entities.AccountOutput, error) {
-	callInfo := struct {
-		Ctx context.Context
-	}{
-		Ctx: ctx,
-	}
-	mock.lockFetchAccounts.Lock()
-	mock.calls.FetchAccounts = append(mock.calls.FetchAccounts, callInfo)
-	mock.lockFetchAccounts.Unlock()
-	if mock.FetchAccountsFunc == nil {
-		var (
-			accountOutputsOut []entities.AccountOutput
-			errOut            error
-		)
-		return accountOutputsOut, errOut
-	}
-	return mock.FetchAccountsFunc(ctx)
-}
-
-// FetchAccountsCalls gets all the calls that were made to FetchAccounts.
-// Check the length with:
-//
-//	len(mockedAccountUseCase.FetchAccountsCalls())
-func (mock *AccountUseCaseMock) FetchAccountsCalls() []struct {
-	Ctx context.Context
-} {
-	var calls []struct {
-		Ctx context.Context
-	}
-	mock.lockFetchAccounts.RLock()
-	calls = mock.calls.FetchAccounts
-	mock.lockFetchAccounts.RUnlock()
 	return calls
 }
 
@@ -187,5 +152,45 @@ func (mock *AccountUseCaseMock) GetBalanceCalls() []struct {
 	mock.lockGetBalance.RLock()
 	calls = mock.calls.GetBalance
 	mock.lockGetBalance.RUnlock()
+	return calls
+}
+
+// ListAccounts calls ListAccountsFunc.
+func (mock *AccountUseCaseMock) ListAccounts(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error) {
+	callInfo := struct {
+		Ctx   context.Context
+		Input usecase.ListAccountsInput
+	}{
+		Ctx:   ctx,
+		Input: input,
+	}
+	mock.lockListAccounts.Lock()
+	mock.calls.ListAccounts = append(mock.calls.ListAccounts, callInfo)
+	mock.lockListAccounts.Unlock()
+	if mock.ListAccountsFunc == nil {
+		var (
+			listAccountsOutputOut usecase.ListAccountsOutput
+			errOut                error
+		)
+		return listAccountsOutputOut, errOut
+	}
+	return mock.ListAccountsFunc(ctx, input)
+}
+
+// ListAccountsCalls gets all the calls that were made to ListAccounts.
+// Check the length with:
+//
+//	len(mockedAccountUseCase.ListAccountsCalls())
+func (mock *AccountUseCaseMock) ListAccountsCalls() []struct {
+	Ctx   context.Context
+	Input usecase.ListAccountsInput
+} {
+	var calls []struct {
+		Ctx   context.Context
+		Input usecase.ListAccountsInput
+	}
+	mock.lockListAccounts.RLock()
+	calls = mock.calls.ListAccounts
+	mock.lockListAccounts.RUnlock()
 	return calls
 }
