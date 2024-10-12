@@ -54,9 +54,7 @@ func (accController AccountController) ListAccounts(w http.ResponseWriter, r *ht
 	}
 
 	// todo: add cursor.
-	ucOutput, err := accController.accUseCase.ListAccounts(r.Context(), usecase.ListAccountsInput{
-		PageSize: 100,
-	})
+	ucOutput, err := accController.accUseCase.ListAccounts(r.Context(), ucInput)
 	if err != nil {
 		reponses.HandleError(w, err, accController.log)
 		return

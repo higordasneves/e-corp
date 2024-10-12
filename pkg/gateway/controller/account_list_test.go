@@ -38,10 +38,13 @@ func TestAccountController_ListAccounts(t *testing.T) {
 	}{
 		{
 			name:    "with success",
-			request: bytes.NewReader([]byte(`{"ids":[], "page_size":100, "page_token":""}`)),
+			request: bytes.NewReader([]byte(`{"ids":["019282db-ff95-76cd-8b7f-c3a07b52a57c", "019282db-ff95-76ce-8ddd-ec5abceffa25"], "page_size":100, "page_token":""}`)),
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
 					ListAccountsFunc: func(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error) {
+						assert.Equal(t, []uuid.UUID{uuid.FromStringOrNil("019282db-ff95-76cd-8b7f-c3a07b52a57c"), uuid.FromStringOrNil("019282db-ff95-76ce-8ddd-ec5abceffa25")}, input.IDs)
+						assert.Equal(t, 100, input.PageSize)
+
 						return usecase.ListAccountsOutput{
 							Accounts: []entities.Account{
 								{
@@ -58,20 +61,6 @@ func TestAccountController_ListAccounts(t *testing.T) {
 									Balance:   5596400,
 									CreatedAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 								},
-								{
-									ID:        uuid.FromStringOrNil("019282db-ff95-76cf-a31f-101349333a13"),
-									Name:      "WhiteRose",
-									Document:  "55566677782",
-									Balance:   5534513,
-									CreatedAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
-								},
-								{
-									ID:        uuid.FromStringOrNil("019282db-ff95-76d0-a96d-41f561a1af27"),
-									Name:      "Darlene",
-									Document:  "55566677783",
-									Balance:   12350,
-									CreatedAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
-								},
 							},
 							NextPage: &usecase.ListAccountsInput{
 								LastFetchedID: uuid.FromStringOrNil("019282db-ff95-76d0-a96d-41f561a1af28"),
@@ -81,7 +70,7 @@ func TestAccountController_ListAccounts(t *testing.T) {
 					},
 				},
 			},
-			want:         `{"accounts":[{"id":"019282db-ff95-76cd-8b7f-c3a07b52a57c","name":"Elliot","document":"55566677780","balance":9700000,"created_at":"2024-01-01T00:00:00Z"},{"id":"019282db-ff95-76ce-8ddd-ec5abceffa25","name":"Mr. Robot","document":"55566677781","balance":5596400,"created_at":"2024-01-01T00:00:00Z"},{"id":"019282db-ff95-76cf-a31f-101349333a13","name":"WhiteRose","document":"55566677782","balance":5534513,"created_at":"2024-01-01T00:00:00Z"},{"id":"019282db-ff95-76d0-a96d-41f561a1af27","name":"Darlene","document":"55566677783","balance":12350,"created_at":"2024-01-01T00:00:00Z"}],"next_page":"eyJJRHMiOm51bGwsIkxhc3RGZXRjaGVkSUQiOiIwMTkyODJkYi1mZjk1LTc2ZDAtYTk2ZC00MWY1NjFhMWFmMjgiLCJQYWdlU2l6ZSI6MTAwfQ=="}`,
+			want:         `{"accounts":[{"id":"019282db-ff95-76cd-8b7f-c3a07b52a57c","name":"Elliot","document":"55566677780","balance":9700000,"created_at":"2024-01-01T00:00:00Z"},{"id":"019282db-ff95-76ce-8ddd-ec5abceffa25","name":"Mr. Robot","document":"55566677781","balance":5596400,"created_at":"2024-01-01T00:00:00Z"}],"next_page":"eyJJRHMiOm51bGwsIkxhc3RGZXRjaGVkSUQiOiIwMTkyODJkYi1mZjk1LTc2ZDAtYTk2ZC00MWY1NjFhMWFmMjgiLCJQYWdlU2l6ZSI6MTAwfQ=="}`,
 			expectedCode: 200,
 		},
 		{
