@@ -1,9 +1,9 @@
-package http
+package controller
 
 import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
 	"net/http"
 )
 

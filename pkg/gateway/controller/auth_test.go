@@ -1,4 +1,4 @@
-package http_test
+package controller_test
 
 import (
 	"bytes"
@@ -6,9 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofrs/uuid/v5"
-	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/mocks"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -18,16 +15,18 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
 )
 
 func TestAuthController_Login(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		authUC http2.AuthUseCase
+		authUC controller.AuthUseCase
 	}
 
 	tests := []struct {
@@ -60,11 +59,11 @@ func TestAuthController_Login(t *testing.T) {
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
-						return usecase.LoginOutput{}, entities.ErrAccNotFound
+						return usecase.LoginOutput{}, domain.ErrNotFound
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error":"%s"}`, entities.ErrAccNotFound),
+			want:         fmt.Sprintf(`{"error":"%s"}`, domain.ErrNotFound),
 			expectedCode: http.StatusNotFound,
 		},
 		{
@@ -73,11 +72,11 @@ func TestAuthController_Login(t *testing.T) {
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
-						return usecase.LoginOutput{}, vos.ErrInvalidPass
+						return usecase.LoginOutput{}, domain.ErrInvalidParameter
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error":"%s"}`, vos.ErrInvalidPass),
+			want:         fmt.Sprintf(`{"error":"%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -86,11 +85,11 @@ func TestAuthController_Login(t *testing.T) {
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
-						return usecase.LoginOutput{}, vos.ErrDocumentFormat
+						return usecase.LoginOutput{}, domain.ErrInvalidParameter
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error":"%s"}`, vos.ErrDocumentFormat),
+			want:         fmt.Sprintf(`{"error":"%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -116,7 +115,7 @@ func TestAuthController_Login(t *testing.T) {
 
 			// setup
 			authUC := tt.fields.authUC
-			authCtrl := http2.NewAuthController(authUC, "test_secret_key", logTest)
+			authCtrl := controller.NewAuthController(authUC, "test_secret_key", logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/login", authCtrl.Login).Methods(http.MethodPost)

@@ -1,11 +1,9 @@
-package http_test
+package controller_test
 
 import (
 	"bytes"
 	"context"
 	"fmt"
-	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -17,9 +15,11 @@ import (
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 )
 
 const balanceInit = 1000000
@@ -27,7 +27,7 @@ const balanceInit = 1000000
 func TestAccountController_CreateAccount(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		accUseCase http2.AccountUseCase
+		accUseCase controller.AccountUseCase
 	}
 
 	tests := []struct {
@@ -62,11 +62,11 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
 					CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
-						return nil, entities.ErrAccAlreadyExists
+						return nil, domain.ErrInvalidParameter
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrAccAlreadyExists),
+			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -75,11 +75,11 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
 					CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
-						return nil, vos.ErrDocumentLen
+						return nil, domain.ErrInvalidParameter
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrDocumentLen),
+			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -88,11 +88,11 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
 					CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
-						return nil, vos.ErrDocumentFormat
+						return nil, domain.ErrInvalidParameter
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrDocumentFormat),
+			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -101,11 +101,11 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
 					CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
-						return nil, vos.ErrSmallSecret
+						return nil, domain.ErrInvalidParameter
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, vos.ErrSmallSecret),
+			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
@@ -114,11 +114,11 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
 					CreateAccountFunc: func(ctx context.Context, input *usecase.CreateAccountInput) (*entities.AccountOutput, error) {
-						return nil, entities.ErrEmptyInput
+						return nil, domain.ErrInvalidParameter
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrEmptyInput),
+			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 	}
@@ -130,7 +130,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 
 			// setup
 			accUseCase := tt.fields.accUseCase
-			accController := http2.NewAccountController(accUseCase, logTest)
+			accController := controller.NewAccountController(accUseCase, logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/accounts", accController.CreateAccount).Methods(http.MethodPost)

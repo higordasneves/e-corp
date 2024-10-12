@@ -1,9 +1,9 @@
-package http
+package controller
 
 import (
 	"context"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/requests"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/requests"
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"

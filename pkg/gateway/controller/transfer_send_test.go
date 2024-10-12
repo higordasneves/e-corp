@@ -1,12 +1,12 @@
-package http_test
+package controller_test
 
 import (
 	"bytes"
 	"context"
 	"fmt"
 	"github.com/higordasneves/e-corp/pkg/domain"
-	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/mocks"
+	http2 "github.com/higordasneves/e-corp/pkg/gateway/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"

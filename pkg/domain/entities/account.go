@@ -1,23 +1,11 @@
 package entities
 
 import (
-	"errors"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
-)
-
-var (
-	//ErrAccNotFound occurs when trying to obtain information from a non-existent account
-	ErrAccNotFound = errors.New("account not found")
-	//ErrAccAlreadyExists occurs when trying to create an account that already exists
-	ErrAccAlreadyExists = errors.New("account already exists")
-	//ErrEmptyInput occurs when fields required to create an account aren't filled
-	ErrEmptyInput = errors.New("the name, document and password fields are required")
-	//ErrZeroRowsAffectedUpdateBalance occurs when zero rows affected in update balance query
-	ErrZeroRowsAffectedUpdateBalance = errors.New("zero rows affected in update balance query")
 )
 
 // Account represents a banking account

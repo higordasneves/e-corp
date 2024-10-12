@@ -1,10 +1,11 @@
-package http_test
+package controller_test
 
 import (
 	"context"
 	"fmt"
-	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/mocks"
+	"github.com/higordasneves/e-corp/pkg/domain"
+	http2 "github.com/higordasneves/e-corp/pkg/gateway/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -14,8 +15,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
 )
 
 func TestAccountController_GetBalance(t *testing.T) {
@@ -65,11 +64,11 @@ func TestAccountController_GetBalance(t *testing.T) {
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
 					GetBalanceFunc: func(ctx context.Context, id uuid.UUID) (int, error) {
-						return 0, entities.ErrAccNotFound
+						return 0, domain.ErrNotFound
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, entities.ErrAccNotFound),
+			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrNotFound),
 			expectedCode: 404,
 		},
 	}

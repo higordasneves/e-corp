@@ -7,13 +7,13 @@ import (
 	"context"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/http"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"sync"
 )
 
 // Ensure, that TransferUseCaseMock does implement controller.TransferUseCase.
 // If this is not the case, regenerate this file with moq.
-var _ http.TransferUseCase = &TransferUseCaseMock{}
+var _ controller.TransferUseCase = &TransferUseCaseMock{}
 
 // TransferUseCaseMock is a mock implementation of controller.TransferUseCase.
 //

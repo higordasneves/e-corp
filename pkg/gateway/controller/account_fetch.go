@@ -1,7 +1,7 @@
-package http
+package controller
 
 import (
-	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
 	"net/http"
 )
 

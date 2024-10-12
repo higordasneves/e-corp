@@ -1,8 +1,8 @@
-package http
+package controller
 
 import (
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
 	"net/http"
 )
 

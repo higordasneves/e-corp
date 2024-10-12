@@ -1,7 +1,7 @@
 package router
 
 import (
-	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
+	http2 "github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/middleware"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/middleware"
 )
 
 // GetHTTPHandler returns HTTP handler with all routes

@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/router"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
 )
 

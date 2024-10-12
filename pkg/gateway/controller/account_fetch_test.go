@@ -1,13 +1,13 @@
-package http_test
+package controller_test
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"github.com/gofrs/uuid/v5"
-	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/mocks"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
+	http2 "github.com/higordasneves/e-corp/pkg/gateway/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
 	"net/http"
 	"net/http/httptest"
 	"strings"

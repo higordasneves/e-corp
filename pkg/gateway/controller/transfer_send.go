@@ -1,9 +1,9 @@
-package http
+package controller
 
 import (
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/requests"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/requests"
 	"net/http"
 
 	"github.com/gofrs/uuid/v5"
