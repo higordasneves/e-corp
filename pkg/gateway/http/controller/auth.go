@@ -2,12 +2,14 @@ package controller
 
 import (
 	"context"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/sirupsen/logrus"
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
+	"github.com/sirupsen/logrus"
+
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/requests"
 )
 
 //go:generate moq -stub -pkg mocks -out mocks/auth_uc.go . AuthUseCase
@@ -28,14 +30,14 @@ func NewAuthController(authUseCase AuthUseCase, secretKey string, log *logrus.Lo
 
 func (authCtrl AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	var loginInput usecase.LoginInput
-	if err := interpreter.ReadRequestBody(r, &loginInput); err != nil {
-		interpreter.HandleError(w, err, authCtrl.log)
+	if err := requests.ReadRequestBody(r, &loginInput); err != nil {
+		reponses.HandleError(w, err, authCtrl.log)
 		return
 	}
 
 	output, err := authCtrl.authUseCase.Login(r.Context(), loginInput)
 	if err != nil {
-		interpreter.HandleError(w, err, authCtrl.log)
+		reponses.HandleError(w, err, authCtrl.log)
 		return
 	}
 
@@ -50,9 +52,9 @@ func (authCtrl AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	resp, err := token.SignedString([]byte(authCtrl.secretKey))
 	if err != nil {
-		interpreter.HandleError(w, err, authCtrl.log)
+		reponses.HandleError(w, err, authCtrl.log)
 		return
 	}
 
-	interpreter.SendResponse(w, http.StatusOK, resp, authCtrl.log)
+	reponses.SendResponse(w, http.StatusOK, resp, authCtrl.log)
 }

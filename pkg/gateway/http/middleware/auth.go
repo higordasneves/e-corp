@@ -3,13 +3,13 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/requests"
 	"net/http"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/sirupsen/logrus"
-
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 )
 
 // Authenticate validates the session token provided as input.
@@ -19,7 +19,7 @@ func Authenticate(secretKey string, next http.HandlerFunc, log *logrus.Logger) h
 	return func(w http.ResponseWriter, r *http.Request) {
 		header := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 		if len(header) != 2 {
-			interpreter.HandleError(w, interpreter.ErrTokenFormat, log)
+			reponses.HandleError(w, requests.ErrTokenFormat, log)
 			return
 		}
 
@@ -32,13 +32,13 @@ func Authenticate(secretKey string, next http.HandlerFunc, log *logrus.Logger) h
 		})
 
 		if err != nil {
-			interpreter.HandleError(w, interpreter.ErrTokenFormat, log)
+			reponses.HandleError(w, requests.ErrTokenFormat, log)
 			return
 		}
 
 		claims, ok := token.Claims.(*jwt.StandardClaims)
 		if !(ok && token.Valid) {
-			interpreter.HandleError(w, interpreter.ErrTokenFormat, log)
+			reponses.HandleError(w, requests.ErrTokenFormat, log)
 			return
 		}
 

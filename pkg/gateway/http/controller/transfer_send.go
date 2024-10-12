@@ -2,16 +2,19 @@ package controller
 
 import (
 	"fmt"
-	"github.com/gofrs/uuid/v5"
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 	"net/http"
+
+	"github.com/gofrs/uuid/v5"
+
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/requests"
 )
 
 func (tController TransferController) Transfer(w http.ResponseWriter, r *http.Request) {
 	var transferInput usecase.TransferInput
-	if err := interpreter.ReadRequestBody(r, &transferInput); err != nil {
-		interpreter.HandleError(w, err, tController.log)
+	if err := requests.ReadRequestBody(r, &transferInput); err != nil {
+		reponses.HandleError(w, err, tController.log)
 		return
 	}
 
@@ -20,8 +23,8 @@ func (tController TransferController) Transfer(w http.ResponseWriter, r *http.Re
 
 	transfer, err := tController.tUseCase.Transfer(r.Context(), &transferInput)
 	if err != nil {
-		interpreter.HandleError(w, err, tController.log)
+		reponses.HandleError(w, err, tController.log)
 		return
 	}
-	interpreter.SendResponse(w, http.StatusCreated, transfer, tController.log)
+	reponses.SendResponse(w, http.StatusCreated, transfer, tController.log)
 }

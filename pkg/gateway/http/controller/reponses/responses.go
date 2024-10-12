@@ -1,4 +1,4 @@
-package interpreter
+package reponses
 
 import (
 	"encoding/json"
@@ -10,6 +10,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/requests"
 )
 
 type errJSON struct {
@@ -35,11 +36,11 @@ func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 	var dbError *domain.DBError
 
 	switch {
-	case errors.Is(err, ErrReadRequest):
+	case errors.Is(err, requests.ErrReadRequest):
 		statusCode = http.StatusBadRequest
-	case errors.Is(err, ErrTokenFormat):
+	case errors.Is(err, requests.ErrTokenFormat):
 		statusCode = http.StatusUnauthorized
-	case errors.Is(err, ErrReadRequest):
+	case errors.Is(err, requests.ErrReadRequest):
 		statusCode = http.StatusBadRequest
 	case errors.Is(err, entities.ErrAccNotFound) || errors.Is(err, domain.ErrNotFound):
 		statusCode = http.StatusNotFound

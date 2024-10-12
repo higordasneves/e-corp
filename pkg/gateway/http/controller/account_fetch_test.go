@@ -17,8 +17,8 @@ import (
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
 )
 
 func TestAccountController_FetchAccounts(t *testing.T) {
@@ -98,7 +98,7 @@ func TestAccountController_FetchAccounts(t *testing.T) {
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, interpreter.ErrUnexpected),
+			want:         fmt.Sprintf(`{"error": "%s"}`, reponses.ErrUnexpected),
 			expectedCode: 500,
 		},
 	}

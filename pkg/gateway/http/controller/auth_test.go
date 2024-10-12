@@ -19,8 +19,8 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
 )
 
 func TestAuthController_Login(t *testing.T) {
@@ -104,7 +104,7 @@ func TestAuthController_Login(t *testing.T) {
 				},
 			},
 
-			want:         fmt.Sprintf(`{"error":"%s"}`, interpreter.ErrUnexpected),
+			want:         fmt.Sprintf(`{"error":"%s"}`, reponses.ErrUnexpected),
 			expectedCode: http.StatusInternalServerError,
 		},
 	}

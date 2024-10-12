@@ -2,8 +2,9 @@ package controller
 
 import (
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 	"net/http"
+
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
 )
 
 func (tController TransferController) FetchTransfers(w http.ResponseWriter, r *http.Request) {
@@ -11,15 +12,15 @@ func (tController TransferController) FetchTransfers(w http.ResponseWriter, r *h
 	transferList, err := tController.tUseCase.FetchTransfers(r.Context(), accountOriginID)
 
 	if err != nil {
-		interpreter.HandleError(w, err, tController.log)
+		reponses.HandleError(w, err, tController.log)
 		return
 	}
 
 	if len(transferList) > 0 {
-		interpreter.SendResponse(w, http.StatusOK, transferList, tController.log)
+		reponses.SendResponse(w, http.StatusOK, transferList, tController.log)
 
 	} else {
 		noTransfers := &map[string]string{"msg": "no transfers"}
-		interpreter.SendResponse(w, http.StatusOK, noTransfers, tController.log)
+		reponses.SendResponse(w, http.StatusOK, noTransfers, tController.log)
 	}
 }

@@ -17,8 +17,8 @@ import (
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
 )
 
 func TestTransferController_FetchTransfers(t *testing.T) {
@@ -102,7 +102,7 @@ func TestTransferController_FetchTransfers(t *testing.T) {
 				},
 			},
 			args:         args{ctxWithValue: context.WithValue(context.Background(), "subject", "uuid_acc1")},
-			want:         fmt.Sprintf(`{"error": "%s"}`, interpreter.ErrUnexpected),
+			want:         fmt.Sprintf(`{"error": "%s"}`, reponses.ErrUnexpected),
 			expectedCode: http.StatusInternalServerError,
 		},
 	}

@@ -3,8 +3,9 @@ package controller
 import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/interpreter"
 	"net/http"
+
+	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
 )
 
 func (accController AccountController) GetBalance(w http.ResponseWriter, r *http.Request) {
@@ -14,10 +15,10 @@ func (accController AccountController) GetBalance(w http.ResponseWriter, r *http
 
 	balance, err := accController.accUseCase.GetBalance(r.Context(), id)
 	if err != nil {
-		interpreter.HandleError(w, err, accController.log)
+		reponses.HandleError(w, err, accController.log)
 		return
 	}
 
 	balanceResponse := map[string]int{"balance": balance}
-	interpreter.SendResponse(w, http.StatusOK, balanceResponse, accController.log)
+	reponses.SendResponse(w, http.StatusOK, balanceResponse, accController.log)
 }
