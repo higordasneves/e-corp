@@ -22,8 +22,6 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 )
 
-const balanceInit = 1000000
-
 func TestAccountController_CreateAccount(t *testing.T) {
 	t.Parallel()
 
@@ -49,14 +47,14 @@ func TestAccountController_CreateAccount(t *testing.T) {
 								ID:        uuid.FromStringOrNil("5f2d4920-89c3-4ed5-af8e-1d411588746d"),
 								Name:      input.Name,
 								Document:  vos.Document(input.Document),
-								Balance:   balanceInit,
+								Balance:   0,
 								CreatedAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 							},
 						}, nil
 					},
 				},
 			},
-			want:         fmt.Sprintf(`{"id":"5f2d4920-89c3-4ed5-af8e-1d411588746d","name":"Elliot","document":"44455566678","balance":%v,"created_at":"2024-01-01T00:00:00Z"}`, balanceInit),
+			want:         `{"id":"5f2d4920-89c3-4ed5-af8e-1d411588746d","name":"Elliot","document":"44455566678","balance":0,"created_at":"2024-01-01T00:00:00Z"}`,
 			expectedCode: http.StatusCreated,
 		},
 		{
