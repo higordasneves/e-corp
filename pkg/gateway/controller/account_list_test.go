@@ -1,6 +1,7 @@
 package controller_test
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -30,12 +31,14 @@ func TestAccountController_ListAccounts(t *testing.T) {
 
 	tests := []struct {
 		name         string
+		request      *bytes.Reader
 		fields       fields
 		want         string
 		expectedCode int
 	}{
 		{
-			name: "with success",
+			name:    "with success",
+			request: bytes.NewReader([]byte(`{"ids":[], "page_size":100, "page_token":""}`)),
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
 					ListAccountsFunc: func(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error) {
@@ -70,16 +73,20 @@ func TestAccountController_ListAccounts(t *testing.T) {
 									CreatedAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 								},
 							},
-							NextPage: nil,
+							NextPage: &usecase.ListAccountsInput{
+								LastFetchedID: uuid.FromStringOrNil("019282db-ff95-76d0-a96d-41f561a1af28"),
+								PageSize:      100,
+							},
 						}, nil
 					},
 				},
 			},
-			want:         `{"accounts":[{"id":"019282db-ff95-76cd-8b7f-c3a07b52a57c","name":"Elliot","document":"55566677780","balance":9700000,"created_at":"2024-01-01T00:00:00Z"},{"id":"019282db-ff95-76ce-8ddd-ec5abceffa25","name":"Mr. Robot","document":"55566677781","balance":5596400,"created_at":"2024-01-01T00:00:00Z"},{"id":"019282db-ff95-76cf-a31f-101349333a13","name":"WhiteRose","document":"55566677782","balance":5534513,"created_at":"2024-01-01T00:00:00Z"},{"id":"019282db-ff95-76d0-a96d-41f561a1af27","name":"Darlene","document":"55566677783","balance":12350,"created_at":"2024-01-01T00:00:00Z"}],"next_page":""}`,
+			want:         `{"accounts":[{"id":"019282db-ff95-76cd-8b7f-c3a07b52a57c","name":"Elliot","document":"55566677780","balance":9700000,"created_at":"2024-01-01T00:00:00Z"},{"id":"019282db-ff95-76ce-8ddd-ec5abceffa25","name":"Mr. Robot","document":"55566677781","balance":5596400,"created_at":"2024-01-01T00:00:00Z"},{"id":"019282db-ff95-76cf-a31f-101349333a13","name":"WhiteRose","document":"55566677782","balance":5534513,"created_at":"2024-01-01T00:00:00Z"},{"id":"019282db-ff95-76d0-a96d-41f561a1af27","name":"Darlene","document":"55566677783","balance":12350,"created_at":"2024-01-01T00:00:00Z"}],"next_page":"eyJJRHMiOm51bGwsIkxhc3RGZXRjaGVkSUQiOiIwMTkyODJkYi1mZjk1LTc2ZDAtYTk2ZC00MWY1NjFhMWFmMjgiLCJQYWdlU2l6ZSI6MTAwfQ=="}`,
 			expectedCode: 200,
 		},
 		{
-			name: "empty database",
+			name:    "empty database",
+			request: bytes.NewReader([]byte(`{"ids":[], "page_size":100, "page_token":""}`)),
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
 					ListAccountsFunc: func(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error) {
@@ -91,7 +98,8 @@ func TestAccountController_ListAccounts(t *testing.T) {
 			expectedCode: 200,
 		},
 		{
-			name: "unexpected error",
+			name:    "unexpected error",
+			request: bytes.NewReader([]byte(`{"ids":[], "page_size":100, "page_token":""}`)),
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
 					ListAccountsFunc: func(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error) {
@@ -113,9 +121,9 @@ func TestAccountController_ListAccounts(t *testing.T) {
 			accCtrl := controller.NewAccountController(accUseCase, logTest)
 
 			router := mux.NewRouter()
-			router.HandleFunc("/accounts", accCtrl.ListAccounts).Methods(http.MethodGet)
+			router.HandleFunc("/accounts", accCtrl.ListAccounts).Methods(http.MethodPost)
 
-			req := httptest.NewRequest(http.MethodGet, "/accounts", nil)
+			req := httptest.NewRequest(http.MethodPost, "/accounts", tt.request)
 			response := httptest.NewRecorder()
 
 			// execute
