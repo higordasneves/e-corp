@@ -1,9 +1,12 @@
-package controller_test
+package http_test
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/mocks"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -16,16 +19,13 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
 )
 
 func TestTransferController_FetchTransfers(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		tUseCase controller.TransferUseCase
+		tUseCase http2.TransferUseCase
 	}
 
 	type args struct {
@@ -114,7 +114,7 @@ func TestTransferController_FetchTransfers(t *testing.T) {
 
 			// setup
 			tUseCase := tt.fields.tUseCase
-			tCtrl := controller.NewTransferController(tUseCase, logTest)
+			tCtrl := http2.NewTransferController(tUseCase, logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/transfers", tCtrl.FetchTransfers).Methods(http.MethodGet)

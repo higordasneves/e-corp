@@ -1,14 +1,14 @@
-package controller
+package http
 
 import (
 	"fmt"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/requests"
 	"net/http"
 
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/requests"
 )
 
 func (tController TransferController) Transfer(w http.ResponseWriter, r *http.Request) {

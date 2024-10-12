@@ -1,10 +1,12 @@
-package controller_test
+package http_test
 
 import (
 	"bytes"
 	"context"
 	"fmt"
 	"github.com/higordasneves/e-corp/pkg/domain"
+	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -18,15 +20,13 @@ import (
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 )
 
 func TestTransferController_Transfer(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		tUseCase controller.TransferUseCase
+		tUseCase http2.TransferUseCase
 	}
 
 	type args struct {
@@ -156,7 +156,7 @@ func TestTransferController_Transfer(t *testing.T) {
 
 			// setup
 			tUseCase := tt.fields.tUseCase
-			tCtrl := controller.NewTransferController(tUseCase, logTest)
+			tCtrl := http2.NewTransferController(tUseCase, logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/transfers", tCtrl.Transfer).Methods(http.MethodPost)

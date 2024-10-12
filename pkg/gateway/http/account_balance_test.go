@@ -1,8 +1,10 @@
-package controller_test
+package http_test
 
 import (
 	"context"
 	"fmt"
+	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -14,14 +16,12 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 )
 
 func TestAccountController_GetBalance(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		accUseCase controller.AccountUseCase
+		accUseCase http2.AccountUseCase
 	}
 
 	tests := []struct {
@@ -80,7 +80,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 
 			//setup
 			accUseCase := tt.fields.accUseCase
-			accCtrl := controller.NewAccountController(accUseCase, logTest)
+			accCtrl := http2.NewAccountController(accUseCase, logTest)
 			router := mux.NewRouter()
 			router.HandleFunc("/accounts/{account_id}/balance", accCtrl.GetBalance).Methods(http.MethodGet)
 			path := fmt.Sprintf("/accounts/%v/balance", tt.accID)

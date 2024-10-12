@@ -3,6 +3,7 @@ package reponses
 import (
 	"encoding/json"
 	"errors"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/requests"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -10,7 +11,6 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/requests"
 )
 
 type errJSON struct {

@@ -1,9 +1,11 @@
-package controller_test
+package http_test
 
 import (
 	"bytes"
 	"context"
 	"fmt"
+	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -18,8 +20,6 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
 )
 
 const balanceInit = 1000000
@@ -27,7 +27,7 @@ const balanceInit = 1000000
 func TestAccountController_CreateAccount(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		accUseCase controller.AccountUseCase
+		accUseCase http2.AccountUseCase
 	}
 
 	tests := []struct {
@@ -130,7 +130,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 
 			// setup
 			accUseCase := tt.fields.accUseCase
-			accController := controller.NewAccountController(accUseCase, logTest)
+			accController := http2.NewAccountController(accUseCase, logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/accounts", accController.CreateAccount).Methods(http.MethodPost)

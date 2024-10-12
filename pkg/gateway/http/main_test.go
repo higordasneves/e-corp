@@ -1,4 +1,4 @@
-package controller_test
+package http_test
 
 import (
 	"github.com/sirupsen/logrus"

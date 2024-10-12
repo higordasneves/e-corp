@@ -1,11 +1,10 @@
-package controller
+package http
 
 import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
 	"net/http"
-
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
 )
 
 func (accController AccountController) GetBalance(w http.ResponseWriter, r *http.Request) {

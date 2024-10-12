@@ -1,9 +1,8 @@
-package controller
+package http
 
 import (
+	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
 	"net/http"
-
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
 )
 
 // FetchAccounts reads HTTP GET request for accounts and sends response with account list or error

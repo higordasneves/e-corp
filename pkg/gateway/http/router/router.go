@@ -1,6 +1,7 @@
 package router
 
 import (
+	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -8,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/http/middleware"
 )
 
@@ -17,13 +17,13 @@ func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.Au
 	// r := postgres.NewRepository(dbpool.NewConn(dbPool))
 
 	// accUseCase := usecase.NewAccountUseCase(r)
-	accController := controller.NewAccountController(nil, log)
+	accController := http2.NewAccountController(nil, log)
 
 	//tUseCase := usecase.NewTransferUseCase(r)
-	tController := controller.NewTransferController(nil, log)
+	tController := http2.NewTransferController(nil, log)
 
 	//authUseCase := usecase.NewAuthUseCase(r, cfgAuth)
-	authController := controller.NewAuthController(nil, cfgAuth.SecretKey, log)
+	authController := http2.NewAuthController(nil, cfgAuth.SecretKey, log)
 
 	router := mux.NewRouter()
 	apiVersion := "/api/v0"

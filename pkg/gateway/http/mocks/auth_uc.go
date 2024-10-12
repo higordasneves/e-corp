@@ -6,13 +6,13 @@ package mocks
 import (
 	"context"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/http"
 	"sync"
 )
 
 // Ensure, that AuthUseCaseMock does implement controller.AuthUseCase.
 // If this is not the case, regenerate this file with moq.
-var _ controller.AuthUseCase = &AuthUseCaseMock{}
+var _ http.AuthUseCase = &AuthUseCaseMock{}
 
 // AuthUseCaseMock is a mock implementation of controller.AuthUseCase.
 //

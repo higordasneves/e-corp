@@ -1,15 +1,15 @@
-package controller
+package http
 
 import (
 	"context"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/requests"
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/sirupsen/logrus"
 
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/requests"
 )
 
 //go:generate moq -stub -pkg mocks -out mocks/auth_uc.go . AuthUseCase

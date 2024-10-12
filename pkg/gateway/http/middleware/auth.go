@@ -3,8 +3,8 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/requests"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/requests"
 	"net/http"
 	"strings"
 

@@ -1,10 +1,13 @@
-package controller_test
+package http_test
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"github.com/gofrs/uuid/v5"
+	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/mocks"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -16,15 +19,12 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
 )
 
 func TestAccountController_FetchAccounts(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		accUseCase controller.AccountUseCase
+		accUseCase http2.AccountUseCase
 	}
 
 	tests := []struct {
@@ -110,7 +110,7 @@ func TestAccountController_FetchAccounts(t *testing.T) {
 
 			// setup
 			accUseCase := tt.fields.accUseCase
-			accCtrl := controller.NewAccountController(accUseCase, logTest)
+			accCtrl := http2.NewAccountController(accUseCase, logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/accounts", accCtrl.FetchAccounts).Methods(http.MethodGet)

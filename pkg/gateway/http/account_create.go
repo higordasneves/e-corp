@@ -1,11 +1,11 @@
-package controller
+package http
 
 import (
+	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/requests"
 	"net/http"
 
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/requests"
 )
 
 // CreateAccount reads HTTP POST request to create an account and returns a response

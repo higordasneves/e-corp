@@ -1,4 +1,4 @@
-package controller_test
+package http_test
 
 import (
 	"bytes"
@@ -6,6 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofrs/uuid/v5"
+	http2 "github.com/higordasneves/e-corp/pkg/gateway/http"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/mocks"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -18,16 +21,13 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/mocks"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
 )
 
 func TestAuthController_Login(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		authUC controller.AuthUseCase
+		authUC http2.AuthUseCase
 	}
 
 	tests := []struct {
@@ -116,7 +116,7 @@ func TestAuthController_Login(t *testing.T) {
 
 			// setup
 			authUC := tt.fields.authUC
-			authCtrl := controller.NewAuthController(authUC, "test_secret_key", logTest)
+			authCtrl := http2.NewAuthController(authUC, "test_secret_key", logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/login", authCtrl.Login).Methods(http.MethodPost)

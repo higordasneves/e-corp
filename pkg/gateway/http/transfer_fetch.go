@@ -1,10 +1,9 @@
-package controller
+package http
 
 import (
 	"fmt"
+	"github.com/higordasneves/e-corp/pkg/gateway/http/reponses"
 	"net/http"
-
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller/reponses"
 )
 
 func (tController TransferController) FetchTransfers(w http.ResponseWriter, r *http.Request) {

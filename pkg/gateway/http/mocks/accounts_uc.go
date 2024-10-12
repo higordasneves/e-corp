@@ -8,13 +8,13 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/http/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/http"
 	"sync"
 )
 
 // Ensure, that AccountUseCaseMock does implement controller.AccountUseCase.
 // If this is not the case, regenerate this file with moq.
-var _ controller.AccountUseCase = &AccountUseCaseMock{}
+var _ http.AccountUseCase = &AccountUseCaseMock{}
 
 // AccountUseCaseMock is a mock implementation of controller.AccountUseCase.
 //
