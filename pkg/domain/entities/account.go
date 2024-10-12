@@ -17,12 +17,3 @@ type Account struct {
 	Balance   int
 	CreatedAt time.Time
 }
-
-// AccountOutput represents information from a bank account that should be returned
-type AccountOutput struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	CPF       string    `json:"cpf"`
-	Balance   int       `json:"balance"`
-	CreatedAt time.Time `json:"created_at"`
-}

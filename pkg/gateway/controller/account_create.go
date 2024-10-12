@@ -11,6 +11,12 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/requests"
 )
 
+type CreateAccountRequest struct {
+	Name     string `json:"name"`
+	Document string `json:"document"`
+	Secret   string `json:"secret"`
+}
+
 // CreateAccountResponse represents information from a bank account that
 // should be returned to the user after tha account creation.
 type CreateAccountResponse struct {
@@ -29,13 +35,17 @@ type CreateAccountResponse struct {
 // - the number of the characters of the secret is less than the minimum;
 // - the account already exists.
 func (accController AccountController) CreateAccount(w http.ResponseWriter, r *http.Request) {
-	var accountInput usecase.CreateAccountInput
-	if err := requests.ReadRequestBody(r, &accountInput); err != nil {
+	var req CreateAccountRequest
+	if err := requests.ReadRequestBody(r, &req); err != nil {
 		reponses.HandleError(w, err, accController.log)
 		return
 	}
 
-	ucOutput, err := accController.accUseCase.CreateAccount(r.Context(), accountInput)
+	ucOutput, err := accController.accUseCase.CreateAccount(r.Context(), usecase.CreateAccountInput{
+		Name:     req.Name,
+		Document: req.Document,
+		Secret:   req.Secret,
+	})
 	if err != nil {
 		reponses.HandleError(w, err, accController.log)
 		return
