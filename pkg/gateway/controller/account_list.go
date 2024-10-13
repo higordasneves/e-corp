@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
@@ -11,15 +13,8 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/requests"
 	"github.com/higordasneves/e-corp/utils/pagination"
 )
-
-type ListAccountsRequest struct {
-	IDs       []uuid.UUID `json:"ids"`
-	PageSize  int         `json:"page_size"`
-	PageToken string      `json:"page_token"`
-}
 
 type ListAccountsResponse struct {
 	Accounts []ListAccountsResponseItem `json:"accounts"`
@@ -38,21 +33,36 @@ type ListAccountsResponseItem struct {
 func (accController AccountController) ListAccounts(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var req ListAccountsRequest
-	if err := requests.ReadRequestBody(r, &req); err != nil {
-		reponses.HandleError(ctx, w, err)
-		return
-	}
-
 	var ucInput usecase.ListAccountsInput
-	if req.PageToken != "" {
-		err := pagination.Extract(req.PageToken, &ucInput)
+	if t := r.URL.Query().Get("page_token"); t != "" {
+		err := pagination.Extract(t, &ucInput)
 		if err != nil {
 			reponses.HandleError(ctx, w, fmt.Errorf("%w: invalid page token", domain.ErrInvalidParameter))
 		}
 	} else {
-		ucInput.PageSize = pagination.ValidatePageSize(uint32(req.PageSize))
-		ucInput.IDs = req.IDs
+		pageSize := r.URL.Query().Get("page_size")
+		if pageSize == "" {
+			pageSize = "0"
+		}
+		i, err := strconv.Atoi(pageSize)
+		if err != nil {
+			reponses.HandleError(ctx, w, fmt.Errorf("%w: converting page size to int", domain.ErrInvalidParameter))
+			return
+		}
+
+		idsString := strings.Split(r.URL.Query().Get("ids"), ",")
+		accountIDs := make([]uuid.UUID, 0, len(idsString))
+		for _, id := range idsString {
+			accountID, err := uuid.FromString(id)
+			if err != nil {
+				reponses.HandleError(ctx, w, fmt.Errorf("%w: invalid account id", domain.ErrInvalidParameter))
+				return
+			}
+			accountIDs = append(accountIDs, accountID)
+		}
+
+		ucInput.PageSize = pagination.ValidatePageSize(uint32(i))
+		ucInput.IDs = accountIDs
 	}
 
 	ucOutput, err := accController.accUseCase.ListAccounts(r.Context(), ucInput)

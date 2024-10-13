@@ -1,12 +1,12 @@
 package controller_test
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -27,10 +27,9 @@ import (
 func TestAccountController_ListAccounts_Success(t *testing.T) {
 	t.Parallel()
 
-	request := bytes.NewReader([]byte(`{"ids":["019282db-ff95-76cd-8b7f-c3a07b52a57c", "019282db-ff95-76ce-8ddd-ec5abceffa25"], "page_size":100, "page_token":""}`))
 	uc := &mocks.AccountUseCaseMock{
 		ListAccountsFunc: func(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error) {
-			assert.Equal(t, []uuid.UUID{uuid.FromStringOrNil("019282db-ff95-76cd-8b7f-c3a07b52a57c"), uuid.FromStringOrNil("019282db-ff95-76ce-8ddd-ec5abceffa25")}, input.IDs)
+			assert.Equal(t, []uuid.UUID{uuid.FromStringOrNil("019282db-ff95-76ce-8ddd-ec5abceffa25"), uuid.FromStringOrNil("019282db-ff95-76cd-8b7f-c3a07b52a57c")}, input.IDs)
 			assert.Equal(t, 100, input.PageSize)
 
 			return usecase.ListAccountsOutput{
@@ -64,7 +63,12 @@ func TestAccountController_ListAccounts_Success(t *testing.T) {
 	}
 
 	handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
-	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/accounts"), request)
+	urlValues := url.Values{
+		"ids":        []string{strings.Join([]string{"019282db-ff95-76ce-8ddd-ec5abceffa25", "019282db-ff95-76cd-8b7f-c3a07b52a57c"}, ",")},
+		"page_size":  []string{"100"},
+		"page_token": []string{""},
+	}
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/accounts?"+urlValues.Encode(), nil)
 	response := httptest.NewRecorder()
 
 	// execute
@@ -75,7 +79,6 @@ func TestAccountController_ListAccounts_Success(t *testing.T) {
 	assert.Equal(t, 200, response.Code)
 
 	// request with page token
-	request = bytes.NewReader([]byte(`{"page_token":"eyJJRHMiOm51bGwsIkxhc3RGZXRjaGVkSUQiOiIwMTkyODJkYi1mZjk1LTc2ZDAtYTk2ZC00MWY1NjFhMWFmMjgiLCJQYWdlU2l6ZSI6MTAwfQ=="}`))
 	uc = &mocks.AccountUseCaseMock{
 		ListAccountsFunc: func(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error) {
 			assert.Equal(t, usecase.ListAccountsInput{
@@ -91,7 +94,9 @@ func TestAccountController_ListAccounts_Success(t *testing.T) {
 	}
 
 	handler = router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
-	req = httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/accounts"), request)
+	req = httptest.NewRequest(http.MethodGet, "/api/v1/accounts?"+url.Values{
+		"page_token": []string{"eyJJRHMiOm51bGwsIkxhc3RGZXRjaGVkSUQiOiIwMTkyODJkYi1mZjk1LTc2ZDAtYTk2ZC00MWY1NjFhMWFmMjgiLCJQYWdlU2l6ZSI6MTAwfQ=="},
+	}.Encode(), nil)
 	response = httptest.NewRecorder()
 
 	// execute
@@ -108,14 +113,12 @@ func TestAccountController_ListAccounts_Failure(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		request      *bytes.Reader
 		fields       fields
 		want         string
 		expectedCode int
 	}{
 		{
-			name:    "empty database",
-			request: bytes.NewReader([]byte(`{"ids":[], "page_size":100, "page_token":""}`)),
+			name: "empty database",
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
 					ListAccountsFunc: func(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error) {
@@ -127,8 +130,7 @@ func TestAccountController_ListAccounts_Failure(t *testing.T) {
 			expectedCode: 200,
 		},
 		{
-			name:    "unexpected error",
-			request: bytes.NewReader([]byte(`{"ids":[], "page_size":100, "page_token":""}`)),
+			name: "unexpected error",
 			fields: fields{
 				accUseCase: &mocks.AccountUseCaseMock{
 					ListAccountsFunc: func(ctx context.Context, input usecase.ListAccountsInput) (usecase.ListAccountsOutput, error) {
@@ -153,7 +155,12 @@ func TestAccountController_ListAccounts_Failure(t *testing.T) {
 			}
 
 			handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
-			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/accounts"), tt.request)
+			urlValues := url.Values{
+				"ids":        []string{uuid.Must(uuid.NewV4()).String()},
+				"page_size":  []string{"100"},
+				"page_token": []string{""},
+			}
+			req := httptest.NewRequest(http.MethodGet, "/api/v1/accounts?"+urlValues.Encode(), nil)
 			response := httptest.NewRecorder()
 
 			// execute
