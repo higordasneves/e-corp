@@ -12,9 +12,7 @@ import (
 // GetBalance returns the current balance of the account.
 // It returns NotFound error if the account not exists.
 func (accController AccountController) GetBalance(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id := uuid.FromStringOrNil(params["account_id"])
-
+	id := uuid.FromStringOrNil(mux.Vars(r)["account_id"])
 	balance, err := accController.accUseCase.GetBalance(r.Context(), id)
 	if err != nil {
 		reponses.HandleError(w, err, accController.log)
