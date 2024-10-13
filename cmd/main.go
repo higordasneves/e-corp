@@ -8,7 +8,6 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/server"
@@ -41,25 +40,8 @@ var Options = fx.Options(
 	fx.Provide(
 		postgres.NewRepository,
 		fx.Annotate(
-			newAPI,
+			controller.NewApi,
 			fx.As(new(server.API)),
 		),
 	),
 )
-
-func newAPI(r postgres.Repository, cfg config.Config) controller.API {
-	accUseCase := usecase.NewAccountUseCase(r)
-	accController := controller.NewAccountController(accUseCase)
-
-	tUseCase := usecase.NewTransferUseCase(r)
-	tController := controller.NewTransferController(tUseCase)
-
-	authUseCase := usecase.NewAuthUseCase(r, &cfg.Auth)
-	authController := controller.NewAuthController(authUseCase, cfg.Auth.SecretKey)
-
-	return controller.API{
-		AuthController:     authController,
-		AccountController:  accController,
-		TransferController: tController,
-	}
-}
