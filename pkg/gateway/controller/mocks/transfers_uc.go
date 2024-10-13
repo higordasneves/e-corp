@@ -22,7 +22,7 @@ var _ controller.TransferUseCase = &TransferUseCaseMock{}
 //		// make and configure a mocked controller.TransferUseCase
 //		mockedTransferUseCase := &TransferUseCaseMock{
 //			FetchTransfersFunc: func(ctx context.Context, id string) ([]entities.Transfer, error) {
-//				panic("mock out the FetchTransfers method")
+//				panic("mock out the ListTransfers method")
 //			},
 //			TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
 //				panic("mock out the Transfer method")

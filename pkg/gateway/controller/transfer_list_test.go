@@ -117,7 +117,7 @@ func TestTransferController_FetchTransfers(t *testing.T) {
 			tCtrl := http2.NewTransferController(tUseCase, logTest)
 
 			router := mux.NewRouter()
-			router.HandleFunc("/transfers", tCtrl.FetchTransfers).Methods(http.MethodGet)
+			router.HandleFunc("/transfers", tCtrl.ListTransfers).Methods(http.MethodGet)
 			req := httptest.NewRequest(http.MethodGet, "/transfers", nil).WithContext(tt.args.ctxWithValue)
 			response := httptest.NewRecorder()
 
