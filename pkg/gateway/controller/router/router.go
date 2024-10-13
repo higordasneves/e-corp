@@ -3,7 +3,7 @@ package router
 import (
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
@@ -16,33 +16,45 @@ import (
 )
 
 // HTTPHandler returns HTTP handler with all routes.
-func HTTPHandler(dbPool *pgxpool.Pool, l *zap.Logger, cfgAuth *config.AuthConfig) *mux.Router {
+func HTTPHandler(dbPool *pgxpool.Pool, l *zap.Logger, cfgAuth *config.AuthConfig) http.Handler {
 	r := postgres.NewRepository(dbpool.NewConn(dbPool))
 
 	accUseCase := usecase.NewAccountUseCase(r)
 	accController := controller.NewAccountController(accUseCase)
 
-	//tUseCase := usecase.NewTransferUseCase(r)
-	tController := controller.NewTransferController(nil)
+	tUseCase := usecase.NewTransferUseCase(r)
+	tController := controller.NewTransferController(tUseCase)
 
 	authUseCase := usecase.NewAuthUseCase(r, cfgAuth)
 	authController := controller.NewAuthController(authUseCase, cfgAuth.SecretKey)
 
-	router := mux.NewRouter()
+	chiRouter := chi.NewRouter()
+
+	chiRouter.Use(middleware.LoggerToContext(l))
+
+	chiRouter.Get("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
 	apiVersion := "/api/v0"
+	chiRouter.Route(apiVersion, func(r chi.Router) {
+		// login
+		r.Post("/login", authController.Login)
 
-	router.Use(middleware.LoggerToContext(l))
-	//account
-	router.HandleFunc(apiVersion+"/accounts", accController.CreateAccount).Methods(http.MethodPost)
-	router.HandleFunc(apiVersion+"/accounts", accController.ListAccounts).Methods(http.MethodGet)
-	router.HandleFunc(apiVersion+"/accounts/{account_id}/balance", accController.GetBalance).Methods(http.MethodGet)
+		// accounts
+		r.Route("/accounts", func(r chi.Router) {
+			r.Post("", accController.CreateAccount)
+			r.Get("", accController.CreateAccount)
+			r.Get("/{account_id}/balance", accController.GetBalance)
+		})
 
-	//transfer
-	router.HandleFunc(apiVersion+"/transfers", middleware.Authenticate(cfgAuth.SecretKey, tController.Transfer)).Methods(http.MethodPost)
-	router.HandleFunc(apiVersion+"/transfers", middleware.Authenticate(cfgAuth.SecretKey, tController.ListTransfers)).Methods(http.MethodGet)
+		// transfers
+		r.Route("/transfers", func(r chi.Router) {
+			r.Use(middleware.Authenticate(cfgAuth.SecretKey))
+			r.Post("", tController.Transfer)
+			r.Get("", tController.ListTransfers)
+		})
+	})
 
-	//login
-	router.HandleFunc(apiVersion+"/login", authController.Login).Methods(http.MethodPost)
-
-	return router
+	return chiRouter
 }
