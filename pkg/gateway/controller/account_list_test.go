@@ -152,7 +152,6 @@ func TestAccountController_ListAccounts_Failure(t *testing.T) {
 			router.ServeHTTP(response, req)
 
 			// assert
-			fmt.Println(response.Body.String())
 			assert.Equal(t, strings.TrimSpace(tt.want), strings.TrimSpace(response.Body.String()))
 			assert.Equal(t, tt.expectedCode, response.Code)
 		})
