@@ -25,8 +25,8 @@ func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.Au
 	//tUseCase := usecase.NewTransferUseCase(r)
 	tController := controller.NewTransferController(nil, log)
 
-	//authUseCase := usecase.NewAuthUseCase(r, cfgAuth)
-	authController := controller.NewAuthController(nil, cfgAuth.SecretKey, log)
+	authUseCase := usecase.NewAuthUseCase(r, cfgAuth)
+	authController := controller.NewAuthController(authUseCase, cfgAuth.SecretKey, log)
 
 	router := mux.NewRouter()
 	apiVersion := "/api/v0"
