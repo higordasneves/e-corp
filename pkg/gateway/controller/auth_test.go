@@ -22,7 +22,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/server"
 )
 
 func TestAuthController_Login(t *testing.T) {
@@ -123,7 +123,7 @@ func TestAuthController_Login(t *testing.T) {
 				AuthController: authCtrl,
 			}
 
-			handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
+			handler := server.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
 			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/login"), tt.requestBody)
 			response := httptest.NewRecorder()
 

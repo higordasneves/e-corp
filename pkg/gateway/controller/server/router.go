@@ -1,4 +1,4 @@
-package router
+package server
 
 import (
 	"github.com/higordasneves/e-corp/pkg/gateway/config"

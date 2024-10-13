@@ -21,7 +21,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/server"
 )
 
 func TestAccountController_CreateAccount(t *testing.T) {
@@ -137,7 +137,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			api := controller.API{
 				AccountController: accController,
 			}
-			handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
+			handler := server.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
 
 			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/accounts"), tt.requestBody)
 			response := httptest.NewRecorder()

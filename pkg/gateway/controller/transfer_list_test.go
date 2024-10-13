@@ -22,7 +22,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/server"
 )
 
 func TestTransferController_ListTransfers(t *testing.T) {
@@ -129,7 +129,7 @@ func TestTransferController_ListTransfers(t *testing.T) {
 			tokenString, err := token.SignedString([]byte("test_secret_key"))
 			require.NoError(t, err)
 
-			handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{Auth: config.AuthConfig{SecretKey: "test_secret_key"}})
+			handler := server.HTTPHandler(zaptest.NewLogger(t), api, config.Config{Auth: config.AuthConfig{SecretKey: "test_secret_key"}})
 			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/transfers"), nil)
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tokenString))
 			response := httptest.NewRecorder()

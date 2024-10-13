@@ -16,7 +16,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/server"
 )
 
 func TestAccountController_GetBalance(t *testing.T) {
@@ -85,7 +85,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 			api := controller.API{
 				AccountController: accCtrl,
 			}
-			handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
+			handler := server.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
 
 			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/accounts/%v/balance", tt.accID), nil)
 			response := httptest.NewRecorder()

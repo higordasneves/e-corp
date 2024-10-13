@@ -21,7 +21,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/server"
 )
 
 func TestAccountController_ListAccounts_Success(t *testing.T) {
@@ -62,7 +62,7 @@ func TestAccountController_ListAccounts_Success(t *testing.T) {
 		AccountController: accCtrl,
 	}
 
-	handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
+	handler := server.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
 	urlValues := url.Values{
 		"ids":        []string{strings.Join([]string{"019282db-ff95-76ce-8ddd-ec5abceffa25", "019282db-ff95-76cd-8b7f-c3a07b52a57c"}, ",")},
 		"page_size":  []string{"100"},
@@ -93,7 +93,7 @@ func TestAccountController_ListAccounts_Success(t *testing.T) {
 		AccountController: accCtrl,
 	}
 
-	handler = router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
+	handler = server.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
 	req = httptest.NewRequest(http.MethodGet, "/api/v1/accounts?"+url.Values{
 		"page_token": []string{"eyJJRHMiOm51bGwsIkxhc3RGZXRjaGVkSUQiOiIwMTkyODJkYi1mZjk1LTc2ZDAtYTk2ZC00MWY1NjFhMWFmMjgiLCJQYWdlU2l6ZSI6MTAwfQ=="},
 	}.Encode(), nil)
@@ -154,7 +154,7 @@ func TestAccountController_ListAccounts_Failure(t *testing.T) {
 				AccountController: accCtrl,
 			}
 
-			handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
+			handler := server.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
 			urlValues := url.Values{
 				"ids":        []string{uuid.Must(uuid.NewV4()).String()},
 				"page_size":  []string{"100"},
