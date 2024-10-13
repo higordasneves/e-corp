@@ -1,0 +1,36 @@
+run:
+  deadline: 5m
+  tests: true
+
+linters-settings:
+  gofmt:
+    simplify: true
+  exhaustive:
+    check-generated: false
+    default-signifies-exhaustive: true
+  skip-go-installation: true
+  skip-pkg-cache: true
+
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - durationcheck
+    - errname
+    - errcheck
+    - errorlint
+    - exhaustive
+    - gocheckcompilerdirectives
+    - gofmt
+    - gosec
+    - loggercheck
+    - protogetter
+    - reassign
+    - wrapcheck
+    - tenv
+    - spancheck
+    - promlinter
+    - prealloc
+    - perfsprint
+    - noctx
+    - gofumpt
