@@ -1,7 +1,10 @@
 package router
 
 import (
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	http2 "github.com/higordasneves/e-corp/pkg/gateway/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -14,10 +17,10 @@ import (
 
 // GetHTTPHandler returns HTTP handler with all routes
 func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.AuthConfig) *mux.Router {
-	// r := postgres.NewRepository(dbpool.NewConn(dbPool))
+	r := postgres.NewRepository(dbpool.NewConn(dbPool))
 
-	// accUseCase := usecase.NewAccountUseCase(r)
-	accController := http2.NewAccountController(nil, log)
+	accUseCase := usecase.NewAccountUseCase(r)
+	accController := http2.NewAccountController(accUseCase, log)
 
 	//tUseCase := usecase.NewTransferUseCase(r)
 	tController := http2.NewTransferController(nil, log)
