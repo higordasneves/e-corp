@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/domain"
-	http2 "github.com/higordasneves/e-corp/pkg/gateway/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -15,18 +12,20 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
-	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 )
 
 func TestTransferController_Transfer(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		tUseCase http2.TransferUseCase
+		tUseCase controller.TransferUseCase
 	}
 
 	type args struct {
@@ -45,34 +44,32 @@ func TestTransferController_Transfer(t *testing.T) {
 			name: "with success",
 			fields: fields{
 				tUseCase: &mocks.TransferUseCaseMock{
-					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
-						return &entities.Transfer{
-							ID:                   uuid.FromStringOrNil("9ee14852-1011-422e-b9f3-abd905d5103c"),
-							AccountOriginID:      transferInput.AccountOriginID,
-							AccountDestinationID: transferInput.AccountDestinationID,
-							Amount:               transferInput.Amount,
-							CreatedAt:            time.Now().Truncate(time.Minute),
+					TransferFunc: func(ctx context.Context, input usecase.TransferInput) (usecase.TransferOutput, error) {
+						return usecase.TransferOutput{
+							Transfer: entities.Transfer{
+								ID:                   uuid.FromStringOrNil("9ee14852-1011-422e-b9f3-abd905d5103c"),
+								AccountOriginID:      input.AccountOriginID,
+								AccountDestinationID: input.AccountDestinationID,
+								Amount:               input.Amount,
+								CreatedAt:            time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+							},
 						}, nil
 					},
 				},
 			},
 			args: args{
 				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
-				requestBody:  bytes.NewReader([]byte(`{"destinationID": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "amount": 10827}`)),
+				requestBody:  bytes.NewReader([]byte(`{"destination_id": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "amount": 10827}`)),
 			},
-			want: `{"id": "9ee14852-1011-422e-b9f3-abd905d5103c",
-				"account_origin_id": "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d",
-				"account_destination_id": "5f2d4920-89c3-4ed5-af8e-1d411588746d",
-				"amount": 10827,
-				"created_at": "<<PRESENCE>>"}`,
+			want:         `{"id":"9ee14852-1011-422e-b9f3-abd905d5103c","account_origin_id":"b59c5660-d62f-4f3e-91b4-5f8e236e5d3d","account_destination_id":"5f2d4920-89c3-4ed5-af8e-1d411588746d","amount":10827,"created_at":"2024-01-01T00:00:00Z"}`,
 			expectedCode: http.StatusCreated,
 		},
 		{
 			name: "same account id in origin and destination should return an error and status code 400",
 			fields: fields{
 				tUseCase: &mocks.TransferUseCaseMock{
-					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
-						return nil, domain.ErrInvalidParameter
+					TransferFunc: func(ctx context.Context, input usecase.TransferInput) (usecase.TransferOutput, error) {
+						return usecase.TransferOutput{}, domain.ErrInvalidParameter
 					},
 				},
 			},
@@ -80,15 +77,15 @@ func TestTransferController_Transfer(t *testing.T) {
 				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
 				requestBody:  bytes.NewReader([]byte(`{"destinationID": "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d", "amount": 10}`)),
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
+			want:         fmt.Sprintf(`{"error":"%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
 			name: "invalid origin id should return an error and status code 400",
 			fields: fields{
 				tUseCase: &mocks.TransferUseCaseMock{
-					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
-						return nil, domain.ErrInvalidParameter
+					TransferFunc: func(ctx context.Context, input usecase.TransferInput) (usecase.TransferOutput, error) {
+						return usecase.TransferOutput{}, domain.ErrInvalidParameter
 					},
 				},
 			},
@@ -96,15 +93,15 @@ func TestTransferController_Transfer(t *testing.T) {
 				ctxWithValue: context.WithValue(context.Background(), "subject", "invalid"),
 				requestBody:  bytes.NewReader([]byte(`{"destinationID": "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d", "amount": 10}`)),
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
+			want:         fmt.Sprintf(`{"error":"%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
 			name: "when transfer amount < 0 should return an error and status code 400",
 			fields: fields{
 				tUseCase: &mocks.TransferUseCaseMock{
-					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
-						return nil, domain.ErrInvalidParameter
+					TransferFunc: func(ctx context.Context, input usecase.TransferInput) (usecase.TransferOutput, error) {
+						return usecase.TransferOutput{}, domain.ErrInvalidParameter
 					},
 				},
 			},
@@ -112,15 +109,15 @@ func TestTransferController_Transfer(t *testing.T) {
 				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
 				requestBody:  bytes.NewReader([]byte(`{"destinationID": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "amount": -10}`)),
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
+			want:         fmt.Sprintf(`{"error":"%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
 			name: "when origin account balance < transfer amount should return an error and status code 400",
 			fields: fields{
 				tUseCase: &mocks.TransferUseCaseMock{
-					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
-						return nil, domain.ErrInvalidParameter
+					TransferFunc: func(ctx context.Context, input usecase.TransferInput) (usecase.TransferOutput, error) {
+						return usecase.TransferOutput{}, domain.ErrInvalidParameter
 					},
 				},
 			},
@@ -128,15 +125,15 @@ func TestTransferController_Transfer(t *testing.T) {
 				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
 				requestBody:  bytes.NewReader([]byte(`{"destinationID": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "amount": 1000000000000000000}`)),
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrInvalidParameter),
+			want:         fmt.Sprintf(`{"error":"%s"}`, domain.ErrInvalidParameter),
 			expectedCode: http.StatusBadRequest,
 		},
 		{
 			name: "when destination account doesn't exists should return an error and status code 400",
 			fields: fields{
 				tUseCase: &mocks.TransferUseCaseMock{
-					TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
-						return nil, domain.ErrNotFound
+					TransferFunc: func(ctx context.Context, input usecase.TransferInput) (usecase.TransferOutput, error) {
+						return usecase.TransferOutput{}, domain.ErrNotFound
 					},
 				},
 			},
@@ -144,7 +141,7 @@ func TestTransferController_Transfer(t *testing.T) {
 				ctxWithValue: context.WithValue(context.Background(), "subject", "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d"),
 				requestBody:  bytes.NewReader([]byte(`{"destinationID": "5f2d4920-89c3-4ed5-af8e-1d411588746d", "amount": 1000000000000000000}`)),
 			},
-			want:         fmt.Sprintf(`{"error": "%s"}`, domain.ErrNotFound),
+			want:         fmt.Sprintf(`{"error":"%s"}`, domain.ErrNotFound),
 			expectedCode: http.StatusNotFound,
 		},
 	}
@@ -156,7 +153,7 @@ func TestTransferController_Transfer(t *testing.T) {
 
 			// setup
 			tUseCase := tt.fields.tUseCase
-			tCtrl := http2.NewTransferController(tUseCase, logTest)
+			tCtrl := controller.NewTransferController(tUseCase, logTest)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/transfers", tCtrl.Transfer).Methods(http.MethodPost)
@@ -167,8 +164,7 @@ func TestTransferController_Transfer(t *testing.T) {
 			router.ServeHTTP(response, req)
 
 			// assert
-			ja := jsonassert.New(t)
-			ja.Assertf(strings.TrimSpace(response.Body.String()), tt.want)
+			assert.Equal(t, strings.TrimSpace(tt.want), strings.TrimSpace(response.Body.String()))
 			assert.Equal(t, tt.expectedCode, response.Code)
 		})
 	}

@@ -5,7 +5,6 @@ package mocks
 
 import (
 	"context"
-	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"sync"
@@ -21,10 +20,10 @@ var _ controller.TransferUseCase = &TransferUseCaseMock{}
 //
 //		// make and configure a mocked controller.TransferUseCase
 //		mockedTransferUseCase := &TransferUseCaseMock{
-//			FetchTransfersFunc: func(ctx context.Context, id string) ([]entities.Transfer, error) {
-//				panic("mock out the ListTransfers method")
+//			ListAccountTransfersFunc: func(ctx context.Context, input usecase.ListAccountTransfersInput) (usecase.ListAccountTransfersOutput, error) {
+//				panic("mock out the ListAccountTransfers method")
 //			},
-//			TransferFunc: func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
+//			TransferFunc: func(ctx context.Context, input usecase.TransferInput) (usecase.TransferOutput, error) {
 //				panic("mock out the Transfer method")
 //			},
 //		}
@@ -34,93 +33,93 @@ var _ controller.TransferUseCase = &TransferUseCaseMock{}
 //
 //	}
 type TransferUseCaseMock struct {
-	// FetchTransfersFunc mocks the FetchTransfers method.
-	FetchTransfersFunc func(ctx context.Context, id string) ([]entities.Transfer, error)
+	// ListAccountTransfersFunc mocks the ListAccountTransfers method.
+	ListAccountTransfersFunc func(ctx context.Context, input usecase.ListAccountTransfersInput) (usecase.ListAccountTransfersOutput, error)
 
 	// TransferFunc mocks the Transfer method.
-	TransferFunc func(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error)
+	TransferFunc func(ctx context.Context, input usecase.TransferInput) (usecase.TransferOutput, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// FetchTransfers holds details about calls to the FetchTransfers method.
-		FetchTransfers []struct {
+		// ListAccountTransfers holds details about calls to the ListAccountTransfers method.
+		ListAccountTransfers []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// ID is the id argument value.
-			ID string
+			// Input is the input argument value.
+			Input usecase.ListAccountTransfersInput
 		}
 		// Transfer holds details about calls to the Transfer method.
 		Transfer []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// TransferInput is the transferInput argument value.
-			TransferInput *usecase.TransferInput
+			// Input is the input argument value.
+			Input usecase.TransferInput
 		}
 	}
-	lockFetchTransfers sync.RWMutex
-	lockTransfer       sync.RWMutex
+	lockListAccountTransfers sync.RWMutex
+	lockTransfer             sync.RWMutex
 }
 
-// FetchTransfers calls FetchTransfersFunc.
-func (mock *TransferUseCaseMock) FetchTransfers(ctx context.Context, id string) ([]entities.Transfer, error) {
+// ListAccountTransfers calls ListAccountTransfersFunc.
+func (mock *TransferUseCaseMock) ListAccountTransfers(ctx context.Context, input usecase.ListAccountTransfersInput) (usecase.ListAccountTransfersOutput, error) {
 	callInfo := struct {
-		Ctx context.Context
-		ID  string
+		Ctx   context.Context
+		Input usecase.ListAccountTransfersInput
 	}{
-		Ctx: ctx,
-		ID:  id,
+		Ctx:   ctx,
+		Input: input,
 	}
-	mock.lockFetchTransfers.Lock()
-	mock.calls.FetchTransfers = append(mock.calls.FetchTransfers, callInfo)
-	mock.lockFetchTransfers.Unlock()
-	if mock.FetchTransfersFunc == nil {
+	mock.lockListAccountTransfers.Lock()
+	mock.calls.ListAccountTransfers = append(mock.calls.ListAccountTransfers, callInfo)
+	mock.lockListAccountTransfers.Unlock()
+	if mock.ListAccountTransfersFunc == nil {
 		var (
-			transfersOut []entities.Transfer
-			errOut       error
+			listAccountTransfersOutputOut usecase.ListAccountTransfersOutput
+			errOut                        error
 		)
-		return transfersOut, errOut
+		return listAccountTransfersOutputOut, errOut
 	}
-	return mock.FetchTransfersFunc(ctx, id)
+	return mock.ListAccountTransfersFunc(ctx, input)
 }
 
-// FetchTransfersCalls gets all the calls that were made to FetchTransfers.
+// ListAccountTransfersCalls gets all the calls that were made to ListAccountTransfers.
 // Check the length with:
 //
-//	len(mockedTransferUseCase.FetchTransfersCalls())
-func (mock *TransferUseCaseMock) FetchTransfersCalls() []struct {
-	Ctx context.Context
-	ID  string
+//	len(mockedTransferUseCase.ListAccountTransfersCalls())
+func (mock *TransferUseCaseMock) ListAccountTransfersCalls() []struct {
+	Ctx   context.Context
+	Input usecase.ListAccountTransfersInput
 } {
 	var calls []struct {
-		Ctx context.Context
-		ID  string
+		Ctx   context.Context
+		Input usecase.ListAccountTransfersInput
 	}
-	mock.lockFetchTransfers.RLock()
-	calls = mock.calls.FetchTransfers
-	mock.lockFetchTransfers.RUnlock()
+	mock.lockListAccountTransfers.RLock()
+	calls = mock.calls.ListAccountTransfers
+	mock.lockListAccountTransfers.RUnlock()
 	return calls
 }
 
 // Transfer calls TransferFunc.
-func (mock *TransferUseCaseMock) Transfer(ctx context.Context, transferInput *usecase.TransferInput) (*entities.Transfer, error) {
+func (mock *TransferUseCaseMock) Transfer(ctx context.Context, input usecase.TransferInput) (usecase.TransferOutput, error) {
 	callInfo := struct {
-		Ctx           context.Context
-		TransferInput *usecase.TransferInput
+		Ctx   context.Context
+		Input usecase.TransferInput
 	}{
-		Ctx:           ctx,
-		TransferInput: transferInput,
+		Ctx:   ctx,
+		Input: input,
 	}
 	mock.lockTransfer.Lock()
 	mock.calls.Transfer = append(mock.calls.Transfer, callInfo)
 	mock.lockTransfer.Unlock()
 	if mock.TransferFunc == nil {
 		var (
-			transferOut *entities.Transfer
-			errOut      error
+			transferOutputOut usecase.TransferOutput
+			errOut            error
 		)
-		return transferOut, errOut
+		return transferOutputOut, errOut
 	}
-	return mock.TransferFunc(ctx, transferInput)
+	return mock.TransferFunc(ctx, input)
 }
 
 // TransferCalls gets all the calls that were made to Transfer.
@@ -128,12 +127,12 @@ func (mock *TransferUseCaseMock) Transfer(ctx context.Context, transferInput *us
 //
 //	len(mockedTransferUseCase.TransferCalls())
 func (mock *TransferUseCaseMock) TransferCalls() []struct {
-	Ctx           context.Context
-	TransferInput *usecase.TransferInput
+	Ctx   context.Context
+	Input usecase.TransferInput
 } {
 	var calls []struct {
-		Ctx           context.Context
-		TransferInput *usecase.TransferInput
+		Ctx   context.Context
+		Input usecase.TransferInput
 	}
 	mock.lockTransfer.RLock()
 	calls = mock.calls.Transfer

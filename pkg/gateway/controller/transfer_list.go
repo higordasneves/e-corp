@@ -28,10 +28,15 @@ type ListTransfersResponseItem struct {
 // Returns not found error if the account not exists.
 func (tController TransferController) ListTransfers(w http.ResponseWriter, r *http.Request) {
 	accountOriginID := fmt.Sprint(r.Context().Value("subject"))
-	ucOutput, err := tController.tUseCase.ListAccountTransfers(r.Context(), usecase.ListAccountTransfersInput{
-		AccountID: uuid.Must(uuid.FromString(accountOriginID)),
-	})
+	id, err := uuid.FromString(accountOriginID)
+	if err != nil {
+		reponses.HandleError(w, fmt.Errorf("unexpected error when parsing the account id: %w", err), tController.log)
+		return
+	}
 
+	ucOutput, err := tController.tUseCase.ListAccountTransfers(r.Context(), usecase.ListAccountTransfersInput{
+		AccountID: id,
+	})
 	if err != nil {
 		reponses.HandleError(w, err, tController.log)
 		return
@@ -42,5 +47,5 @@ func (tController TransferController) ListTransfers(w http.ResponseWriter, r *ht
 		resp = append(resp, ListTransfersResponseItem(transfer))
 	}
 
-	reponses.SendResponse(w, http.StatusOK, resp, tController.log)
+	reponses.SendResponse(w, http.StatusOK, ListTransfersResponse{Transfers: resp}, tController.log)
 }
