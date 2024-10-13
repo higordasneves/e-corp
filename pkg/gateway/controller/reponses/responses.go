@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/higordasneves/e-corp/pkg/domain"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/requests"
 )
 
 type errJSON struct {
@@ -35,7 +34,7 @@ func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 	switch {
 	case errors.Is(err, domain.ErrUnauthorized):
 		statusCode = http.StatusUnauthorized
-	case errors.Is(err, domain.ErrInvalidParameter) || errors.Is(err, requests.ErrReadRequest):
+	case errors.Is(err, domain.ErrInvalidParameter):
 		statusCode = http.StatusBadRequest
 	case errors.Is(err, domain.ErrNotFound):
 		statusCode = http.StatusNotFound
