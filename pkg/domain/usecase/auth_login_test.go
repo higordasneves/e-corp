@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	thelp "github.com/higordasneves/e-corp/extensions/testhelpers"
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
+	thelp "github.com/higordasneves/e-corp/utils/testhelpers"
 )
 
 func TestAuthUseCase_Login_Success(t *testing.T) {

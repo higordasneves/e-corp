@@ -8,11 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	thelp "github.com/higordasneves/e-corp/extensions/testhelpers"
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
+	thelp "github.com/higordasneves/e-corp/utils/testhelpers"
 )
 
 func TestTransferUseCase_Transfer_Success(t *testing.T) {

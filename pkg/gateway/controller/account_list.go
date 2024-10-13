@@ -3,16 +3,16 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"github.com/higordasneves/e-corp/extensions/pagination"
-	"github.com/higordasneves/e-corp/pkg/domain"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/requests"
 	"net/http"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
 
+	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/requests"
+	"github.com/higordasneves/e-corp/utils/pagination"
 )
 
 type ListAccountsRequest struct {
@@ -53,7 +53,6 @@ func (accController AccountController) ListAccounts(w http.ResponseWriter, r *ht
 		ucInput.IDs = req.IDs
 	}
 
-	// todo: add cursor.
 	ucOutput, err := accController.accUseCase.ListAccounts(r.Context(), ucInput)
 	if err != nil {
 		reponses.HandleError(w, err, accController.log)
