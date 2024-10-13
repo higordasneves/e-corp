@@ -3,15 +3,14 @@ package usecase_test
 import (
 	"context"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"os"
-
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ory/dockertest/v3"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
