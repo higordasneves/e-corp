@@ -1,18 +1,18 @@
 package router
 
 import (
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	http2 "github.com/higordasneves/e-corp/pkg/gateway/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
-	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/middleware"
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 )
 
 // GetHTTPHandler returns HTTP handler with all routes
@@ -20,13 +20,13 @@ func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.Au
 	r := postgres.NewRepository(dbpool.NewConn(dbPool))
 
 	accUseCase := usecase.NewAccountUseCase(r)
-	accController := http2.NewAccountController(accUseCase, log)
+	accController := controller.NewAccountController(accUseCase, log)
 
 	//tUseCase := usecase.NewTransferUseCase(r)
-	tController := http2.NewTransferController(nil, log)
+	tController := controller.NewTransferController(nil, log)
 
 	//authUseCase := usecase.NewAuthUseCase(r, cfgAuth)
-	authController := http2.NewAuthController(nil, cfgAuth.SecretKey, log)
+	authController := controller.NewAuthController(nil, cfgAuth.SecretKey, log)
 
 	router := mux.NewRouter()
 	apiVersion := "/api/v0"
