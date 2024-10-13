@@ -10,9 +10,12 @@ import (
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 
+	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
+	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 	"github.com/higordasneves/e-corp/utils/logger"
 )
 
@@ -45,8 +48,26 @@ func main() {
 		log.Error("executing database migration", zap.Error(err))
 	}
 
-	r := router.HTTPHandler(dbPool, log, &cfg.Auth)
-	if err := http.ListenAndServe(":5000", r); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	r := postgres.NewRepository(dbpool.NewConn(dbPool))
+	handler := router.HTTPHandler(log, newAPI(&r, cfg.Auth), cfg)
+	if err := http.ListenAndServe(":5000", handler); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal("failed to start gateway HTTP server", zap.Error(err))
+	}
+}
+
+func newAPI(r *postgres.Repository, authCfg config.AuthConfig) controller.API {
+	accUseCase := usecase.NewAccountUseCase(r)
+	accController := controller.NewAccountController(accUseCase)
+
+	tUseCase := usecase.NewTransferUseCase(r)
+	tController := controller.NewTransferController(tUseCase)
+
+	authUseCase := usecase.NewAuthUseCase(r, &authCfg)
+	authController := controller.NewAuthController(authUseCase, authCfg.SecretKey)
+
+	return controller.API{
+		AuthController:     authController,
+		AccountController:  accController,
+		TransferController: tController,
 	}
 }

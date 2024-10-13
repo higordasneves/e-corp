@@ -12,14 +12,16 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
 )
 
 func TestAccountController_ListAccounts_Success(t *testing.T) {
@@ -57,14 +59,16 @@ func TestAccountController_ListAccounts_Success(t *testing.T) {
 	}
 	want := `{"accounts":[{"id":"019282db-ff95-76cd-8b7f-c3a07b52a57c","name":"Elliot","document":"55566677780","balance":9700000,"created_at":"2024-01-01T00:00:00Z"},{"id":"019282db-ff95-76ce-8ddd-ec5abceffa25","name":"Mr. Robot","document":"55566677781","balance":5596400,"created_at":"2024-01-01T00:00:00Z"}],"next_page":"eyJJRHMiOm51bGwsIkxhc3RGZXRjaGVkSUQiOiIwMTkyODJkYi1mZjk1LTc2ZDAtYTk2ZC00MWY1NjFhMWFmMjgiLCJQYWdlU2l6ZSI6MTAwfQ=="}`
 	accCtrl := controller.NewAccountController(uc)
-	router := mux.NewRouter()
-	router.HandleFunc("/accounts", accCtrl.ListAccounts).Methods(http.MethodPost)
+	api := controller.API{
+		AccountController: accCtrl,
+	}
 
-	req := httptest.NewRequest(http.MethodPost, "/accounts", request)
+	handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/accounts"), request)
 	response := httptest.NewRecorder()
 
 	// execute
-	router.ServeHTTP(response, req)
+	handler.ServeHTTP(response, req)
 
 	// assert
 	assert.Equal(t, strings.TrimSpace(want), strings.TrimSpace(response.Body.String()))
@@ -82,13 +86,16 @@ func TestAccountController_ListAccounts_Success(t *testing.T) {
 		},
 	}
 	accCtrl = controller.NewAccountController(uc)
-	router = mux.NewRouter()
-	router.HandleFunc("/accounts", accCtrl.ListAccounts).Methods(http.MethodPost)
+	api = controller.API{
+		AccountController: accCtrl,
+	}
 
-	req = httptest.NewRequest(http.MethodPost, "/accounts", request)
+	handler = router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
+	req = httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/accounts"), request)
 	response = httptest.NewRecorder()
+
 	// execute
-	router.ServeHTTP(response, req)
+	handler.ServeHTTP(response, req)
 	assert.Equal(t, http.StatusOK, response.Code)
 }
 
@@ -141,15 +148,16 @@ func TestAccountController_ListAccounts_Failure(t *testing.T) {
 			// setup
 			accUseCase := tt.fields.accUseCase
 			accCtrl := controller.NewAccountController(accUseCase)
+			api := controller.API{
+				AccountController: accCtrl,
+			}
 
-			router := mux.NewRouter()
-			router.HandleFunc("/accounts", accCtrl.ListAccounts).Methods(http.MethodPost)
-
-			req := httptest.NewRequest(http.MethodPost, "/accounts", tt.request)
+			handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
+			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/accounts"), tt.request)
 			response := httptest.NewRecorder()
 
 			// execute
-			router.ServeHTTP(response, req)
+			handler.ServeHTTP(response, req)
 
 			// assert
 			assert.Equal(t, strings.TrimSpace(tt.want), strings.TrimSpace(response.Body.String()))

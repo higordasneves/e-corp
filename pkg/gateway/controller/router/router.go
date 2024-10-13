@@ -1,59 +1,53 @@
 package router
 
 import (
+	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
-	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/config"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/middleware"
-	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
-	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 )
 
+type API interface {
+	Login(w http.ResponseWriter, r *http.Request)
+
+	GetBalance(w http.ResponseWriter, r *http.Request)
+	CreateAccount(w http.ResponseWriter, r *http.Request)
+	ListAccounts(w http.ResponseWriter, r *http.Request)
+
+	ListTransfers(w http.ResponseWriter, r *http.Request)
+	Transfer(w http.ResponseWriter, r *http.Request)
+}
+
 // HTTPHandler returns HTTP handler with all routes.
-func HTTPHandler(dbPool *pgxpool.Pool, l *zap.Logger, cfgAuth *config.AuthConfig) http.Handler {
-	r := postgres.NewRepository(dbpool.NewConn(dbPool))
-
-	accUseCase := usecase.NewAccountUseCase(r)
-	accController := controller.NewAccountController(accUseCase)
-
-	tUseCase := usecase.NewTransferUseCase(r)
-	tController := controller.NewTransferController(tUseCase)
-
-	authUseCase := usecase.NewAuthUseCase(r, cfgAuth)
-	authController := controller.NewAuthController(authUseCase, cfgAuth.SecretKey)
-
+func HTTPHandler(l *zap.Logger, api API, cfg config.Config) http.Handler {
 	chiRouter := chi.NewRouter()
-
 	chiRouter.Use(middleware.LoggerToContext(l))
 
 	chiRouter.Get("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	apiVersion := "/api/v0"
+	apiVersion := "/api/v1"
 	chiRouter.Route(apiVersion, func(r chi.Router) {
 		// login
-		r.Post("/login", authController.Login)
+		r.Post("/login", api.Login)
 
-		// accounts
 		r.Route("/accounts", func(r chi.Router) {
-			r.Post("", accController.CreateAccount)
-			r.Get("", accController.CreateAccount)
-			r.Get("/{account_id}/balance", accController.GetBalance)
+			r.Post("/", api.CreateAccount)
+			r.Get("/", api.ListAccounts)
+			r.Get("/{account_id}/balance", api.GetBalance)
 		})
 
 		// transfers
 		r.Route("/transfers", func(r chi.Router) {
-			r.Use(middleware.Authenticate(cfgAuth.SecretKey))
-			r.Post("", tController.Transfer)
-			r.Get("", tController.ListTransfers)
+			r.Use(middleware.Authenticate(cfg.Auth.SecretKey))
+			r.Post("/", api.Transfer)
+			r.Get("/", api.ListTransfers)
 		})
+
 	})
 
 	return chiRouter

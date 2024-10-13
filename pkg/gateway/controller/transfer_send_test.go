@@ -10,15 +10,19 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid/v5"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
 )
 
 func TestTransferController_Transfer(t *testing.T) {
@@ -154,14 +158,29 @@ func TestTransferController_Transfer(t *testing.T) {
 			// setup
 			tUseCase := tt.fields.tUseCase
 			tCtrl := controller.NewTransferController(tUseCase)
+			api := controller.API{
+				TransferController: tCtrl,
+			}
 
-			router := mux.NewRouter()
-			router.HandleFunc("/transfers", tCtrl.Transfer).Methods(http.MethodPost)
-			req := httptest.NewRequest(http.MethodPost, "/transfers", tt.args.requestBody).WithContext(tt.args.ctxWithValue)
+			now := time.Now()
+			claims := &jwt.StandardClaims{
+				Issuer:    "login",
+				Subject:   "b59c5660-d62f-4f3e-91b4-5f8e236e5d3d",
+				IssuedAt:  now.UTC().Unix(),
+				ExpiresAt: now.UTC().Add(time.Hour).Unix(),
+			}
+
+			token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+			tokenString, err := token.SignedString([]byte("test_secret_key"))
+			require.NoError(t, err)
+
+			handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{Auth: config.AuthConfig{SecretKey: "test_secret_key"}})
+			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/transfers"), tt.args.requestBody)
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tokenString))
 			response := httptest.NewRecorder()
 
 			// execute
-			router.ServeHTTP(response, req)
+			handler.ServeHTTP(response, req)
 
 			// assert
 			assert.Equal(t, strings.TrimSpace(tt.want), strings.TrimSpace(response.Body.String()))

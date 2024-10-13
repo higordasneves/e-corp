@@ -13,14 +13,16 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
 )
 
 func TestAuthController_Login(t *testing.T) {
@@ -117,14 +119,16 @@ func TestAuthController_Login(t *testing.T) {
 			// setup
 			authUC := tt.fields.authUC
 			authCtrl := controller.NewAuthController(authUC, "test_secret_key")
+			api := controller.API{
+				AuthController: authCtrl,
+			}
 
-			router := mux.NewRouter()
-			router.HandleFunc("/login", authCtrl.Login).Methods(http.MethodPost)
-			req := httptest.NewRequest(http.MethodPost, "/login", tt.requestBody)
+			handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
+			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/login"), tt.requestBody)
 			response := httptest.NewRecorder()
 
 			// execute
-			router.ServeHTTP(response, req)
+			handler.ServeHTTP(response, req)
 
 			// assert
 			assert.Contains(t, strings.TrimSpace(response.Body.String()), tt.want)

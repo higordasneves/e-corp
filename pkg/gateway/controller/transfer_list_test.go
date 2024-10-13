@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -11,14 +13,16 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
 )
 
 func TestTransferController_ListTransfers(t *testing.T) {
@@ -109,14 +113,29 @@ func TestTransferController_ListTransfers(t *testing.T) {
 			// setup
 			tUseCase := tt.fields.tUseCase
 			tCtrl := controller.NewTransferController(tUseCase)
+			api := controller.API{
+				TransferController: tCtrl,
+			}
 
-			router := mux.NewRouter()
-			router.HandleFunc("/transfers", tCtrl.ListTransfers).Methods(http.MethodGet)
-			req := httptest.NewRequest(http.MethodGet, "/transfers", nil).WithContext(tt.args.ctxWithValue)
+			now := time.Now()
+			claims := &jwt.StandardClaims{
+				Issuer:    "login",
+				Subject:   "0457c690-f884-4d57-810c-85cf09a50d8b",
+				IssuedAt:  now.UTC().Unix(),
+				ExpiresAt: now.UTC().Add(time.Hour).Unix(),
+			}
+
+			token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+			tokenString, err := token.SignedString([]byte("test_secret_key"))
+			require.NoError(t, err)
+
+			handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{Auth: config.AuthConfig{SecretKey: "test_secret_key"}})
+			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/transfers"), nil)
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tokenString))
 			response := httptest.NewRecorder()
 
 			// execute
-			router.ServeHTTP(response, req)
+			handler.ServeHTTP(response, req)
 
 			// assert
 			assert.Equal(t, strings.TrimSpace(tt.want), strings.TrimSpace(response.Body.String()))

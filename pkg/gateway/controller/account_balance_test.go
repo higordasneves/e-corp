@@ -9,12 +9,14 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/higordasneves/e-corp/pkg/domain"
+	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
 )
 
 func TestAccountController_GetBalance(t *testing.T) {
@@ -80,14 +82,16 @@ func TestAccountController_GetBalance(t *testing.T) {
 			//setup
 			accUseCase := tt.fields.accUseCase
 			accCtrl := controller.NewAccountController(accUseCase)
-			router := mux.NewRouter()
-			router.HandleFunc("/accounts/{account_id}/balance", accCtrl.GetBalance).Methods(http.MethodGet)
-			path := fmt.Sprintf("/accounts/%v/balance", tt.accID)
-			req := httptest.NewRequest(http.MethodGet, path, nil)
+			api := controller.API{
+				AccountController: accCtrl,
+			}
+			handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
+
+			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/accounts/%v/balance", tt.accID), nil)
 			response := httptest.NewRecorder()
 
 			// execute
-			router.ServeHTTP(response, req)
+			handler.ServeHTTP(response, req)
 
 			//assert
 			assert.Equal(t, tt.expectedCode, response.Code)

@@ -11,15 +11,17 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
+	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/router"
 )
 
 func TestAccountController_CreateAccount(t *testing.T) {
@@ -132,13 +134,16 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			accUseCase := tt.fields.accUseCase
 			accController := controller.NewAccountController(accUseCase)
 
-			router := mux.NewRouter()
-			router.HandleFunc("/accounts", accController.CreateAccount).Methods(http.MethodPost)
-			req := httptest.NewRequest(http.MethodPost, "/accounts", tt.requestBody)
+			api := controller.API{
+				AccountController: accController,
+			}
+			handler := router.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
+
+			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/accounts"), tt.requestBody)
 			response := httptest.NewRecorder()
 
 			//execute
-			router.ServeHTTP(response, req)
+			handler.ServeHTTP(response, req)
 
 			//assert
 			assert.Equal(t, strings.TrimSpace(tt.want), strings.TrimSpace(response.Body.String()))
