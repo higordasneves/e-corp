@@ -3,13 +3,14 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/requests"
 	"net/http"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/sirupsen/logrus"
+
+	"github.com/higordasneves/e-corp/pkg/domain"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
 )
 
 // Authenticate validates the session token provided as input.
@@ -19,7 +20,7 @@ func Authenticate(secretKey string, next http.HandlerFunc, log *logrus.Logger) h
 	return func(w http.ResponseWriter, r *http.Request) {
 		header := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 		if len(header) != 2 {
-			reponses.HandleError(w, requests.ErrTokenFormat, log)
+			reponses.HandleError(w, domain.ErrUnauthorized, log)
 			return
 		}
 
@@ -28,21 +29,23 @@ func Authenticate(secretKey string, next http.HandlerFunc, log *logrus.Logger) h
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
+
 			return []byte(secretKey), nil
 		})
 
 		if err != nil {
-			reponses.HandleError(w, requests.ErrTokenFormat, log)
+			reponses.HandleError(w, domain.ErrUnauthorized, log)
 			return
 		}
 
 		claims, ok := token.Claims.(*jwt.StandardClaims)
 		if !(ok && token.Valid) {
-			reponses.HandleError(w, requests.ErrTokenFormat, log)
+			reponses.HandleError(w, domain.ErrUnauthorized, log)
 			return
 		}
 
 		ctxWithValue := context.WithValue(r.Context(), "subject", claims.Subject)
+
 		next(w, r.WithContext(ctxWithValue))
 	}
 }

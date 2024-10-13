@@ -33,7 +33,7 @@ func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 	var statusCode int
 
 	switch {
-	case errors.Is(err, requests.ErrTokenFormat):
+	case errors.Is(err, domain.ErrUnauthorized):
 		statusCode = http.StatusUnauthorized
 	case errors.Is(err, domain.ErrInvalidParameter) || errors.Is(err, requests.ErrReadRequest):
 		statusCode = http.StatusBadRequest
