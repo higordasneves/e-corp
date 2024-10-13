@@ -108,7 +108,7 @@ func TestTransferController_ListTransfers(t *testing.T) {
 
 			// setup
 			tUseCase := tt.fields.tUseCase
-			tCtrl := controller.NewTransferController(tUseCase, logTest)
+			tCtrl := controller.NewTransferController(tUseCase)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/transfers", tCtrl.ListTransfers).Methods(http.MethodGet)

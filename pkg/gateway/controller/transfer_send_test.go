@@ -153,7 +153,7 @@ func TestTransferController_Transfer(t *testing.T) {
 
 			// setup
 			tUseCase := tt.fields.tUseCase
-			tCtrl := controller.NewTransferController(tUseCase, logTest)
+			tCtrl := controller.NewTransferController(tUseCase)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/transfers", tCtrl.Transfer).Methods(http.MethodPost)

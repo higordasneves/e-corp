@@ -116,7 +116,7 @@ func TestAuthController_Login(t *testing.T) {
 
 			// setup
 			authUC := tt.fields.authUC
-			authCtrl := controller.NewAuthController(authUC, "test_secret_key", logTest)
+			authCtrl := controller.NewAuthController(authUC, "test_secret_key")
 
 			router := mux.NewRouter()
 			router.HandleFunc("/login", authCtrl.Login).Methods(http.MethodPost)

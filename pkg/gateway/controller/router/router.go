@@ -5,7 +5,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
@@ -15,30 +15,31 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 )
 
-// GetHTTPHandler returns HTTP handler with all routes.
-func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.AuthConfig) *mux.Router {
+// HTTPHandler returns HTTP handler with all routes.
+func HTTPHandler(dbPool *pgxpool.Pool, l *zap.Logger, cfgAuth *config.AuthConfig) *mux.Router {
 	r := postgres.NewRepository(dbpool.NewConn(dbPool))
 
 	accUseCase := usecase.NewAccountUseCase(r)
-	accController := controller.NewAccountController(accUseCase, log)
+	accController := controller.NewAccountController(accUseCase)
 
 	//tUseCase := usecase.NewTransferUseCase(r)
-	tController := controller.NewTransferController(nil, log)
+	tController := controller.NewTransferController(nil)
 
 	authUseCase := usecase.NewAuthUseCase(r, cfgAuth)
-	authController := controller.NewAuthController(authUseCase, cfgAuth.SecretKey, log)
+	authController := controller.NewAuthController(authUseCase, cfgAuth.SecretKey)
 
 	router := mux.NewRouter()
 	apiVersion := "/api/v0"
 
+	router.Use(middleware.LoggerToContext(l))
 	//account
 	router.HandleFunc(apiVersion+"/accounts", accController.CreateAccount).Methods(http.MethodPost)
 	router.HandleFunc(apiVersion+"/accounts", accController.ListAccounts).Methods(http.MethodGet)
 	router.HandleFunc(apiVersion+"/accounts/{account_id}/balance", accController.GetBalance).Methods(http.MethodGet)
 
 	//transfer
-	router.HandleFunc(apiVersion+"/transfers", middleware.Authenticate(cfgAuth.SecretKey, tController.Transfer, log)).Methods(http.MethodPost)
-	router.HandleFunc(apiVersion+"/transfers", middleware.Authenticate(cfgAuth.SecretKey, tController.ListTransfers, log)).Methods(http.MethodGet)
+	router.HandleFunc(apiVersion+"/transfers", middleware.Authenticate(cfgAuth.SecretKey, tController.Transfer)).Methods(http.MethodPost)
+	router.HandleFunc(apiVersion+"/transfers", middleware.Authenticate(cfgAuth.SecretKey, tController.ListTransfers)).Methods(http.MethodGet)
 
 	//login
 	router.HandleFunc(apiVersion+"/login", authController.Login).Methods(http.MethodPost)

@@ -3,8 +3,6 @@ package controller
 import (
 	"context"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 )
 
@@ -17,9 +15,8 @@ type TransferUseCase interface {
 
 type TransferController struct {
 	tUseCase TransferUseCase
-	log      *logrus.Logger
 }
 
-func NewTransferController(tUseCase TransferUseCase, log *logrus.Logger) TransferController {
-	return TransferController{tUseCase: tUseCase, log: log}
+func NewTransferController(tUseCase TransferUseCase) TransferController {
+	return TransferController{tUseCase: tUseCase}
 }

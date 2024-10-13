@@ -27,10 +27,12 @@ type ListTransfersResponseItem struct {
 // ListTransfers lists all the transfers sent or received by the account in desc order.
 // Returns not found error if the account not exists.
 func (tController TransferController) ListTransfers(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	accountOriginID := fmt.Sprint(r.Context().Value("subject"))
 	id, err := uuid.FromString(accountOriginID)
 	if err != nil {
-		reponses.HandleError(w, fmt.Errorf("unexpected error when parsing the account id: %w", err), tController.log)
+		reponses.HandleError(ctx, w, fmt.Errorf("unexpected error when parsing the account id: %w", err))
 		return
 	}
 
@@ -38,7 +40,7 @@ func (tController TransferController) ListTransfers(w http.ResponseWriter, r *ht
 		AccountID: id,
 	})
 	if err != nil {
-		reponses.HandleError(w, err, tController.log)
+		reponses.HandleError(ctx, w, err)
 		return
 	}
 
@@ -47,5 +49,5 @@ func (tController TransferController) ListTransfers(w http.ResponseWriter, r *ht
 		resp = append(resp, ListTransfersResponseItem(transfer))
 	}
 
-	reponses.SendResponse(w, http.StatusOK, ListTransfersResponse{Transfers: resp}, tController.log)
+	reponses.SendResponse(ctx, w, http.StatusOK, ListTransfersResponse{Transfers: resp})
 }

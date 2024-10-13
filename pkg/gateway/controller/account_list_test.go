@@ -56,7 +56,7 @@ func TestAccountController_ListAccounts_Success(t *testing.T) {
 		},
 	}
 	want := `{"accounts":[{"id":"019282db-ff95-76cd-8b7f-c3a07b52a57c","name":"Elliot","document":"55566677780","balance":9700000,"created_at":"2024-01-01T00:00:00Z"},{"id":"019282db-ff95-76ce-8ddd-ec5abceffa25","name":"Mr. Robot","document":"55566677781","balance":5596400,"created_at":"2024-01-01T00:00:00Z"}],"next_page":"eyJJRHMiOm51bGwsIkxhc3RGZXRjaGVkSUQiOiIwMTkyODJkYi1mZjk1LTc2ZDAtYTk2ZC00MWY1NjFhMWFmMjgiLCJQYWdlU2l6ZSI6MTAwfQ=="}`
-	accCtrl := controller.NewAccountController(uc, logTest)
+	accCtrl := controller.NewAccountController(uc)
 	router := mux.NewRouter()
 	router.HandleFunc("/accounts", accCtrl.ListAccounts).Methods(http.MethodPost)
 
@@ -81,7 +81,7 @@ func TestAccountController_ListAccounts_Success(t *testing.T) {
 			return usecase.ListAccountsOutput{}, nil
 		},
 	}
-	accCtrl = controller.NewAccountController(uc, logTest)
+	accCtrl = controller.NewAccountController(uc)
 	router = mux.NewRouter()
 	router.HandleFunc("/accounts", accCtrl.ListAccounts).Methods(http.MethodPost)
 
@@ -140,7 +140,7 @@ func TestAccountController_ListAccounts_Failure(t *testing.T) {
 
 			// setup
 			accUseCase := tt.fields.accUseCase
-			accCtrl := controller.NewAccountController(accUseCase, logTest)
+			accCtrl := controller.NewAccountController(accUseCase)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/accounts", accCtrl.ListAccounts).Methods(http.MethodPost)

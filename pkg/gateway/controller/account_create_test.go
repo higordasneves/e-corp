@@ -130,7 +130,7 @@ func TestAccountController_CreateAccount(t *testing.T) {
 
 			// setup
 			accUseCase := tt.fields.accUseCase
-			accController := controller.NewAccountController(accUseCase, logTest)
+			accController := controller.NewAccountController(accUseCase)
 
 			router := mux.NewRouter()
 			router.HandleFunc("/accounts", accController.CreateAccount).Methods(http.MethodPost)

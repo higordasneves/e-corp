@@ -36,9 +36,11 @@ type ListAccountsResponseItem struct {
 
 // ListAccounts Lists accounts by filtering the IDs provided in the input.
 func (accController AccountController) ListAccounts(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	var req ListAccountsRequest
 	if err := requests.ReadRequestBody(r, &req); err != nil {
-		reponses.HandleError(w, err, accController.log)
+		reponses.HandleError(ctx, w, err)
 		return
 	}
 
@@ -46,7 +48,7 @@ func (accController AccountController) ListAccounts(w http.ResponseWriter, r *ht
 	if req.PageToken != "" {
 		err := pagination.Extract(req.PageToken, &ucInput)
 		if err != nil {
-			reponses.HandleError(w, fmt.Errorf("%w: invalid page token", domain.ErrInvalidParameter), accController.log)
+			reponses.HandleError(ctx, w, fmt.Errorf("%w: invalid page token", domain.ErrInvalidParameter))
 		}
 	} else {
 		ucInput.PageSize = pagination.ValidatePageSize(uint32(req.PageSize))
@@ -55,7 +57,7 @@ func (accController AccountController) ListAccounts(w http.ResponseWriter, r *ht
 
 	ucOutput, err := accController.accUseCase.ListAccounts(r.Context(), ucInput)
 	if err != nil {
-		reponses.HandleError(w, err, accController.log)
+		reponses.HandleError(ctx, w, err)
 		return
 	}
 
@@ -74,7 +76,7 @@ func (accController AccountController) ListAccounts(w http.ResponseWriter, r *ht
 	if ucOutput.NextPage != nil {
 		v, err := pagination.NewToken(*ucOutput.NextPage)
 		if err != nil {
-			reponses.HandleError(w, errors.New("unexpect error"), accController.log)
+			reponses.HandleError(ctx, w, errors.New("unexpect error"))
 		}
 		nextPageToken = v
 	}
@@ -84,5 +86,5 @@ func (accController AccountController) ListAccounts(w http.ResponseWriter, r *ht
 		NextPage: nextPageToken,
 	}
 
-	reponses.SendResponse(w, http.StatusOK, response, accController.log)
+	reponses.SendResponse(ctx, w, http.StatusOK, response)
 }

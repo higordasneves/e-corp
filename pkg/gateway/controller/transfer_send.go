@@ -32,9 +32,11 @@ type TransferResponse struct {
 // - The origin accounts doesn't have enough funds to complete the transfer.
 // Returns not found error if the destination account not exists.
 func (tController TransferController) Transfer(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	var req TransferRequest
 	if err := requests.ReadRequestBody(r, &req); err != nil {
-		reponses.HandleError(w, err, tController.log)
+		reponses.HandleError(ctx, w, err)
 		return
 	}
 
@@ -46,9 +48,9 @@ func (tController TransferController) Transfer(w http.ResponseWriter, r *http.Re
 		Amount:               req.Amount,
 	})
 	if err != nil {
-		reponses.HandleError(w, err, tController.log)
+		reponses.HandleError(ctx, w, err)
 		return
 	}
 
-	reponses.SendResponse(w, http.StatusCreated, TransferResponse(ucOutput.Transfer), tController.log)
+	reponses.SendResponse(ctx, w, http.StatusCreated, TransferResponse(ucOutput.Transfer))
 }

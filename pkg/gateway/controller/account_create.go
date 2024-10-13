@@ -35,9 +35,11 @@ type CreateAccountResponse struct {
 // - the number of the characters of the secret is less than the minimum;
 // - the account already exists.
 func (accController AccountController) CreateAccount(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	var req CreateAccountRequest
 	if err := requests.ReadRequestBody(r, &req); err != nil {
-		reponses.HandleError(w, err, accController.log)
+		reponses.HandleError(ctx, w, err)
 		return
 	}
 
@@ -47,7 +49,7 @@ func (accController AccountController) CreateAccount(w http.ResponseWriter, r *h
 		Secret:   req.Secret,
 	})
 	if err != nil {
-		reponses.HandleError(w, err, accController.log)
+		reponses.HandleError(ctx, w, err)
 		return
 	}
 
@@ -59,5 +61,5 @@ func (accController AccountController) CreateAccount(w http.ResponseWriter, r *h
 		CreatedAt: ucOutput.Account.CreatedAt,
 	}
 
-	reponses.SendResponse(w, http.StatusCreated, response, accController.log)
+	reponses.SendResponse(ctx, w, http.StatusCreated, response)
 }

@@ -5,8 +5,6 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/sirupsen/logrus"
-
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
@@ -22,11 +20,10 @@ type AuthUseCase interface {
 type AuthController struct {
 	authUseCase AuthUseCase
 	secretKey   string
-	log         *logrus.Logger
 }
 
-func NewAuthController(authUseCase AuthUseCase, secretKey string, log *logrus.Logger) AuthController {
-	return AuthController{authUseCase, secretKey, log}
+func NewAuthController(authUseCase AuthUseCase, secretKey string) AuthController {
+	return AuthController{authUseCase, secretKey}
 }
 
 type LoginRequest struct {
@@ -41,15 +38,17 @@ type LoginResponse struct {
 // Login validates the credentials of an account and return a login token session.
 // It returns bad request error if the password doesn't match.
 func (authCtrl AuthController) Login(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	var req LoginRequest
 	if err := requests.ReadRequestBody(r, &req); err != nil {
-		reponses.HandleError(w, err, authCtrl.log)
+		reponses.HandleError(ctx, w, err)
 		return
 	}
 
 	output, err := authCtrl.authUseCase.Login(r.Context(), usecase.LoginInput(req))
 	if err != nil {
-		reponses.HandleError(w, err, authCtrl.log)
+		reponses.HandleError(ctx, w, err)
 		return
 	}
 
@@ -64,9 +63,9 @@ func (authCtrl AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(authCtrl.secretKey))
 	if err != nil {
-		reponses.HandleError(w, err, authCtrl.log)
+		reponses.HandleError(ctx, w, err)
 		return
 	}
 
-	reponses.SendResponse(w, http.StatusOK, LoginResponse{Token: tokenString}, authCtrl.log)
+	reponses.SendResponse(ctx, w, http.StatusOK, LoginResponse{Token: tokenString})
 }

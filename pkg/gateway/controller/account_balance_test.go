@@ -79,7 +79,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 
 			//setup
 			accUseCase := tt.fields.accUseCase
-			accCtrl := controller.NewAccountController(accUseCase, logTest)
+			accCtrl := controller.NewAccountController(accUseCase)
 			router := mux.NewRouter()
 			router.HandleFunc("/accounts/{account_id}/balance", accCtrl.GetBalance).Methods(http.MethodGet)
 			path := fmt.Sprintf("/accounts/%v/balance", tt.accID)

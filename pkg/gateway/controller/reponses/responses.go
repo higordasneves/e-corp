@@ -1,13 +1,15 @@
 package reponses
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
 
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/higordasneves/e-corp/pkg/domain"
+	"github.com/higordasneves/e-corp/utils/logger"
 )
 
 type errJSON struct {
@@ -19,16 +21,16 @@ var (
 )
 
 // SendResponse sends formatted json response to request
-func SendResponse(w http.ResponseWriter, statusCode int, data interface{}, log *logrus.Logger) {
+func SendResponse(ctx context.Context, w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
 	if err := json.NewEncoder(w).Encode(data); err != nil {
-		log.WithError(err).Print("an encoding error occurred")
+		logger.Error(ctx, "an unexpected encoding error occurred", zap.Error(err))
 	}
 }
 
-func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
+func HandleError(ctx context.Context, w http.ResponseWriter, err error) {
 	var statusCode int
 
 	switch {
@@ -40,16 +42,16 @@ func HandleError(w http.ResponseWriter, err error, log *logrus.Logger) {
 		statusCode = http.StatusNotFound
 	default:
 		statusCode = http.StatusInternalServerError
-		log.WithError(err).Println(ErrUnexpected)
+		logger.Error(ctx, "an unexpected error occurred", zap.Error(err))
 		err = ErrUnexpected
 	}
 
-	SendError(w, statusCode, err, log)
+	SendError(ctx, w, statusCode, err)
 }
 
-func SendError(w http.ResponseWriter, statusCode int, err error, log *logrus.Logger) {
+func SendError(ctx context.Context, w http.ResponseWriter, statusCode int, err error) {
 	jsonError := errorJSON(err)
-	SendResponse(w, statusCode, jsonError, log)
+	SendResponse(ctx, w, statusCode, jsonError)
 }
 
 func errorJSON(err error) errJSON {

@@ -1,17 +1,20 @@
 package postgres
 
 import (
+	"context"
 	"errors"
+	"go.uber.org/zap"
+
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/postgres"
 	_ "github.com/golang-migrate/migrate/source/file"
-	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/sirupsen/logrus"
+
+	"github.com/higordasneves/e-corp/utils/logger"
 )
 
-func Migration(migrationPath string, dbPool *pgxpool.Pool, log *logrus.Logger) error {
+func Migration(ctx context.Context, migrationPath string, dbPool *pgxpool.Pool) error {
 	cfg := dbPool.Config().ConnConfig
 
 	db := stdlib.OpenDB(*cfg)
@@ -31,11 +34,12 @@ func Migration(migrationPath string, dbPool *pgxpool.Pool, log *logrus.Logger) e
 
 	err = m.Up()
 
-	if errors.Is(err, migrate.ErrNoChange) {
-		log.WithError(err).Warn(config.ErrMigrateDB)
-		return nil
-	}
 	if err != nil {
+		if errors.Is(err, migrate.ErrNoChange) {
+			logger.Error(ctx, "migration error no change", zap.Error(err))
+			return nil
+		}
+
 		return err
 	}
 
