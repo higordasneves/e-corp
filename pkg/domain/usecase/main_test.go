@@ -3,7 +3,6 @@ package usecase_test
 import (
 	"context"
 	"fmt"
-	"github.com/higordasneves/e-corp/utils/logger"
 	"log"
 	"os"
 	"strings"
@@ -17,6 +16,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
+	"github.com/higordasneves/e-corp/utils/logger"
 )
 
 var mainPool *pgxpool.Pool
