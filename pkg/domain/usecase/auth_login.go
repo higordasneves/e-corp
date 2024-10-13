@@ -13,8 +13,8 @@ import (
 
 // LoginInput represents information necessary to access a bank account.
 type LoginInput struct {
-	CPF    vos.Document
-	Secret string
+	Document vos.Document
+	Secret   string
 }
 
 type LoginOutput struct {
@@ -25,12 +25,12 @@ type LoginOutput struct {
 
 type LoginToken string
 
-// Login validates the credentials of an account.
+// Login validates the credentials of an account and return a login token session.
 // It returns domain.ErrInvalidParameter if the password doesn't match.
 func (uc AuthUseCase) Login(ctx context.Context, input LoginInput) (LoginOutput, error) {
-	acc, err := uc.accountRepo.GetAccountByDocument(ctx, input.CPF)
+	acc, err := uc.accountRepo.GetAccountByDocument(ctx, input.Document)
 	if err != nil {
-		return LoginOutput{}, err
+		return LoginOutput{}, fmt.Errorf("getting account: %w", err)
 	}
 
 	err = acc.Secret.CompareHashSecret(input.Secret)
@@ -39,6 +39,7 @@ func (uc AuthUseCase) Login(ctx context.Context, input LoginInput) (LoginOutput,
 	}
 
 	now := time.Now()
+
 	return LoginOutput{
 		AccountID: acc.ID,
 		IssuedAt:  now,

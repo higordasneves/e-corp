@@ -41,8 +41,8 @@ func TestAuthUseCase_Login_Success(t *testing.T) {
 	})
 
 	output, err := uc.Login(thelp.NewCtx(t), usecase.LoginInput{
-		CPF:    "43663412309",
-		Secret: "password123",
+		Document: "43663412309",
+		Secret:   "password123",
 	})
 	require.NoError(t, err)
 	assert.WithinDuration(t, output.IssuedAt, time.Now(), time.Minute)
@@ -73,8 +73,8 @@ func TestAuthUseCase_Login_Failure_InvalidPass(t *testing.T) {
 	})
 
 	_, err = uc.Login(thelp.NewCtx(t), usecase.LoginInput{
-		CPF:    "43663412309",
-		Secret: "password124",
+		Document: "43663412309",
+		Secret:   "password124",
 	})
 	assert.ErrorIs(t, err, vos.ErrInvalidPass)
 	assert.ErrorIs(t, err, domain.ErrInvalidParameter)

@@ -3,15 +3,16 @@ package controller_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gofrs/uuid/v5"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 
@@ -38,7 +39,7 @@ func TestAuthController_Login(t *testing.T) {
 	}{
 		{
 			name:        "with success",
-			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566678", "secret": "12345678"}`)),
+			requestBody: bytes.NewReader([]byte(`{"document": "44455566678", "secret": "12345678"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
@@ -55,7 +56,7 @@ func TestAuthController_Login(t *testing.T) {
 		},
 		{
 			name:        "when account not found should return error and status code 400",
-			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566690", "secret": "12345678"}`)),
+			requestBody: bytes.NewReader([]byte(`{"document": "44455566690", "secret": "12345678"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
@@ -68,7 +69,7 @@ func TestAuthController_Login(t *testing.T) {
 		},
 		{
 			name:        "invalid password should return error and status code 400",
-			requestBody: bytes.NewReader([]byte(`{"cpf": "44455566690", "secret": "123456"}`)),
+			requestBody: bytes.NewReader([]byte(`{"document": "44455566690", "secret": "123456"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
@@ -80,8 +81,8 @@ func TestAuthController_Login(t *testing.T) {
 			expectedCode: http.StatusBadRequest,
 		},
 		{
-			name:        "invalid cpf format should return error and status code 400",
-			requestBody: bytes.NewReader([]byte(`{"cpf": "444.555.666-90", "secret": "12345678"}`)),
+			name:        "invalid document format should return error and status code 400",
+			requestBody: bytes.NewReader([]byte(`{"document": "444.555.666-90", "secret": "12345678"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
@@ -94,7 +95,7 @@ func TestAuthController_Login(t *testing.T) {
 		},
 		{
 			name:        "unknown error should return status code 500",
-			requestBody: bytes.NewReader([]byte(`{"cpf": "444.555.666-90", "secret": "12345678"}`)),
+			requestBody: bytes.NewReader([]byte(`{"document": "444.555.666-90", "secret": "12345678"}`)),
 			fields: fields{
 				authUC: &mocks.AuthUseCaseMock{
 					LoginFunc: func(ctx context.Context, input usecase.LoginInput) (usecase.LoginOutput, error) {
@@ -128,6 +129,12 @@ func TestAuthController_Login(t *testing.T) {
 			// assert
 			assert.Contains(t, strings.TrimSpace(response.Body.String()), tt.want)
 			assert.Equal(t, tt.expectedCode, response.Code)
+			if response.Code == http.StatusOK {
+				var got controller.LoginResponse
+				err := json.NewDecoder(response.Body).Decode(&got)
+				assert.NoError(t, err)
+				assert.Contains(t, got.Token, tt.want)
+			}
 		})
 	}
 }
