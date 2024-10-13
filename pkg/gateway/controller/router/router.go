@@ -15,7 +15,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 )
 
-// GetHTTPHandler returns HTTP handler with all routes
+// GetHTTPHandler returns HTTP handler with all routes.
 func GetHTTPHandler(dbPool *pgxpool.Pool, log *logrus.Logger, cfgAuth *config.AuthConfig) *mux.Router {
 	r := postgres.NewRepository(dbpool.NewConn(dbPool))
 
