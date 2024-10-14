@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -9,14 +8,10 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-var (
-	ErrConnectDB = errors.New("failed to connect to database")
-	ErrMigrateDB = errors.New("failed to migrate to database")
-)
-
 type Config struct {
 	Auth AuthConfig
 	DB   DatabaseConfig
+	HTTP HTTP
 }
 
 type AuthConfig struct {
@@ -32,6 +27,11 @@ type DatabaseConfig struct {
 	Password string `env:"DB_PASSWORD" env-default:"123456"`
 	Port     string `env:"DB_PORT" env-default:"5432"`
 	SSLMode  string `env:"DB_SSL_MODE" env-default:"disable"`
+}
+
+type HTTP struct {
+	Address string `env:"HTTP_ADDR" env-default:"localhost"`
+	Port    string `env:"HTTP_PORT" env-default:"8080"`
 }
 
 // LoadEnv loads environment variables into a DatabaseConfig struct.

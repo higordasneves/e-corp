@@ -19,7 +19,7 @@ var Module = fx.Module("httpserver",
 				handler := HTTPHandler(l, api, cfg)
 
 				server := http.Server{
-					Addr:              "localhost:8080",
+					Addr:              cfg.HTTP.Address + ":" + cfg.HTTP.Port,
 					Handler:           handler,
 					ReadTimeout:       time.Second * 30,
 					ReadHeaderTimeout: time.Second * 30,
