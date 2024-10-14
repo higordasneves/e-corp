@@ -3,11 +3,11 @@ package server
 import (
 	"context"
 	"errors"
+	"net/http"
+	"time"
 
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"net/http"
-	"time"
 
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 )

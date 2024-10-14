@@ -2,6 +2,8 @@ package logger
 
 import (
 	"context"
+	"fmt"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -16,8 +18,7 @@ func New() (*zap.Logger, error) {
 
 	logger, err := logConfig.Build()
 	if err != nil {
-
-		return nil, err
+		return nil, fmt.Errorf("building logger: %w", err)
 	}
 
 	return logger, nil
@@ -30,8 +31,7 @@ func NewWithCtx(ctx context.Context) (context.Context, error) {
 
 	logger, err := logConfig.Build()
 	if err != nil {
-
-		return nil, err
+		return nil, fmt.Errorf("building logger: %w", err)
 	}
 
 	return context.WithValue(ctx, key{}, logger), nil

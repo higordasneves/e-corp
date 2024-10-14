@@ -79,7 +79,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			//setup
+			// setup
 			accUseCase := tt.fields.accUseCase
 			accCtrl := controller.NewAccountController(accUseCase)
 			api := controller.API{
@@ -93,7 +93,7 @@ func TestAccountController_GetBalance(t *testing.T) {
 			// execute
 			handler.ServeHTTP(response, req)
 
-			//assert
+			// assert
 			assert.Equal(t, tt.expectedCode, response.Code)
 			assert.Equal(t, strings.TrimSpace(tt.want), strings.TrimSpace(response.Body.String()))
 		})

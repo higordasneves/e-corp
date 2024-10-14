@@ -10,9 +10,9 @@ type (
 )
 
 var (
-	//ErrDocumentLen occurs when the cpf received have invalid length
+	// ErrDocumentLen occurs when the cpf received have invalid length.
 	ErrDocumentLen = errors.New("the document must have 11 or 14 characters")
-	//ErrDocumentFormat occurs when the cpf contains invalid characters
+	// ErrDocumentFormat occurs when the cpf contains invalid characters.
 	ErrDocumentFormat = errors.New("the document must contain only numbers")
 )
 

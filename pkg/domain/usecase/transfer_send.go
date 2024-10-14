@@ -54,7 +54,7 @@ func (tUseCase TransferUseCase) Transfer(ctx context.Context, input TransferInpu
 	if err != nil {
 		return TransferOutput{}, fmt.Errorf("starting transaction: %w", err)
 	}
-	defer tUseCase.R.RollbackTX(ctx)
+	defer tUseCase.R.RollbackTX(ctx) // nolint:errcheck
 
 	err = tUseCase.R.CreateTransfer(ctx, transfer)
 	if err != nil {

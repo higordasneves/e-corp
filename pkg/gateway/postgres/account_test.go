@@ -97,7 +97,7 @@ func TestAccRepo_ListAccounts_Success(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	//assert
+	// assert
 	assert.ElementsMatch(t, accounts, result.Accounts)
 }
 
@@ -202,7 +202,6 @@ func TestAccRepo_GetBalance(t *testing.T) {
 			// assert
 			assert.ErrorIs(t, err, tt.wantErr)
 			assert.Equal(t, tt.want, result)
-
 		})
 	}
 }

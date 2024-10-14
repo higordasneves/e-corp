@@ -3,9 +3,10 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/ilyakaznacheev/cleanenv"
 	"log"
 	"time"
+
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
 var (
@@ -33,15 +34,15 @@ type DatabaseConfig struct {
 	SSLMode  string `env:"DB_SSL_MODE" env-default:"disable"`
 }
 
-//LoadEnv loads environment variables into a DatabaseConfig struct
+// LoadEnv loads environment variables into a DatabaseConfig struct.
 func (config *Config) LoadEnv() {
 	err := cleanenv.ReadEnv(config)
 	if err != nil {
-		log.Fatal("Fail, .env file not found")
+		log.Fatal("env file not found")
 	}
 }
 
-//DNS returns database domain name servers
+// DNS returns database domain name servers
 func (dbConfig *DatabaseConfig) DNS() (dns string) {
 	dns = fmt.Sprintf("%v://%v:%v@%v:%v/%v?sslmode=%v",
 		dbConfig.Driver,

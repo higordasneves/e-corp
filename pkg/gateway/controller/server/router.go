@@ -1,12 +1,12 @@
 package server
 
 import (
-	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 
+	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/middleware"
 )
 
@@ -47,7 +47,6 @@ func HTTPHandler(l *zap.Logger, api API, cfg config.Config) http.Handler {
 			r.Post("/", api.Transfer)
 			r.Get("/", api.ListTransfers)
 		})
-
 	})
 
 	return chiRouter

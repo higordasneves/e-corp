@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 )
 
@@ -14,13 +15,13 @@ func NewRepository(dbPool dbpool.Conn) Repository {
 }
 
 func (r Repository) BeginTX(ctx context.Context) (context.Context, error) {
-	return r.conn.BeginTX(ctx)
+	return r.conn.BeginTX(ctx) // nolint:wrapcheck
 }
 
 func (r Repository) CommitTX(ctx context.Context) error {
-	return r.conn.CommitTX(ctx)
+	return r.conn.CommitTX(ctx) // nolint:wrapcheck
 }
 
 func (r Repository) RollbackTX(ctx context.Context) error {
-	return r.conn.RollbackTX(ctx)
+	return r.conn.RollbackTX(ctx) // nolint:wrapcheck
 }

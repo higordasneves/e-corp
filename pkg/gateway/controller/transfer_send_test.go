@@ -175,8 +175,8 @@ func TestTransferController_Transfer(t *testing.T) {
 			require.NoError(t, err)
 
 			handler := server.HTTPHandler(zaptest.NewLogger(t), api, config.Config{Auth: config.AuthConfig{SecretKey: "test_secret_key"}})
-			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/transfers"), tt.args.requestBody)
-			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tokenString))
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/transfers", tt.args.requestBody)
+			req.Header.Set("Authorization", "Bearer "+tokenString)
 			response := httptest.NewRecorder()
 
 			// execute

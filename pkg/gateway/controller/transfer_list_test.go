@@ -4,16 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid/v5"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
@@ -130,8 +130,8 @@ func TestTransferController_ListTransfers(t *testing.T) {
 			require.NoError(t, err)
 
 			handler := server.HTTPHandler(zaptest.NewLogger(t), api, config.Config{Auth: config.AuthConfig{SecretKey: "test_secret_key"}})
-			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/transfers"), nil)
-			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tokenString))
+			req := httptest.NewRequest(http.MethodGet, "/api/v1/transfers", nil)
+			req.Header.Set("Authorization", "Bearer "+tokenString)
 			response := httptest.NewRecorder()
 
 			// execute

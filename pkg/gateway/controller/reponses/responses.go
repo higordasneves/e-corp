@@ -16,9 +16,7 @@ type errJSON struct {
 	Err string `json:"error"`
 }
 
-var (
-	ErrUnexpected = errors.New("an unexpected error occurred")
-)
+var ErrUnexpected = errors.New("an unexpected error occurred")
 
 // SendResponse sends formatted json response to request
 func SendResponse(ctx context.Context, w http.ResponseWriter, statusCode int, data interface{}) {

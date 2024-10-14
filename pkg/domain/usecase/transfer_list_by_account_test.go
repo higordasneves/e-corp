@@ -2,7 +2,6 @@ package usecase_test
 
 import (
 	"context"
-	"math/rand"
 	"testing"
 	"time"
 
@@ -55,7 +54,7 @@ func TestTransferUseCase_ListAccountTransfers_Success(t *testing.T) {
 			ID:                   uuid.Must(uuid.NewV7()),
 			AccountOriginID:      accOriginID,
 			AccountDestinationID: accDestinationID,
-			Amount:               rand.Intn(100),
+			Amount:               i,
 			CreatedAt:            time.Now().Truncate(time.Second),
 		}
 		err := r.CreateTransfer(ctxDB, transfer)
@@ -90,7 +89,7 @@ func TestTransferUseCase_ListAccountTransfers_Failure_NotFound(t *testing.T) {
 	// setup
 	r := postgres.NewRepository(NewDB(t))
 	uc := usecase.TransferUseCase{R: r}
-	//execute
+	// execute
 	_, err := uc.ListAccountTransfers(context.Background(), usecase.ListAccountTransfersInput{AccountID: uuid.Must(uuid.NewV7())})
 	// assert
 	require.ErrorIs(t, err, domain.ErrNotFound)

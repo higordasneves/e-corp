@@ -58,7 +58,7 @@ func TestTransferUseCase_Transfer_Success(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	//assert
+	// assert
 	assert.Equal(t, accOriginID, got.Transfer.AccountOriginID)
 	assert.Equal(t, accDestinationID, got.Transfer.AccountDestinationID)
 	assert.Equal(t, 5, got.Transfer.Amount)

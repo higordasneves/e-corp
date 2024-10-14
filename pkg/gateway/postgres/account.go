@@ -27,7 +27,6 @@ func (r Repository) CreateAccount(ctx context.Context, acc entities.Account) err
 		Balance:        int64(acc.Balance),
 		CreatedAt:      acc.CreatedAt,
 	})
-
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -50,7 +49,7 @@ func (r Repository) ListAccounts(ctx context.Context, input usecase.ListAccounts
 		Ids:           input.IDs,
 		LastFetchedID: input.LastFetchedID,
 		// We list page size + 1 to check if there will be more items to list on the next page.
-		PageSize: int32(input.PageSize) + 1,
+		PageSize: int32(input.PageSize) + 1, //nolint:gosec
 	})
 	if err != nil {
 		return usecase.ListAccountsOutput{}, fmt.Errorf("listing accounts: %w", err)
@@ -92,7 +91,7 @@ func (r Repository) GetBalance(ctx context.Context, id uuid.UUID) (int, error) {
 // UpdateBalance updates an account by adding transactionAmount to the balance.
 func (r Repository) UpdateBalance(ctx context.Context, id uuid.UUID, transactionAmount int) error {
 	err := sqlc.New(r.conn.GetTxOrPool(ctx)).UpdateAccountBalance(ctx, sqlc.UpdateAccountBalanceParams{
-		Amount: int32(transactionAmount),
+		Amount: int32(transactionAmount), // nolint:gosec
 		ID:     uuid.FromStringOrNil(id.String()),
 	})
 	if err != nil {

@@ -49,7 +49,6 @@ func TestMain(m *testing.M) {
 			"listen_addresses = '*'",
 		},
 	})
-
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
 	}
@@ -65,15 +64,20 @@ func TestMain(m *testing.M) {
 	if err = pool.Retry(func() error {
 		mainPool, err = pgxpool.New(context.Background(), dbDNS)
 		if err != nil {
-			return err
+			return fmt.Errorf("creating new pool: %w", err)
 		}
+
 		err = mainPool.Ping(context.Background())
-		return err
+		if err != nil {
+			return fmt.Errorf("testing conection: %w", err)
+		}
+
+		return nil
 	}); err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
 	}
 
-	//Run tests
+	// Run tests
 	code := m.Run()
 
 	mainPool.Close()
@@ -98,7 +102,7 @@ func NewDB(t *testing.T) dbpool.Conn {
 
 	dbName := fmt.Sprintf("db_%d", time.Now().UnixNano())
 
-	_, err = mainPool.Exec(context.Background(), fmt.Sprintf("create database %s", dbName))
+	_, err = mainPool.Exec(context.Background(), "create database "+dbName)
 	require.NoError(t, err)
 
 	connString := strings.Replace(mainPool.Config().ConnString(), mainPool.Config().ConnConfig.Database, dbName, 1)
@@ -114,7 +118,7 @@ func NewDB(t *testing.T) dbpool.Conn {
 
 	t.Cleanup(func() {
 		pool.Close()
-		_, _ = pool.Exec(context.Background(), fmt.Sprintf("drop database %s", dbName))
+		_, _ = pool.Exec(context.Background(), "drop database "+dbName)
 	})
 
 	return dbpool.NewConn(pool)

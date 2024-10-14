@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-	"go.uber.org/fx"
+	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
+	"go.uber.org/fx"
 
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
@@ -33,9 +34,13 @@ var Options = fx.Options(
 	config.Module,
 	dbpool.Module,
 	server.Module,
-	fx.Invoke(func(ctx context.Context, pool *pgxpool.Pool) {
-		postgres.Migration(ctx, "pkg/gateway/postgres/migrations", pool)
+	fx.Invoke(func(ctx context.Context, pool *pgxpool.Pool) error {
+		err := postgres.Migration(ctx, "pkg/gateway/postgres/migrations", pool)
+		if err != nil {
+			return fmt.Errorf("executing migrations: %w", err)
+		}
 
+		return nil
 	}),
 	fx.Provide(
 		postgres.NewRepository,

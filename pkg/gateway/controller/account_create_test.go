@@ -139,13 +139,13 @@ func TestAccountController_CreateAccount(t *testing.T) {
 			}
 			handler := server.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
 
-			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/accounts"), tt.requestBody)
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/accounts", tt.requestBody)
 			response := httptest.NewRecorder()
 
-			//execute
+			// execute
 			handler.ServeHTTP(response, req)
 
-			//assert
+			// assert
 			assert.Equal(t, strings.TrimSpace(tt.want), strings.TrimSpace(response.Body.String()))
 			assert.Equal(t, tt.expectedCode, response.Code)
 		})

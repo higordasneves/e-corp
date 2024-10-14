@@ -34,7 +34,6 @@ func Authenticate(secretKey string) func(next http.Handler) http.Handler {
 
 				return []byte(secretKey), nil
 			})
-
 			if err != nil {
 				reponses.HandleError(r.Context(), w, domain.ErrUnauthorized)
 				return

@@ -22,7 +22,7 @@ type ListAccountTransfersOutput struct {
 func (tUseCase TransferUseCase) ListAccountTransfers(ctx context.Context, input ListAccountTransfersInput) (ListAccountTransfersOutput, error) {
 	// Just checking if the account exists. the repository returns domain.ErrNotFound if not exits.
 	if _, err := tUseCase.R.GetBalance(ctx, input.AccountID); err != nil {
-		return ListAccountTransfersOutput{}, err
+		return ListAccountTransfersOutput{}, fmt.Errorf("getting balance: %w", err)
 	}
 
 	output, err := tUseCase.R.ListAccountTransfers(ctx, input.AccountID)

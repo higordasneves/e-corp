@@ -61,7 +61,7 @@ func (accController AccountController) ListAccounts(w http.ResponseWriter, r *ht
 			accountIDs = append(accountIDs, accountID)
 		}
 
-		ucInput.PageSize = pagination.ValidatePageSize(uint32(i))
+		ucInput.PageSize = pagination.ValidatePageSize(uint32(i)) // nolint:gosec
 		ucInput.IDs = accountIDs
 	}
 

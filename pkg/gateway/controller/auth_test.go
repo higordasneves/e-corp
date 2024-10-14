@@ -124,7 +124,7 @@ func TestAuthController_Login(t *testing.T) {
 			}
 
 			handler := server.HTTPHandler(zaptest.NewLogger(t), api, config.Config{})
-			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/login"), tt.requestBody)
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/login", tt.requestBody)
 			response := httptest.NewRecorder()
 
 			// execute

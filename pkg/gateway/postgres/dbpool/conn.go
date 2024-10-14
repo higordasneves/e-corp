@@ -2,6 +2,7 @@ package dbpool
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -58,7 +59,7 @@ func (c Conn) CommitTX(ctx context.Context) error {
 		}
 	}
 
-	return fmt.Errorf("transaction not found")
+	return errors.New("transaction not found")
 }
 
 func (c Conn) RollbackTX(ctx context.Context) error {
@@ -73,5 +74,5 @@ func (c Conn) RollbackTX(ctx context.Context) error {
 		}
 	}
 
-	return fmt.Errorf("transaction not found")
+	return errors.New("transaction not found")
 }

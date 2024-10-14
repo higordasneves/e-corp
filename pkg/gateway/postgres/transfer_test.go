@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"errors"
-	"math/rand"
 	"testing"
 	"time"
 
@@ -59,7 +58,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 				ID:                   uuid.Must(uuid.NewV7()),
 				AccountOriginID:      accOriginID,
 				AccountDestinationID: accDestinationID,
-				Amount:               rand.Int(),
+				Amount:               10,
 				CreatedAt:            time.Now().Truncate(time.Second),
 			},
 			expectedErr: nil,
@@ -70,7 +69,7 @@ func TestTransferRepo_CreateTransfer(t *testing.T) {
 				ID:                   uuid.FromStringOrNil("5f2d4920-89c3-4ed5-af8e-1d411588746d"),
 				AccountOriginID:      uuid.Must(uuid.NewV7()),
 				AccountDestinationID: uuid.Must(uuid.NewV7()),
-				Amount:               rand.Int(),
+				Amount:               0,
 				CreatedAt:            time.Now().Truncate(time.Second),
 			},
 			expectedErr: errors.New("inserting transfer with id 5f2d4920-89c3-4ed5-af8e-1d411588746d"),
@@ -129,7 +128,7 @@ func TestTransferRepo_ListAccountTransfers(t *testing.T) {
 			ID:                   uuid.Must(uuid.NewV7()),
 			AccountOriginID:      accOriginID,
 			AccountDestinationID: accDestinationID,
-			Amount:               rand.Intn(100),
+			Amount:               i,
 			CreatedAt:            time.Now().Truncate(time.Second),
 		}
 		err := r.CreateTransfer(ctxDB, transfer)
