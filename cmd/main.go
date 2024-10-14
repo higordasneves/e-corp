@@ -18,15 +18,14 @@ import (
 	"github.com/higordasneves/e-corp/utils/logger"
 )
 
-// @Title e-corp API
+// @Title Ecorp API
 // @Version 1.0
-// @Description API for banking accounts.
+// @Description API for banking accounts
 
 // @in header
 // @name Authorization
 func main() {
 	app := fx.New(Options)
-
 	if err := app.Err(); err != nil {
 		panic(err)
 	}

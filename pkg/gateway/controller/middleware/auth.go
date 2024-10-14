@@ -3,7 +3,6 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"net/http"
 	"strings"
 
@@ -11,6 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/higordasneves/e-corp/pkg/domain"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/utils/logger"
 )
 

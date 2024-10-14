@@ -4,8 +4,10 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	http_swagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
 
+	_ "github.com/higordasneves/e-corp/docs/swagger"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/middleware"
 )
@@ -31,7 +33,12 @@ func HTTPHandler(l *zap.Logger, api API, cfg config.Config) http.Handler {
 	})
 
 	apiVersion := "/api/v1"
+
 	chiRouter.Route(apiVersion, func(r chi.Router) {
+		r.Route("/docs", func(r chi.Router) {
+			r.Get("/swagger/*", http_swagger.Handler())
+		})
+
 		// login
 		r.Post("/login", api.Login)
 

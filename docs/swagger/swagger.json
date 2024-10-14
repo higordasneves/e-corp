@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "API for banking accounts.",
-        "title": "e-corp API",
+        "description": "API for banking accounts",
+        "title": "Ecorp API",
         "contact": {},
         "version": "1.0"
     },

@@ -92,8 +92,8 @@ definitions:
     type: object
 info:
   contact: {}
-  description: API for banking accounts.
-  title: e-corp API
+  description: API for banking accounts
+  title: Ecorp API
   version: "1.0"
 paths:
   /api/v1/accounts:
