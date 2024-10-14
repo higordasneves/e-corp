@@ -14,7 +14,7 @@ type GetBalanceResponse struct {
 
 // GetBalance returns the current balance of the account.
 // It returns NotFound error if the account not exists.
-// @Summary Get balance
+// @Summary Get Balance
 // @Description Returns the current balance of the account.
 // @Description It returns NotFound error if the account not exists.
 // @Tags Accounts

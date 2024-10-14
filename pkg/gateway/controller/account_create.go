@@ -31,7 +31,7 @@ type CreateAccountResponse struct {
 }
 
 // CreateAccount creates a banking account.
-// @Summary Create Account.
+// @Summary Create Account
 // @Description Creates a banking account.
 // @Description Returns bad request error if:
 // @Description - the account name is not filled;

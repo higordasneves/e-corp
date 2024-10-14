@@ -25,6 +25,17 @@ type ListTransfersResponseItem struct {
 
 // ListTransfers lists all the transfers sent or received by the account in desc order.
 // Returns not found error if the account not exists.
+// @Summary List Transfers
+// @Description Lists all the transfers sent or received by the account in desc order.
+// @Description It returns not found error if the account not exists.
+// @Description The account id is obtained from the subject.
+// @Tags Transfers
+// @Accept json
+// @Produce json
+// @Success 200 {object} ListTransfersResponse "Transfers list"
+// @Failure 404 {object} ErrorResponse "Not found"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /api/v1/transfers [get]
 func (tController TransferController) ListTransfers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

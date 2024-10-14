@@ -36,6 +36,26 @@ definitions:
         description: Balance represents the balance of the account.
         type: integer
     type: object
+  controller.ListTransfersResponse:
+    properties:
+      transfers:
+        items:
+          $ref: '#/definitions/controller.ListTransfersResponseItem'
+        type: array
+    type: object
+  controller.ListTransfersResponseItem:
+    properties:
+      account_destination_id:
+        type: string
+      account_origin_id:
+        type: string
+      amount:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: string
+    type: object
   controller.LoginRequest:
     properties:
       document:
@@ -47,6 +67,27 @@ definitions:
     properties:
       token:
         description: Token is the session token used to authenticate the account.
+        type: string
+    type: object
+  controller.TransferRequest:
+    properties:
+      amount:
+        description: Amount is the amount of the transfer. It must be positive.
+        type: integer
+      destination_id:
+        type: string
+    type: object
+  controller.TransferResponse:
+    properties:
+      account_destination_id:
+        type: string
+      account_origin_id:
+        type: string
+      amount:
+        type: integer
+      created_at:
+        type: string
+      id:
         type: string
     type: object
 info:
@@ -129,7 +170,7 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/controller.ErrorResponse'
-      summary: Create Account.
+      summary: Create Account
       tags:
       - Accounts
   /api/v1/accounts/{account_id}/balance:
@@ -160,7 +201,7 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/controller.ErrorResponse'
-      summary: Get balance
+      summary: Get Balance
       tags:
       - Accounts
   /api/v1/login:
@@ -195,4 +236,70 @@ paths:
       summary: Login
       tags:
       - Login
+  /api/v1/transfers:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Lists all the transfers sent or received by the account in desc order.
+        It returns not found error if the account not exists.
+        The account id is obtained from the subject.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transfers list
+          schema:
+            $ref: '#/definitions/controller.ListTransfersResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: List Transfers
+      tags:
+      - Transfers
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Creates a transfer and updates the balance of the destination and origin accounts.
+        The origin account id is obtained from the subject.
+        It returns not found error if the destination account not exists.
+        It returns bad request error if:
+        - The AccountOriginID is equal to AccountDestinationID.
+        - The amount is less than or equal to zero.
+        - The origin accounts doesn't have enough funds to complete the transfer.
+      parameters:
+      - description: Request body
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.TransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transfer Created
+          schema:
+            $ref: '#/definitions/controller.TransferResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Send Transfer
+      tags:
+      - Transfers
 swagger: "2.0"

@@ -13,7 +13,8 @@ import (
 
 type TransferRequest struct {
 	AccountDestinationID uuid.UUID `json:"destination_id"`
-	Amount               int       `json:"amount"`
+	// Amount is the amount of the transfer. It must be positive.
+	Amount int `json:"amount"`
 }
 
 type TransferResponse struct {
@@ -25,11 +26,23 @@ type TransferResponse struct {
 }
 
 // Transfer creates a transfer and updates the balance of the destination and origin accounts.
-// Returns bad request error if:
-// - The AccountOriginID is equal to AccountDestinationID.
-// - The amount is less than or equal to zero.
-// - The origin accounts doesn't have enough funds to complete the transfer.
-// Returns not found error if the destination account not exists.
+// @Summary Send Transfer
+// @Description Creates a transfer and updates the balance of the destination and origin accounts.
+// @Description The origin account id is obtained from the subject.
+// @Description It returns not found error if the destination account not exists.
+// @Description It returns bad request error if:
+// @Description - The AccountOriginID is equal to AccountDestinationID.
+// @Description - The amount is less than or equal to zero.
+// @Description - The origin accounts doesn't have enough funds to complete the transfer.
+// @Tags Transfers
+// @Param Body body TransferRequest true "Request body"
+// @Accept json
+// @Produce json
+// @Success 200 {object} TransferResponse "Transfer Created"
+// @Failure 400 {object} ErrorResponse "Bad Request"
+// @Failure 404 {object} ErrorResponse "Not found"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /api/v1/transfers [post]
 func (tController TransferController) Transfer(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

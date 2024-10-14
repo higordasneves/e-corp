@@ -83,7 +83,7 @@ const docTemplate = `{
                 "tags": [
                     "Accounts"
                 ],
-                "summary": "Create Account.",
+                "summary": "Create Account",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -129,7 +129,7 @@ const docTemplate = `{
                 "tags": [
                     "Accounts"
                 ],
-                "summary": "Get balance",
+                "summary": "Get Balance",
                 "parameters": [
                     {
                         "type": "string",
@@ -206,6 +206,91 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/transfers": {
+            "get": {
+                "description": "Lists all the transfers sent or received by the account in desc order.\nIt returns not found error if the account not exists.\nThe account id is obtained from the subject.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfers"
+                ],
+                "summary": "List Transfers",
+                "responses": {
+                    "200": {
+                        "description": "Transfers list",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ListTransfersResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a transfer and updates the balance of the destination and origin accounts.\nThe origin account id is obtained from the subject.\nIt returns not found error if the destination account not exists.\nIt returns bad request error if:\n- The AccountOriginID is equal to AccountDestinationID.\n- The amount is less than or equal to zero.\n- The origin accounts doesn't have enough funds to complete the transfer.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfers"
+                ],
+                "summary": "Send Transfer",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.TransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer Created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.TransferResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -264,6 +349,37 @@ const docTemplate = `{
                 }
             }
         },
+        "controller.ListTransfersResponse": {
+            "type": "object",
+            "properties": {
+                "transfers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controller.ListTransfersResponseItem"
+                    }
+                }
+            }
+        },
+        "controller.ListTransfersResponseItem": {
+            "type": "object",
+            "properties": {
+                "account_destination_id": {
+                    "type": "string"
+                },
+                "account_origin_id": {
+                    "type": "string"
+                },
+                "amount": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.LoginRequest": {
             "type": "object",
             "properties": {
@@ -280,6 +396,38 @@ const docTemplate = `{
             "properties": {
                 "token": {
                     "description": "Token is the session token used to authenticate the account.",
+                    "type": "string"
+                }
+            }
+        },
+        "controller.TransferRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "description": "Amount is the amount of the transfer. It must be positive.",
+                    "type": "integer"
+                },
+                "destination_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.TransferResponse": {
+            "type": "object",
+            "properties": {
+                "account_destination_id": {
+                    "type": "string"
+                },
+                "account_origin_id": {
+                    "type": "string"
+                },
+                "amount": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 }
             }
