@@ -160,6 +160,52 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/login": {
+            "post": {
+                "description": "Validates the credentials of an account and return a login token session.\nIt returns bad request error if the provided password doesn't match for the account.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Login"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Token",
+                        "schema": {
+                            "$ref": "#/definitions/controller.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid parameter",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -215,6 +261,26 @@ const docTemplate = `{
                 "balance": {
                     "description": "Balance represents the balance of the account.",
                     "type": "integer"
+                }
+            }
+        },
+        "controller.LoginRequest": {
+            "type": "object",
+            "properties": {
+                "document": {
+                    "type": "string"
+                },
+                "secret": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "description": "Token is the session token used to authenticate the account.",
+                    "type": "string"
                 }
             }
         }

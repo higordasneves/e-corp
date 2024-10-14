@@ -36,6 +36,19 @@ definitions:
         description: Balance represents the balance of the account.
         type: integer
     type: object
+  controller.LoginRequest:
+    properties:
+      document:
+        type: string
+      secret:
+        type: string
+    type: object
+  controller.LoginResponse:
+    properties:
+      token:
+        description: Token is the session token used to authenticate the account.
+        type: string
+    type: object
 info:
   contact: {}
   description: API for banking accounts.
@@ -150,4 +163,36 @@ paths:
       summary: Get balance
       tags:
       - Accounts
+  /api/v1/login:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Validates the credentials of an account and return a login token session.
+        It returns bad request error if the provided password doesn't match for the account.
+      parameters:
+      - description: Request body
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token
+          schema:
+            $ref: '#/definitions/controller.LoginResponse'
+        "400":
+          description: invalid parameter
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Login
+      tags:
+      - Login
 swagger: "2.0"

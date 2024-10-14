@@ -31,11 +31,23 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
+	// Token is the session token used to authenticate the account.
 	Token string `json:"token"`
 }
 
 // Login validates the credentials of an account and return a login token session.
 // It returns bad request error if the password doesn't match.
+// @Summary Login
+// @Description Validates the credentials of an account and return a login token session.
+// @Description It returns bad request error if the provided password doesn't match for the account.
+// @Tags Login
+// @Param Body body LoginRequest true "Request body"
+// @Accept json
+// @Produce json
+// @Success 200 {object} LoginResponse "Token"
+// @Failure 400 {object} ErrorResponse "invalid parameter"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /api/v1/login [POST]
 func (authCtrl AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
