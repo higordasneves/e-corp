@@ -21,7 +21,6 @@ import (
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/mocks"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/server"
 )
 
@@ -106,7 +105,7 @@ func TestAuthController_Login(t *testing.T) {
 				},
 			},
 
-			want:         fmt.Sprintf(`{"error":"%s"}`, reponses.ErrUnexpected),
+			want:         fmt.Sprintf(`{"error":"%s"}`, controller.ErrUnexpected),
 			expectedCode: http.StatusInternalServerError,
 		},
 	}

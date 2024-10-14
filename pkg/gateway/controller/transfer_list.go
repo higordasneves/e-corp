@@ -8,7 +8,6 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
 )
 
 type ListTransfersResponse struct {
@@ -32,7 +31,7 @@ func (tController TransferController) ListTransfers(w http.ResponseWriter, r *ht
 	accountOriginID := fmt.Sprint(r.Context().Value("subject"))
 	id, err := uuid.FromString(accountOriginID)
 	if err != nil {
-		reponses.HandleError(ctx, w, fmt.Errorf("unexpected error when parsing the account id: %w", err))
+		HandleError(ctx, w, fmt.Errorf("unexpected error when parsing the account id: %w", err))
 		return
 	}
 
@@ -40,7 +39,7 @@ func (tController TransferController) ListTransfers(w http.ResponseWriter, r *ht
 		AccountID: id,
 	})
 	if err != nil {
-		reponses.HandleError(ctx, w, err)
+		HandleError(ctx, w, err)
 		return
 	}
 
@@ -49,5 +48,5 @@ func (tController TransferController) ListTransfers(w http.ResponseWriter, r *ht
 		resp = append(resp, ListTransfersResponseItem(transfer))
 	}
 
-	reponses.SendResponse(ctx, w, http.StatusOK, ListTransfersResponse{Transfers: resp})
+	SendResponse(ctx, w, http.StatusOK, ListTransfersResponse{Transfers: resp})
 }

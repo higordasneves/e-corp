@@ -1,0 +1,153 @@
+definitions:
+  controller.CreateAccountRequest:
+    properties:
+      document:
+        description: Document is the document number of the customer.
+        type: string
+      name:
+        description: Name represents the name of the customer.
+        type: string
+      secret:
+        description: Secret is the password. Must have at least 8 digits.
+        type: string
+    type: object
+  controller.CreateAccountResponse:
+    properties:
+      balance:
+        description: Balance represents the balance of the account.
+        type: integer
+      created_at:
+        type: string
+      document:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  controller.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  controller.GetBalanceResponse:
+    properties:
+      balance:
+        description: Balance represents the balance of the account.
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: API for banking accounts.
+  title: e-corp API
+  version: "1.0"
+paths:
+  /api/v1/accounts:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Lists accounts by filtering the IDs provided in the input.
+        It returns bad request error if the provided list of ids is invalid.
+      parameters:
+      - description: Account IDs
+        in: query
+        name: ids
+        required: true
+        type: string
+      - description: Page Size
+        in: query
+        name: page_size
+        required: true
+        type: string
+      - description: Page Token
+        in: query
+        name: page_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account Balance
+          schema:
+            $ref: '#/definitions/controller.GetBalanceResponse'
+        "400":
+          description: invalid parameter
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: List Accounts
+      tags:
+      - Accounts
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Creates a banking account.
+        Returns bad request error if:
+        - the account name is not filled;
+        - the number of characters of the document is not valid;
+        - the format of the document is not valid;
+        - the number of the characters of the secret is less than the minimum;
+        - the account already exists.
+      parameters:
+      - description: Request body
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/controller.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account created
+          schema:
+            $ref: '#/definitions/controller.CreateAccountResponse'
+        "400":
+          description: Invalid parameter
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Create Account.
+      tags:
+      - Accounts
+  /api/v1/accounts/{account_id}/balance:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Returns the current balance of the account.
+        It returns NotFound error if the account not exists.
+      parameters:
+      - description: Account ID
+        in: path
+        name: account_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account Balance
+          schema:
+            $ref: '#/definitions/controller.GetBalanceResponse'
+        "404":
+          description: Account not found
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Get balance
+      tags:
+      - Accounts
+swagger: "2.0"

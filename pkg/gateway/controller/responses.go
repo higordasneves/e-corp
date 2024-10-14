@@ -1,4 +1,4 @@
-package reponses
+package controller
 
 import (
 	"context"
@@ -12,11 +12,11 @@ import (
 	"github.com/higordasneves/e-corp/utils/logger"
 )
 
-type errJSON struct {
+type ErrorResponse struct {
 	Err string `json:"error"`
 }
 
-var ErrUnexpected = errors.New("an unexpected error occurred")
+var ErrUnexpected = errors.New("internal server error")
 
 // SendResponse sends formatted json response to request
 func SendResponse(ctx context.Context, w http.ResponseWriter, statusCode int, data interface{}) {
@@ -52,8 +52,8 @@ func SendError(ctx context.Context, w http.ResponseWriter, statusCode int, err e
 	SendResponse(ctx, w, statusCode, jsonError)
 }
 
-func errorJSON(err error) errJSON {
-	return errJSON{
+func errorJSON(err error) ErrorResponse {
+	return ErrorResponse{
 		Err: err.Error(),
 	}
 }

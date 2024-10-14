@@ -8,7 +8,6 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/requests"
 )
 
@@ -36,7 +35,7 @@ func (tController TransferController) Transfer(w http.ResponseWriter, r *http.Re
 
 	var req TransferRequest
 	if err := requests.ReadRequestBody(r, &req); err != nil {
-		reponses.HandleError(ctx, w, err)
+		HandleError(ctx, w, err)
 		return
 	}
 
@@ -48,9 +47,9 @@ func (tController TransferController) Transfer(w http.ResponseWriter, r *http.Re
 		Amount:               req.Amount,
 	})
 	if err != nil {
-		reponses.HandleError(ctx, w, err)
+		HandleError(ctx, w, err)
 		return
 	}
 
-	reponses.SendResponse(ctx, w, http.StatusCreated, TransferResponse(ucOutput.Transfer))
+	SendResponse(ctx, w, http.StatusCreated, TransferResponse(ucOutput.Transfer))
 }

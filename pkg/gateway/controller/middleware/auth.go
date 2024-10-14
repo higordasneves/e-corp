@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"github.com/higordasneves/e-corp/pkg/gateway/controller"
 	"net/http"
 	"strings"
 
@@ -10,7 +11,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/higordasneves/e-corp/pkg/domain"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
 	"github.com/higordasneves/e-corp/utils/logger"
 )
 
@@ -22,7 +22,7 @@ func Authenticate(secretKey string) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			header := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 			if len(header) != 2 {
-				reponses.HandleError(r.Context(), w, domain.ErrUnauthorized)
+				controller.HandleError(r.Context(), w, domain.ErrUnauthorized)
 				return
 			}
 
@@ -35,13 +35,13 @@ func Authenticate(secretKey string) func(next http.Handler) http.Handler {
 				return []byte(secretKey), nil
 			})
 			if err != nil {
-				reponses.HandleError(r.Context(), w, domain.ErrUnauthorized)
+				controller.HandleError(r.Context(), w, domain.ErrUnauthorized)
 				return
 			}
 
 			claims, ok := token.Claims.(*jwt.StandardClaims)
 			if !(ok && token.Valid) {
-				reponses.HandleError(r.Context(), w, domain.ErrUnauthorized)
+				controller.HandleError(r.Context(), w, domain.ErrUnauthorized)
 				return
 			}
 

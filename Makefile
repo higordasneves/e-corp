@@ -6,3 +6,7 @@ install-linters:
 lint:
 	@echo "==> Running golang ci"
 	$$(go env GOPATH)/bin/golangci-lint run --timeout=300s -c ./.golangci.yml ./...
+
+.PHONY: swagger
+swagger:
+	swag init -g ./cmd/main.go -o ./docs/swagger

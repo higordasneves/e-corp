@@ -7,7 +7,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/reponses"
 	"github.com/higordasneves/e-corp/pkg/gateway/controller/requests"
 )
 
@@ -42,13 +41,13 @@ func (authCtrl AuthController) Login(w http.ResponseWriter, r *http.Request) {
 
 	var req LoginRequest
 	if err := requests.ReadRequestBody(r, &req); err != nil {
-		reponses.HandleError(ctx, w, err)
+		HandleError(ctx, w, err)
 		return
 	}
 
 	output, err := authCtrl.authUseCase.Login(r.Context(), usecase.LoginInput(req))
 	if err != nil {
-		reponses.HandleError(ctx, w, err)
+		HandleError(ctx, w, err)
 		return
 	}
 
@@ -63,9 +62,9 @@ func (authCtrl AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(authCtrl.secretKey))
 	if err != nil {
-		reponses.HandleError(ctx, w, err)
+		HandleError(ctx, w, err)
 		return
 	}
 
-	reponses.SendResponse(ctx, w, http.StatusOK, LoginResponse{Token: tokenString})
+	SendResponse(ctx, w, http.StatusOK, LoginResponse{Token: tokenString})
 }

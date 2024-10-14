@@ -1,0 +1,214 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API for banking accounts.",
+        "title": "e-corp API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "paths": {
+        "/api/v1/accounts": {
+            "get": {
+                "description": "Lists accounts by filtering the IDs provided in the input.\nIt returns bad request error if the provided list of ids is invalid.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "List Accounts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account IDs",
+                        "name": "ids",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Page Size",
+                        "name": "page_size",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Page Token",
+                        "name": "page_token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Account Balance",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetBalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid parameter",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a banking account.\nReturns bad request error if:\n- the account name is not filled;\n- the number of characters of the document is not valid;\n- the format of the document is not valid;\n- the number of the characters of the secret is less than the minimum;\n- the account already exists.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Create Account.",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.CreateAccountRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Account created",
+                        "schema": {
+                            "$ref": "#/definitions/controller.CreateAccountResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameter",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/accounts/{account_id}/balance": {
+            "get": {
+                "description": "Returns the current balance of the account.\nIt returns NotFound error if the account not exists.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Get balance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "account_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Account Balance",
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetBalanceResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "controller.CreateAccountRequest": {
+            "type": "object",
+            "properties": {
+                "document": {
+                    "description": "Document is the document number of the customer.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name represents the name of the customer.",
+                    "type": "string"
+                },
+                "secret": {
+                    "description": "Secret is the password. Must have at least 8 digits.",
+                    "type": "string"
+                }
+            }
+        },
+        "controller.CreateAccountResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "description": "Balance represents the balance of the account.",
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "document": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.GetBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "description": "Balance represents the balance of the account.",
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}
