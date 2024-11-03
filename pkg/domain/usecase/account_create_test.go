@@ -11,6 +11,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
+	"github.com/higordasneves/e-corp/pkg/domain/usecase/mocks"
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
 	thelp "github.com/higordasneves/e-corp/utils/testhelpers"
@@ -22,7 +23,7 @@ func TestAccountUseCase_CreateAccount_Success(t *testing.T) {
 	// setup
 	ctx := thelp.NewCtx(t)
 	r := postgres.NewRepository(NewDB(t))
-	uc := usecase.AccountUseCase{R: r}
+	uc := usecase.AccountUseCase{R: r, B: &mocks.AccountUseCaseUseCaseBrokerMock{}}
 
 	// execute
 	got, err := uc.CreateAccount(ctx, usecase.CreateAccountInput{
@@ -45,7 +46,7 @@ func TestAccountUseCase_CreateAccount_Failure(t *testing.T) {
 	// setup
 	ctx := thelp.NewCtx(t)
 	r := postgres.NewRepository(NewDB(t))
-	uc := usecase.AccountUseCase{R: r}
+	uc := usecase.AccountUseCase{R: r, B: &mocks.AccountUseCaseUseCaseBrokerMock{}}
 
 	tests := []struct {
 		name        string

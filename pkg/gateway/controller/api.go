@@ -4,6 +4,7 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/usecase"
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
 	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
+	"github.com/higordasneves/e-corp/pkg/gateway/rabbitmq"
 )
 
 type API struct {
@@ -12,8 +13,8 @@ type API struct {
 	TransferController
 }
 
-func NewApi(r postgres.Repository, cfg config.Config) API {
-	accUseCase := usecase.NewAccountUseCase(r)
+func NewApi(r postgres.Repository, broker rabbitmq.Publisher, cfg config.Config) API {
+	accUseCase := usecase.NewAccountUseCase(r, broker)
 	accController := NewAccountController(accUseCase)
 
 	tUseCase := usecase.NewTransferUseCase(r)

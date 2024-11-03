@@ -61,6 +61,11 @@ func (accUseCase AccountUseCase) CreateAccount(ctx context.Context, input Create
 		return CreateAccountOutput{}, fmt.Errorf("creating account in the database: %w", err)
 	}
 
+	err = accUseCase.B.NotifyAccountCreation(ctx, account)
+	if err != nil {
+		return CreateAccountOutput{}, fmt.Errorf("notifying account creation in the broker: %w", err)
+	}
+
 	return CreateAccountOutput{account}, nil
 }
 

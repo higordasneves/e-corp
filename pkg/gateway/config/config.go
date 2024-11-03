@@ -12,6 +12,7 @@ type Config struct {
 	Auth AuthConfig
 	DB   DatabaseConfig
 	HTTP HTTP
+	MQ   RabbitMQConfig
 }
 
 type AuthConfig struct {
@@ -34,6 +35,16 @@ type HTTP struct {
 	Port    string `env:"HTTP_PORT" env-default:"8080"`
 }
 
+type RabbitMQConfig struct {
+	Host     string `env:"RABBITMQ_HOST" env-default:"localhost"`
+	User     string `env:"RABBITMQ_USER" env-default:"guest"`
+	Password string `env:"RABBITMQ_PASSWORD" env-default:"guest"`
+	Port     string `env:"RABBITMQ_PORT" env-default:"5672"`
+	Exchange string `env:"RABBITMQ_EXCHANGE" env-default:"ecorp"`
+	Queue    string `env:"RABBITMQ_QUEUE" env-default:"ecorp.stream.accountCreation"`
+	Bind     string `env:"RABBITMQ_BIND" env-default:"ecorp.accountCreation"`
+}
+
 // LoadEnv loads environment variables into a DatabaseConfig struct.
 func (config *Config) LoadEnv() {
 	err := cleanenv.ReadEnv(config)
@@ -54,4 +65,8 @@ func (dbConfig *DatabaseConfig) DNS() (dns string) {
 		dbConfig.SSLMode,
 	)
 	return
+}
+
+func (mqCfg RabbitMQConfig) URL() string {
+	return fmt.Sprintf("amqp://%v:%v@%v:%v", mqCfg.User, mqCfg.Password, mqCfg.Host, mqCfg.Port)
 }

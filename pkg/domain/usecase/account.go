@@ -9,6 +9,8 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
+//go:generate moq -stub -pkg mocks -out mocks/accounts.go . AccountUseCaseUseCaseBroker
+
 type AccountUseCaseRepository interface {
 	CreateAccount(ctx context.Context, acc entities.Account) error
 	GetAccountByDocument(ctx context.Context, cpf vos.Document) (entities.Account, error)
@@ -16,10 +18,15 @@ type AccountUseCaseRepository interface {
 	ListAccounts(ctx context.Context, input ListAccountsInput) (ListAccountsOutput, error)
 }
 
-type AccountUseCase struct {
-	R AccountUseCaseRepository
+type AccountUseCaseUseCaseBroker interface {
+	NotifyAccountCreation(ctx context.Context, account entities.Account) error
 }
 
-func NewAccountUseCase(accountRepo AccountUseCaseRepository) AccountUseCase {
-	return AccountUseCase{R: accountRepo}
+type AccountUseCase struct {
+	R AccountUseCaseRepository
+	B AccountUseCaseUseCaseBroker
+}
+
+func NewAccountUseCase(accountRepo AccountUseCaseRepository, broker AccountUseCaseUseCaseBroker) AccountUseCase {
+	return AccountUseCase{R: accountRepo, B: broker}
 }

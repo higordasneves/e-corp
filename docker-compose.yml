@@ -14,6 +14,14 @@ services:
       - database_postgres:/var/lib/postgresql/data
     networks:
       - fullstack
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    container_name: rabbitmq_db
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - fullstack
   app:
     container_name: ecorp
     build: .

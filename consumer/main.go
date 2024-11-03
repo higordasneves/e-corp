@@ -4,16 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"go.uber.org/fx"
 
 	"github.com/higordasneves/e-corp/pkg/gateway/config"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller"
-	"github.com/higordasneves/e-corp/pkg/gateway/controller/server"
-	"github.com/higordasneves/e-corp/pkg/gateway/postgres"
-	"github.com/higordasneves/e-corp/pkg/gateway/postgres/dbpool"
 	"github.com/higordasneves/e-corp/pkg/gateway/rabbitmq"
 	"github.com/higordasneves/e-corp/utils/apictx"
 	"github.com/higordasneves/e-corp/utils/logger"
@@ -38,23 +33,13 @@ var Options = fx.Options(
 	logger.Module,
 	apictx.Module,
 	config.Module,
-	dbpool.Module,
-	server.Module,
 	rabbitmq.ModuleConn,
-	rabbitmq.ModulePub,
-	fx.Invoke(func(ctx context.Context, pool *pgxpool.Pool) error {
-		err := postgres.Migration(ctx, "pkg/gateway/postgres/migrations", pool)
-		if err != nil {
-			return fmt.Errorf("executing migrations: %w", err)
+	rabbitmq.ModuleSub,
+	fx.Invoke(func(ctx context.Context, c rabbitmq.Consumer) error {
+		if err := c.Run(ctx); err != nil {
+			return fmt.Errorf("failed to start consumer: %w", err)
 		}
 
 		return nil
 	}),
-	fx.Provide(
-		postgres.NewRepository,
-		fx.Annotate(
-			controller.NewApi,
-			fx.As(new(server.API)),
-		),
-	),
 )
