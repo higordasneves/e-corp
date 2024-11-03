@@ -30,7 +30,7 @@ type DatabaseConfig struct {
 }
 
 type HTTP struct {
-	Address string `env:"HTTP_ADDR" env-default:"localhost"`
+	Address string `env:"HTTP_ADDR" env-default:"0.0.0.0"`
 	Port    string `env:"HTTP_PORT" env-default:"8080"`
 }
 

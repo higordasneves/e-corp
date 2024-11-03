@@ -1,13 +1,13 @@
 version: '3'
 services:
   fullstack-postgres:
-    image: postgres:latest
+    image: postgres:16
     container_name: ecorp_db
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
-      - DATABASE_HOST=${DB_HOST}
+      # - DATABASE_HOST=${DB_HOST}
     ports:
       - '7557:5432'
     volumes:
@@ -18,7 +18,7 @@ services:
     container_name: ecorp
     build: .
     ports:
-      - "5000:5000"
+      - "8080:8080"
     restart: on-failure
     depends_on:
       - fullstack-postgres          # Uncomment this when using postgres.
