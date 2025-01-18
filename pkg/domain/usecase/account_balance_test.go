@@ -29,7 +29,7 @@ func TestAccountUseCase_GetBalance(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	uc := usecase.AccountUseCase{R: r}
+	uc := usecase.GetAccountBalanceUC{R: r}
 	got, err := uc.GetBalance(thelp.NewCtx(t), uuid.FromStringOrNil("5f2d4920-89c3-4ed5-af8e-1d411588746d"))
 	require.NoError(t, err)
 	assert.Equal(t, 10, got)

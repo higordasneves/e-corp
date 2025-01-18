@@ -23,7 +23,7 @@ func TestAccountUseCase_CreateAccount_Success(t *testing.T) {
 	// setup
 	ctx := thelp.NewCtx(t)
 	r := postgres.NewRepository(NewDB(t))
-	uc := usecase.AccountUseCase{R: r, B: &mocks.AccountUseCaseUseCaseBrokerMock{}}
+	uc := usecase.CreateAccountUC{R: r, B: &mocks.CreateAccountUCBrokerMock{}}
 
 	// execute
 	got, err := uc.CreateAccount(ctx, usecase.CreateAccountInput{
@@ -46,7 +46,7 @@ func TestAccountUseCase_CreateAccount_Failure(t *testing.T) {
 	// setup
 	ctx := thelp.NewCtx(t)
 	r := postgres.NewRepository(NewDB(t))
-	uc := usecase.AccountUseCase{R: r, B: &mocks.AccountUseCaseUseCaseBrokerMock{}}
+	uc := usecase.CreateAccountUC{R: r, B: &mocks.CreateAccountUCBrokerMock{}}
 
 	tests := []struct {
 		name        string

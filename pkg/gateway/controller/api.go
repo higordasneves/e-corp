@@ -14,13 +14,32 @@ type API struct {
 }
 
 func NewApi(r postgres.Repository, broker rabbitmq.Publisher, cfg config.Config) API {
-	accUseCase := usecase.NewAccountUseCase(r, broker)
-	accController := NewAccountController(accUseCase)
+	createAccUseCase := usecase.NewCreateAccountUC(r, broker)
+	getAccUseCase := usecase.NewGetAccountBalanceUC(r)
+	listAccUseCase := usecase.NewListAccountsUC(r)
+	accountsUCs := struct {
+		usecase.CreateAccountUC
+		usecase.GetAccountBalanceUC
+		usecase.ListAccountsUC
+	}{
+		createAccUseCase,
+		getAccUseCase,
+		listAccUseCase,
+	}
+	accController := NewAccountController(accountsUCs)
 
-	tUseCase := usecase.NewTransferUseCase(r)
-	tController := NewTransferController(tUseCase)
+	tUseCase := usecase.NewTransferUC(r)
+	listTransfersUC := usecase.NewListAccountTransfersUC(r)
+	transfersUCs := struct {
+		usecase.TransferUC
+		usecase.ListAccountTransfersUC
+	}{
+		tUseCase,
+		listTransfersUC,
+	}
+	tController := NewTransferController(transfersUCs)
 
-	authUseCase := usecase.NewAuthUseCase(r, &cfg.Auth)
+	authUseCase := usecase.NewAuthUC(r, &cfg.Auth)
 	authController := NewAuthController(authUseCase, cfg.Auth.SecretKey)
 
 	return API{

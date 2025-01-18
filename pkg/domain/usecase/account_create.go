@@ -13,6 +13,25 @@ import (
 	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
 
+//go:generate moq -stub -pkg mocks -out mocks/account_create.go . CreateAccountUCBroker
+
+type CreateAccountUCRepository interface {
+	CreateAccount(ctx context.Context, acc entities.Account) error
+}
+
+type CreateAccountUCBroker interface {
+	NotifyAccountCreation(ctx context.Context, account entities.Account) error
+}
+
+type CreateAccountUC struct {
+	R CreateAccountUCRepository
+	B CreateAccountUCBroker
+}
+
+func NewCreateAccountUC(accountRepo CreateAccountUCRepository, broker CreateAccountUCBroker) CreateAccountUC {
+	return CreateAccountUC{R: accountRepo, B: broker}
+}
+
 // CreateAccountInput represents information necessary to create a bank account.
 type CreateAccountInput struct {
 	Name     string
@@ -31,7 +50,7 @@ type CreateAccountOutput struct {
 // - the format of the document is not valid;
 // - the number of the characters of the secret is less than the minimum;
 // - the account already exists.
-func (accUseCase AccountUseCase) CreateAccount(ctx context.Context, input CreateAccountInput) (CreateAccountOutput, error) {
+func (accUseCase CreateAccountUC) CreateAccount(ctx context.Context, input CreateAccountInput) (CreateAccountOutput, error) {
 	input = input.removeBlankSpaces()
 	if input.Name == "" {
 		return CreateAccountOutput{}, fmt.Errorf("%w (name): required field", domain.ErrInvalidParameter)

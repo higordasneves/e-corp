@@ -64,7 +64,7 @@ func TestTransferUseCase_ListAccountTransfers_Success(t *testing.T) {
 		want = append(want, transfer)
 	}
 
-	uc := usecase.TransferUseCase{R: r}
+	uc := usecase.ListAccountTransfersUC{R: r}
 
 	t.Run("listing the transfers sent by an account", func(t *testing.T) {
 		// execute
@@ -88,7 +88,7 @@ func TestTransferUseCase_ListAccountTransfers_Failure_NotFound(t *testing.T) {
 
 	// setup
 	r := postgres.NewRepository(NewDB(t))
-	uc := usecase.TransferUseCase{R: r}
+	uc := usecase.ListAccountTransfersUC{R: r}
 	// execute
 	_, err := uc.ListAccountTransfers(context.Background(), usecase.ListAccountTransfersInput{AccountID: uuid.Must(uuid.NewV7())})
 	// assert

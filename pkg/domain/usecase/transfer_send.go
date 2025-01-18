@@ -9,7 +9,28 @@ import (
 
 	"github.com/higordasneves/e-corp/pkg/domain"
 	"github.com/higordasneves/e-corp/pkg/domain/entities"
+	"github.com/higordasneves/e-corp/pkg/domain/vos"
 )
+
+type TransferUCRepository interface {
+	GetBalance(ctx context.Context, id uuid.UUID) (int, error)
+	GetAccountByDocument(ctx context.Context, cpf vos.Document) (entities.Account, error)
+	UpdateBalance(ctx context.Context, id uuid.UUID, transactionAmount int) error
+
+	CreateTransfer(ctx context.Context, transfer entities.Transfer) error
+
+	BeginTX(ctx context.Context) (context.Context, error)
+	CommitTX(ctx context.Context) error
+	RollbackTX(ctx context.Context) error
+}
+
+type TransferUC struct {
+	R TransferUCRepository
+}
+
+func NewTransferUC(r TransferUCRepository) TransferUC {
+	return TransferUC{R: r}
+}
 
 // TransferInput represents information necessary to transfer money between bank accounts
 type TransferInput struct {
@@ -28,7 +49,7 @@ type TransferOutput struct {
 // - The amount is less than or equal to zero.
 // - The origin accounts doesn't have enough funds to complete the transfer.
 // Returns domain.ErrNotFound if the origin or destination account not exists.
-func (tUseCase TransferUseCase) Transfer(ctx context.Context, input TransferInput) (TransferOutput, error) {
+func (tUseCase TransferUC) Transfer(ctx context.Context, input TransferInput) (TransferOutput, error) {
 	ctx, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 
@@ -96,7 +117,7 @@ func ValidateTransferInput(i TransferInput) error {
 // validate validates existence of the accounts involved and balance sufficiency.
 // Returns domain.ErrNotFound if the origin or destination account not exists.
 // Returns domain.ErrInvalidParameter if the origin accounts doesn't have enough funds to complete the transfer.
-func (tUseCase TransferUseCase) validate(ctx context.Context, transfer entities.Transfer) error {
+func (tUseCase TransferUC) validate(ctx context.Context, transfer entities.Transfer) error {
 	originBalance, err := tUseCase.R.GetBalance(ctx, transfer.AccountOriginID)
 	if err != nil {
 		return fmt.Errorf("getting origin account balance: %w", err)

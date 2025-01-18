@@ -10,3 +10,7 @@ lint:
 .PHONY: swagger
 swagger:
 	swag init -g ./cmd/main.go -o ./docs/swagger
+
+.PHONY: installmoq
+installmoq:
+	go install github.com/matryer/moq@latest

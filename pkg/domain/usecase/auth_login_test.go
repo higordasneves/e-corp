@@ -17,7 +17,7 @@ import (
 	thelp "github.com/higordasneves/e-corp/utils/testhelpers"
 )
 
-func TestAuthUseCase_Login_Success(t *testing.T) {
+func TestAuthUC_Login_Success(t *testing.T) {
 	t.Parallel()
 
 	r := postgres.NewRepository(NewDB(t))
@@ -35,7 +35,7 @@ func TestAuthUseCase_Login_Success(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	uc := usecase.NewAuthUseCase(r, &config.AuthConfig{
+	uc := usecase.NewAuthUC(r, &config.AuthConfig{
 		Duration:  time.Minute,
 		SecretKey: "secret_key_test",
 	})
@@ -49,7 +49,7 @@ func TestAuthUseCase_Login_Success(t *testing.T) {
 	assert.Equal(t, output.ExpiresAt, output.IssuedAt.Add(time.Minute))
 }
 
-func TestAuthUseCase_Login_Failure_InvalidPass(t *testing.T) {
+func TestAuthUC_Login_Failure_InvalidPass(t *testing.T) {
 	t.Parallel()
 
 	r := postgres.NewRepository(NewDB(t))
@@ -67,7 +67,7 @@ func TestAuthUseCase_Login_Failure_InvalidPass(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	uc := usecase.NewAuthUseCase(r, &config.AuthConfig{
+	uc := usecase.NewAuthUC(r, &config.AuthConfig{
 		Duration:  time.Minute,
 		SecretKey: "secret_key_test",
 	})

@@ -15,12 +15,12 @@ import (
 	thelp "github.com/higordasneves/e-corp/utils/testhelpers"
 )
 
-func TestTransferUseCase_Transfer_Success(t *testing.T) {
+func TestTransferUC_Transfer_Success(t *testing.T) {
 	t.Parallel()
 
 	// setup
 	r := postgres.NewRepository(NewDB(t))
-	uc := usecase.TransferUseCase{R: r}
+	uc := usecase.TransferUC{R: r}
 
 	accOriginID := uuid.Must(uuid.NewV7())
 	accDestinationID := uuid.Must(uuid.NewV7())
@@ -84,12 +84,12 @@ func TestTransferUseCase_Transfer_Success(t *testing.T) {
 	assert.Equal(t, got.Transfer, accDestTransfers[0])
 }
 
-func TestTransferUseCase_Transfer(t *testing.T) {
+func TestTransferUC_Transfer(t *testing.T) {
 	t.Parallel()
 
 	// setup
 	r := postgres.NewRepository(NewDB(t))
-	uc := usecase.TransferUseCase{R: r}
+	uc := usecase.TransferUC{R: r}
 
 	accOriginID := uuid.Must(uuid.NewV7())
 	accDestinationID := uuid.Must(uuid.NewV7())

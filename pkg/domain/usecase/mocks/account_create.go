@@ -10,26 +10,26 @@ import (
 	"sync"
 )
 
-// Ensure, that AccountUseCaseUseCaseBrokerMock does implement usecase.AccountUseCaseUseCaseBroker.
+// Ensure, that CreateAccountUCBrokerMock does implement usecase.CreateAccountUCBroker.
 // If this is not the case, regenerate this file with moq.
-var _ usecase.AccountUseCaseUseCaseBroker = &AccountUseCaseUseCaseBrokerMock{}
+var _ usecase.CreateAccountUCBroker = &CreateAccountUCBrokerMock{}
 
-// AccountUseCaseUseCaseBrokerMock is a mock implementation of usecase.AccountUseCaseUseCaseBroker.
+// CreateAccountUCBrokerMock is a mock implementation of usecase.CreateAccountUCBroker.
 //
-//	func TestSomethingThatUsesAccountUseCaseUseCaseBroker(t *testing.T) {
+//	func TestSomethingThatUsesCreateAccountUCBroker(t *testing.T) {
 //
-//		// make and configure a mocked usecase.AccountUseCaseUseCaseBroker
-//		mockedAccountUseCaseUseCaseBroker := &AccountUseCaseUseCaseBrokerMock{
+//		// make and configure a mocked usecase.CreateAccountUCBroker
+//		mockedCreateAccountUCBroker := &CreateAccountUCBrokerMock{
 //			NotifyAccountCreationFunc: func(ctx context.Context, account entities.Account) error {
 //				panic("mock out the NotifyAccountCreation method")
 //			},
 //		}
 //
-//		// use mockedAccountUseCaseUseCaseBroker in code that requires usecase.AccountUseCaseUseCaseBroker
+//		// use mockedCreateAccountUCBroker in code that requires usecase.CreateAccountUCBroker
 //		// and then make assertions.
 //
 //	}
-type AccountUseCaseUseCaseBrokerMock struct {
+type CreateAccountUCBrokerMock struct {
 	// NotifyAccountCreationFunc mocks the NotifyAccountCreation method.
 	NotifyAccountCreationFunc func(ctx context.Context, account entities.Account) error
 
@@ -47,7 +47,7 @@ type AccountUseCaseUseCaseBrokerMock struct {
 }
 
 // NotifyAccountCreation calls NotifyAccountCreationFunc.
-func (mock *AccountUseCaseUseCaseBrokerMock) NotifyAccountCreation(ctx context.Context, account entities.Account) error {
+func (mock *CreateAccountUCBrokerMock) NotifyAccountCreation(ctx context.Context, account entities.Account) error {
 	callInfo := struct {
 		Ctx     context.Context
 		Account entities.Account
@@ -70,8 +70,8 @@ func (mock *AccountUseCaseUseCaseBrokerMock) NotifyAccountCreation(ctx context.C
 // NotifyAccountCreationCalls gets all the calls that were made to NotifyAccountCreation.
 // Check the length with:
 //
-//	len(mockedAccountUseCaseUseCaseBroker.NotifyAccountCreationCalls())
-func (mock *AccountUseCaseUseCaseBrokerMock) NotifyAccountCreationCalls() []struct {
+//	len(mockedCreateAccountUCBroker.NotifyAccountCreationCalls())
+func (mock *CreateAccountUCBrokerMock) NotifyAccountCreationCalls() []struct {
 	Ctx     context.Context
 	Account entities.Account
 } {
