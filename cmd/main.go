@@ -21,7 +21,7 @@ import (
 
 // @Title Ecorp API
 // @Version 1.0
-// @Description API for banking accounts
+// @Description A MVP of an API for banking accounts
 
 // @in header
 // @name Authorization
